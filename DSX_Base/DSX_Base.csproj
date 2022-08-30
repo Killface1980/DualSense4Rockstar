@@ -16,9 +16,6 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>C:\Rockstar Games\Grand Theft Auto V\Scripts\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="ScriptHookRDRNetAPI">
-      <HintPath>..\..\..\..\Rockstar Games\Red Dead Redemption 2\ScriptHookRDRNetAPI.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms">
@@ -33,7 +30,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;D:\Rockstar Games\Red Dead Redemption 2\scripts\&quot; /S /Y" />
+    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;D:\Rockstar Games\Red Dead Redemption 2\scripts\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;C:\Rockstar Games\Grand Theft Auto V\Scripts\&quot; /S /Y" />
   </Target>
 
 </Project>

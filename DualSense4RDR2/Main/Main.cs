@@ -3,7 +3,8 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
-using static DSX_Base.Client.Class1;
+using DSX_Base.Client;
+using static DSX_Base.Client.iO;
 using static RDR2.Native.WEAPON;
 
 namespace DualSense4RDR2
@@ -37,8 +38,8 @@ namespace DualSense4RDR2
         {
             blue = 255;
             red = 1;
-            DSX_Base.Client.Class1.Connect();
-            Packet packet = new Packet();
+            DSX_Base.Client.iO.Connect();
+            Packet packet = new();
             int num = 0;
             packet.instructions = new Instruction[4];
             while (red <= 255)
@@ -54,7 +55,7 @@ namespace DualSense4RDR2
                     0,
                     red - brig
                 };
-                DSX_Base.Client.Class1.Send(packet);
+                DSX_Base.Client.iO.Send(packet);
             }
             while (blue <= 255)
             {
@@ -66,7 +67,7 @@ namespace DualSense4RDR2
                     0,
                     red - brig
                 };
-                DSX_Base.Client.Class1.Send(packet);
+                DSX_Base.Client.iO.Send(packet);
                 Script.Wait(10);
                 red -= speed;
                 blue += speed;
@@ -76,11 +77,11 @@ namespace DualSense4RDR2
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             return;
-            Packet packet = new Packet();
+            Packet packet = new();
             packet.instructions = new Instruction[4];
             if (e.KeyCode == Keys.F9)
             {
-                iO obj = new iO();
+                iO obj = new();
                 int bat = 0;
                 bool isconnected = false;
                 Send(packet);
@@ -126,7 +127,7 @@ namespace DualSense4RDR2
 
         private unsafe void OnTick(object sender, EventArgs e)
         {
-            Packet packet = new Packet();
+            Packet packet = new();
             int controllerIndex = 0;
             packet.instructions = new Instruction[4];
             Player player = Game.Player;
@@ -256,7 +257,7 @@ namespace DualSense4RDR2
                 0 // blue
             };
             Send(packet);
-            RDR2.UI.Screen.DisplaySubtitle((myred).ToString());
+            //RDR2.UI.Screen.DisplaySubtitle((myred).ToString());
             return;
 
             //else
@@ -264,8 +265,8 @@ namespace DualSense4RDR2
 
 
             //RDR2.UI.Screen.DisplaySubtitle(health + " - " + pulseRate + " - " + staminaTarget);
-            add add2 = new add();
-            iO obj = new iO();
+            add add2 = new();
+            iO obj = new();
             int bat = 0;
             Send(packet);
             Script.Wait(235);

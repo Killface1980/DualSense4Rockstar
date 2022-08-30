@@ -1,21 +1,24 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Newtonsoft.Json;
 using Shared;
 
 namespace DSX_Base.Client
 {
-    public static class Class1
+    public class iO
     {
         private static UdpClient client;
+
         private static IPEndPoint endPoint;
-        private static DateTime TimeSent;
 
         public static void Connect()
         {
+            _ = DateTime.Now;
             client = new UdpClient();
             string value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
             endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(value));
@@ -26,14 +29,12 @@ namespace DSX_Base.Client
         {
             byte[] bytes = Encoding.ASCII.GetBytes(Triggers.PacketToJson(data));
             client.Send(bytes, bytes.Length, endPoint);
-            TimeSent = DateTime.Now;
         }
-
 
         public static void SetAndSendPacket(Packet packet, int controllerIndex, Trigger trigger, TriggerMode triggerMode = TriggerMode.Normal, List<int> parameters = null)
         {
             packet.instructions[0].type = InstructionType.TriggerUpdate;
-            List<object> newList = new List<object>()
+            List<object> newList = new()
             {
                 controllerIndex,
                 trigger,
@@ -54,13 +55,14 @@ namespace DSX_Base.Client
         {
 
             packet.instructions[0].type = InstructionType.TriggerUpdate;
-            List<object> newList = new List<object>()
+            List<object> newList = new()
             {
                 controllerIndex,
                 trigger,
                 triggerMode,
                 customMode,
-                startOfResistance,amountOfForceExerted,forceExertedInRange,ab_strengthNearRelease,ab_strengthNearMiddle,ab_strengthPressedState,ab_actuationFrequency
+                startOfResistance, amountOfForceExerted, forceExertedInRange, ab_strengthNearRelease,
+                ab_strengthNearMiddle, ab_strengthPressedState, ab_actuationFrequency
             };
 
             packet.instructions[0].parameters = newList.ToArray();

@@ -26,7 +26,6 @@ namespace DualSense4GTAV
 
         private bool playeralive;
 
-        private Main n = new Main();
 
         private int brig;
 
@@ -52,7 +51,7 @@ namespace DualSense4GTAV
             Connect();
             bat = 0;
             isconnected = false;
-            Packet data = new Packet
+            Packet data = new()
             {
                 instructions = new Instruction[6]
             };
@@ -61,7 +60,7 @@ namespace DualSense4GTAV
             Console.WriteLine("Waiting for Server Response...\n");
             if (Process.GetProcessesByName("DSX").Length == 0)
             {
-                UI.Notify("DSX is not running but mod is installed");
+                GTA.UI.Notification.Show("DSX is not running but mod is installed");
             }
             else
             {
@@ -80,7 +79,7 @@ namespace DualSense4GTAV
                 }
                 else
                 {
-                    UI.Notify("DSX is not installed or UDP is off check the app settings ");
+                    GTA.UI.Notification.Show("DSX is not installed or UDP is off check the app settings ");
                 }
             }
             Console.WriteLine("Press any key to send again\n");

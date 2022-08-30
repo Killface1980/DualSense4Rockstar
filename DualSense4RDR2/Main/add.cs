@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using RDR2;
 using Shared;
-using static DSX_Base.Client.Class1;
+using static DSX_Base.Client.iO;
 
 namespace DualSense4RDR2
 {
@@ -162,8 +162,8 @@ namespace DualSense4RDR2
         {
             blue = 255;
             red = 1;
-            DSX_Base.Client.Class1.Connect();
-            Packet packet = new Packet();
+            DSX_Base.Client.iO.Connect();
+            Packet packet = new();
             int num = 0;
             packet.instructions = new Instruction[4];
             while (red <= 255)
@@ -179,7 +179,7 @@ namespace DualSense4RDR2
                     0,
                     red - brig
                 };
-                DSX_Base.Client.Class1.Send(packet);
+                DSX_Base.Client.iO.Send(packet);
             }
             while (blue <= 255)
             {
@@ -191,7 +191,7 @@ namespace DualSense4RDR2
                     0,
                     red - brig
                 };
-                DSX_Base.Client.Class1.Send(packet);
+                Send(packet);
                 Script.Wait(10);
                 red -= speed;
                 blue += speed;

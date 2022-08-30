@@ -3,8 +3,10 @@ using GTA.Native;
 using Shared;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
-using static DSX_Base.Client.Class1;
+using DSX_Base.Client;
+using static DSX_Base.Client.iO;
 
 namespace DualSense4GTAV
 {
@@ -21,6 +23,8 @@ namespace DualSense4GTAV
         private static bool showconmes = true;
         private static DateTime TimeSent;
         private static bool wanted = false;
+        private add _add2 = null;
+        private iO _obj = null;
 
         public Main()
         {
@@ -34,16 +38,16 @@ namespace DualSense4GTAV
 
         private void onKeyDown(object sender, KeyEventArgs e)
         {
-            Packet packet = new Packet();
+            Packet packet = new();
             packet.instructions = new Instruction[4];
             if (e.KeyCode == Keys.F9)
             {
-                iO obj = new iO();
+                iO obj = new();
                 int bat = 0;
                 bool isconnected = false;
                 Send(packet);
                 obj.getstat(out bat, out isconnected);
-                UI.Notify("Controller connection status: " + isconnected + " controller battery status: " + bat + "% \n to hide this Press F10");
+                GTA.UI.Notification.Show("Controller connection status: " + isconnected + " controller battery status: " + bat + "% \n to hide this Press F10");
             }
             if (e.KeyCode == Keys.F10)
             {
@@ -57,7 +61,7 @@ namespace DualSense4GTAV
 
         private void onTick(object sender, EventArgs e)
         {
-            Packet packet = new Packet();
+            Packet packet = new();
             int controllerIndex = 0;
             packet.instructions = new Instruction[4];
             playerped = Game.Player.Character;
@@ -79,13 +83,33 @@ namespace DualSense4GTAV
                     packet.instructions[1].type = InstructionType.RGBUpdate;
                     packet.instructions[1].parameters = new object[4] { controllerIndex, 0, 255, 0 };
                 }
+                /*
+                if (playerped.IsInVehicle())
+                {
+                    Vehicle currentVehicle = playerped.CurrentVehicle;
+                    OutputArgument outR = new();
+                    OutputArgument outG = new();
+                    OutputArgument outB = new();
+
+                    Function.Call(GTA.Native.Hash.GET_VEHICLE_COLOR, currentVehicle, outR, outG, outB);
+                    int red = outR.GetResult<int>();
+                    int green = outG.GetResult<int>();
+                    int blue = outB.GetResult<int>();
+                    // GTA.UI.Screen.ShowSubtitle(red + " - " + green + " - " + blue);
+                    packet.instructions[1].type = InstructionType.RGBUpdate;
+                    packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
+
+                }
+                */
+
                 Send(packet);
             }
             if (playerped.IsInVehicle())
             {
                 Vehicle currentVehicle = playerped.CurrentVehicle;
 
-                if (!currentVehicle.EngineRunning)
+
+                if (!currentVehicle.IsEngineRunning)
                 {
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right);
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left);
@@ -116,12 +140,8 @@ namespace DualSense4GTAV
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Choppy);
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Choppy);
                 //}
-                else if (currentVehicle.IsTireBurst(1) ||
-                         currentVehicle.IsTireBurst(2) ||
-                         currentVehicle.IsTireBurst(3) ||
-                         currentVehicle.IsTireBurst(4) ||
-                         currentVehicle.IsTireBurst(5) ||
-                         currentVehicle.IsTireBurst(6))
+                
+                else if (currentVehicle.Wheels.Any(x=> x.IsBursted))
                 {
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest);
@@ -134,14 +154,15 @@ namespace DualSense4GTAV
                     float currentRpm = currentVehicle.CurrentRPM;
                     var currentSpeed = currentVehicle.Speed;
                 
-                    int resistance = 5 - currentGear;
-                
+                    int resistance = 4 - currentGear;
+                    //GTA.Native.Hash.traction
                     // UI.ShowSubtitle(resistance.ToString());
 
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { (int)(7f -
-                        healthMalus), resistance + (int)healthMalus });
+                    //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { (int)(6f -
+                    //    healthMalus), Math.Min(resistance + (int)healthMalus, 8) });
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 5, Math.Max(1, Math.Min(resistance + (int)healthMalus, 8)) });
 
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 8-
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 7-
                         (currentGear) -
                         (int)(healthMalus / 2f), 8-resistance });
 
@@ -170,123 +191,24 @@ namespace DualSense4GTAV
             {
                 _ = wanted;
 
-                if (playerped.IsReloading)
+                if (playerped.IsReloading || playerWeapon.AmmoInClip == 0)
                 {
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 8, 8 });
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left);
-
                 }
                 else
                 {
-                    // switch (playerweapon.Hash)
-                    // {
-                    //     case WeaponHash.Knife:
-                    //     case WeaponHash.Nightstick:
-                    //     case WeaponHash.Hammer:
-                    //     case WeaponHash.Bat:
-                    //     case WeaponHash.GolfClub:
-                    //     case WeaponHash.Crowbar:
-                    //     case WeaponHash.Bottle:
-                    //     case WeaponHash.SwitchBlade:
-                    //     case WeaponHash.BattleAxe:
-                    //     case WeaponHash.PoolCue:
-                    //     case WeaponHash.Wrench:
-                    //     case WeaponHash.StoneHatchet:
-                    //     case WeaponHash.Pistol:
-                    //     case WeaponHash.PistolMk2:
-                    //     case WeaponHash.CombatPistol:
-                    //     case WeaponHash.APPistol:
-                    //     case WeaponHash.Pistol50:
-                    //     case WeaponHash.FlareGun:
-                    //     case WeaponHash.MarksmanPistol:
-                    //     case WeaponHash.Revolver:
-                    //     case WeaponHash.RevolverMk2:
-                    //     case WeaponHash.DoubleActionRevolver:
-                    //     case WeaponHash.UpNAtomizer:
-                    //     case WeaponHash.CeramicPistol:
-                    //     case WeaponHash.NavyRevolver:
-                    //     case WeaponHash.PericoPistol:
-                    //     case WeaponHash.MicroSMG:
-                    //     case WeaponHash.SMG:
-                    //     case WeaponHash.SMGMk2:
-                    //     case WeaponHash.AssaultSMG:
-                    //     case WeaponHash.CombatPDW:
-                    //     case WeaponHash.MiniSMG:
-                    //     case WeaponHash.AssaultRifle:
-                    //     case WeaponHash.AssaultrifleMk2:
-                    //     case WeaponHash.CarbineRifle:
-                    //     case WeaponHash.CarbineRifleMk2:
-                    //     case WeaponHash.AdvancedRifle:
-                    //     case WeaponHash.CompactRifle:
-                    //     case WeaponHash.MilitaryRifle:
-                    //     case WeaponHash.HeavyRifle:
-                    //     case WeaponHash.MG:
-                    //     case WeaponHash.CombatMG:
-                    //     case WeaponHash.CombatMGMk2:
-                    //     case WeaponHash.UnholyHellbringer:
-                    //     case WeaponHash.PumpShotgun:
-                    //     case WeaponHash.PumpShotgunMk2:
-                    //     case WeaponHash.SawnOffShotgun:
-                    //     case WeaponHash.AssaultShotgun:
-                    //     case WeaponHash.BullpupShotgun:
-                    //     case WeaponHash.DoubleBarrelShotgun:
-                    //     case WeaponHash.SweeperShotgun:
-                    //     case WeaponHash.CombatShotgun:
-                    //     case WeaponHash.StunGun:
-                    //     case WeaponHash.StunGunMultiplayer:
-                    //     case WeaponHash.SniperRifle:
-                    //     case WeaponHash.HeavySniper:
-                    //     case WeaponHash.HeavySniperMk2:
-                    //     case WeaponHash.GrenadeLauncher:
-                    //     case WeaponHash.GrenadeLauncherSmoke:
-                    //     case WeaponHash.CompactGrenadeLauncher:
-                    //     case WeaponHash.CompactEMPLauncher:
-                    //     case WeaponHash.RPG:
-                    //     case WeaponHash.Minigun:
-                    //     case WeaponHash.Widowmaker:
-                    //     case WeaponHash.Grenade:
-                    //     case WeaponHash.StickyBomb:
-                    //     case WeaponHash.SmokeGrenade:
-                    //     case WeaponHash.BZGas:
-                    //     case WeaponHash.Molotov:
-                    //     case WeaponHash.PipeBomb:
-                    //     case WeaponHash.FireExtinguisher:
-                    //     case WeaponHash.PetrolCan:
-                    //     case WeaponHash.HazardousJerryCan:
-                    //     case WeaponHash.FertilizerCan:
-                    //     case WeaponHash.SNSPistol:
-                    //     case WeaponHash.SNSPistolMk2:
-                    //     case WeaponHash.SpecialCarbine:
-                    //     case WeaponHash.SpecialCarbineMk2:
-                    //     case WeaponHash.HeavyPistol:
-                    //     case WeaponHash.BullpupRifle:
-                    //     case WeaponHash.BullpupRifleMk2:
-                    //     case WeaponHash.HomingLauncher:
-                    //     case WeaponHash.ProximityMine:
-                    //     case WeaponHash.Snowball:
-                    //     case WeaponHash.VintagePistol:
-                    //     case WeaponHash.Dagger:
-                    //     case WeaponHash.Firework:
-                    //     case WeaponHash.Musket:
-                    //     case WeaponHash.MarksmanRifle:
-                    //     case WeaponHash.MarksmanRifleMk2:
-                    //     case WeaponHash.HeavyShotgun:
-                    //     case WeaponHash.Gusenberg:
-                    //     case WeaponHash.Hatchet:
-                    //     case WeaponHash.Railgun:
-                    //     case WeaponHash.Unarmed:
-                    //     case WeaponHash.KnuckleDuster:
-                    //     case WeaponHash.Machete:
-                    //     case WeaponHash.MachinePistol:
-                    //     case WeaponHash.Flashlight:
-                    //     case WeaponHash.Ball:
-                    //     case WeaponHash.Flare:
-                    //     case WeaponHash.NightVision:
-                    //     case WeaponHash.Parachute:
-                    //     default:
-                    //         break;
-                    // }
-                    int frequency = 7;
+                    
+
+                    float fireRate = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
+                    float weaponDamage = Function.Call<float>(Hash.GET_WEAPON_DAMAGE, playerWeapon.Hash);
+
+                    int weaponStrength = 4 + (int)(weaponDamage / 8f);
+                    weaponStrength = Math.Min(weaponStrength, 8);
+                    int fireRateAutomaticInt = (int)(1.4f / fireRate);
+                    //GTA.UI.Notification.Show(weaponStrength.ToString());
+
+                    
                     switch (playerWeapon.Group)
                     {
                         case WeaponGroup.Pistol:
@@ -294,12 +216,13 @@ namespace DualSense4GTAV
                             // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Soft);
                             // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.SemiAutomaticGun, new() { 2, 7, 8 });
                             SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 1 });
-                            if (playerWeapon.Hash == WeaponHash.APPistol)
-                            {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 7, 8, 12 });
+                          //  if (playerWeapon.Hash == WeaponHash.APPistol)
+                        {
+                            //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                            //    new() { 8, weaponStrength, fireRateAutomaticInt });
 
-                            }
-                            else
+                        }
+                         //   else
                             {
                                 SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 8, 8 });
                             }
@@ -310,33 +233,31 @@ namespace DualSense4GTAV
                             // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
                             // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.VibrateTrigger, new() { 40 });
                             SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 2 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Machine, new() { 7, 9, 4, 4, frequency, 0 });
+                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Machine, new() { 7, 9, 4, 4, fireRateAutomaticInt, 0 });
                             break;
 
                         case WeaponGroup.AssaultRifle:
                             // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
                             // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.AutomaticGun, new() { 2, 7, 8 });
                             SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 3 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 7, 8, 15 });
+                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                                    new() { 8, weaponStrength, fireRateAutomaticInt });
+
                             break;
 
                         case WeaponGroup.MG:
                             // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
                             // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.VibrateTrigger, new() { 40 });
                             SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 }); //1,3
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 7, 8, 9 });
+                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 8, weaponStrength, fireRateAutomaticInt });
                             break;
 
                         case WeaponGroup.Shotgun:
 
                             SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 2 });
-                            if (playerWeapon.Hash == WeaponHash.AssaultShotgun || playerWeapon.Hash == WeaponHash.SweeperShotgun || playerWeapon.Hash == WeaponHash.HeavyShotgun)
+                            if (playerWeapon.Hash == WeaponHash.AssaultShotgun || playerWeapon.Hash == WeaponHash.SweeperShotgun || playerWeapon.Hash == WeaponHash.HeavyShotgun || playerWeapon.Hash == WeaponHash.BullpupShotgun)
                             {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 7, 8, 3 });
-                            }
-                            else if (playerWeapon.Hash == WeaponHash.BullpupShotgun)
-                            {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 7, 8, 1 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 8, weaponStrength, fireRateAutomaticInt });
                             }
                             else
                             {
@@ -364,8 +285,16 @@ namespace DualSense4GTAV
                             {
                                 SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 });
                                 //SetAndSendPacket(packet, controllerIndex, Trigger.Right,  TriggerMode.VibrateTrigger, new() { 39 });
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 8, 8, 40 });
+                                if(playerped.IsShooting)
+                                {
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                                        new() { 8, weaponStrength, fireRateAutomaticInt });
+                                }                                
+                                else
+                                {
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 1 });
 
+                                }
                             }
                             else
                             {
@@ -385,19 +314,27 @@ namespace DualSense4GTAV
                     }
                 }
             }
-            add add2 = new add();
-            iO obj = new iO();
+
+            if (_add2 == null)
+            {
+                _add2 = InstantiateScript<add>();
+            }
+
+            if (_obj == null)
+            {
+                _obj = new iO();
+            }
             int bat = 0;
             Send(packet);
             Script.Wait(235);
-            obj.getstat(out bat, out bool _);
+            _obj.getstat(out bat, out bool _);
             if ((false) && showconmes)
             {
-                UI.ShowSubtitle("controller is disconnected or discharged, please fix or press F11");
+                GTA.UI.Notification.Show("controller is disconnected or discharged, please fix or press F11");
             }
             if (bat <= 15 && showbatstat)
             {
-                UI.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);
+                GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press F10", true);
             }
             switch (Game.Player.WantedLevel)
             {
@@ -420,7 +357,7 @@ namespace DualSense4GTAV
                 {
                     int blue = 0;
                     int red = 0;
-                    add2.rgbupdat2e(10, playerped.Health, out red, out blue);
+                    _add2.rgbupdat2e(10, playerped.Health, out red, out blue);
                     wanted = true;
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, false, false, false, false };
@@ -437,7 +374,7 @@ namespace DualSense4GTAV
                     break;
                 }
                 case 2:
-                    add2.rgbupdat2e(30, playerped.Health, out int _, out int _);
+                    _add2.rgbupdat2e(30, playerped.Health, out int _, out int _);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, false, false, false };
                     Send(packet);
@@ -451,7 +388,7 @@ namespace DualSense4GTAV
                     break;
 
                 case 3:
-                    add2.rgbupdat2e(40, playerped.Health, out int _, out int _);
+                    _add2.rgbupdat2e(40, playerped.Health, out int _, out int _);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, false, false };
                     Send(packet);
@@ -474,12 +411,12 @@ namespace DualSense4GTAV
                     Send(packet);
 
 
-                    add2.rgbupdat2e(50, playerped.Health, out int _, out int _);
+                    _add2.rgbupdat2e(50, playerped.Health, out int _, out int _);
                     wanted = true;
                     break;
 
                 case 5:
-                    add2.rgbupdat2e(70, playerped.Health, out int _, out int _);
+                    _add2.rgbupdat2e(70, playerped.Health, out int _, out int _);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, true };
                     Send(packet);

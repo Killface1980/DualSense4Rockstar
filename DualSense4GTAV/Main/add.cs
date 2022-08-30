@@ -8,6 +8,7 @@ using Shared;
 
 namespace DualSense4GTAV
 {
+    [ScriptAttributes(NoDefaultInstance = true)]
     public class add : Script
     {
         private static bool wanted;
@@ -23,8 +24,6 @@ namespace DualSense4GTAV
         private static ServicePoint ser;
 
         private bool playeralive;
-
-        private Main n = new Main();
 
         private int brig;
 
@@ -74,7 +73,7 @@ namespace DualSense4GTAV
             blue = 255;
             red = 1;
             Connect();
-            Packet packet = new Packet();
+            Packet packet = new();
             int num = 0;
             packet.instructions = new Instruction[4];
             while (red <= 255)

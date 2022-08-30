@@ -28,7 +28,6 @@ namespace DualSense4RDR2
         private int brig;
 
         private int batterylevel;
-
         private static void Connect()
         {
             _ = DateTime.Now;
@@ -44,12 +43,13 @@ namespace DualSense4RDR2
             client.Send(bytes, bytes.Length, endPoint);
         }
 
+
         public void getstat(out int bat, out bool isconnected)
         {
             Connect();
             bat = 0;
             isconnected = false;
-            Packet data = new Packet
+            Packet data = new()
             {
                 instructions = new Instruction[6]
             };

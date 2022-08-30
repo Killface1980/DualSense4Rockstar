@@ -31,7 +31,7 @@ namespace Client
             Connect();
             while (true)
             {
-                Packet packet = new Packet();
+                Packet packet = new();
                 int num = 0;
                 packet.instructions = new Instruction[4];
                 packet.instructions[0].type = InstructionType.TriggerUpdate;

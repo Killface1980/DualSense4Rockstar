@@ -15,13 +15,12 @@
     <ProjectReference Include="..\DSX_Base\DSX_Base.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ScriptHookVDotNet2">
-      <HintPath>C:\Rockstar Games\Grand Theft Auto V\ScriptHookVDotNet2.dll</HintPath>
-      <CopyLocal>False</CopyLocal>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>C:\Rockstar Games\Grand Theft Auto V\Scripts\Newtonsoft.Json.dll</HintPath>
       <CopyLocal>False</CopyLocal>
+    </Reference>
+    <Reference Include="ScriptHookVDotNet3">
+      <HintPath>C:\Rockstar Games\Grand Theft Auto V\ScriptHookVDotNet3.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
