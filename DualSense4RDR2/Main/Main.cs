@@ -3,7 +3,6 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
-using DSX_Base.Client;
 using static DSX_Base.Client.iO;
 using static RDR2.Native.WEAPON;
 
@@ -29,8 +28,8 @@ namespace DualSense4RDR2
         public Main()
         {
             characterPed = Game.Player.Character;
-            base.Tick += OnTick;
-            base.KeyDown += OnKeyDown;
+            base.Tick += this.OnTick;
+            base.KeyDown += this.OnKeyDown;
             Connect();
             Process.GetProcessesByName("DSX");
         }
@@ -51,9 +50,9 @@ namespace DualSense4RDR2
                 packet.instructions[1].parameters = new object[4]
                 {
                     num,
-                    blue - brig,
+                    blue - this.brig,
                     0,
-                    red - brig
+                    red - this.brig
                 };
                 DSX_Base.Client.iO.Send(packet);
             }
@@ -63,9 +62,9 @@ namespace DualSense4RDR2
                 packet.instructions[1].parameters = new object[4]
                 {
                     num,
-                    blue - brig,
+                    blue - this.brig,
                     0,
-                    red - brig
+                    red - this.brig
                 };
                 DSX_Base.Client.iO.Send(packet);
                 Script.Wait(10);
@@ -82,10 +81,8 @@ namespace DualSense4RDR2
             if (e.KeyCode == Keys.F9)
             {
                 iO obj = new();
-                int bat = 0;
-                bool isconnected = false;
                 Send(packet);
-                obj.getstat(out bat, out isconnected);
+                obj.getstat(out int bat, out bool isconnected);
                 RDR2.UI.Screen.DisplaySubtitle("Controller connection status: " + isconnected + " controller battery status: " + bat + "% \n to hide this Press F10");
             }
             if (e.KeyCode == Keys.F10)
@@ -101,7 +98,7 @@ namespace DualSense4RDR2
         {
             // if (ScriptSettings::getBool("HealthIndication"))
             {
-                health = characterPed.Health / characterPed.MaxHealth;
+                this.health = characterPed.Health / characterPed.MaxHealth;
             }
             // else
             // {
@@ -110,14 +107,14 @@ namespace DualSense4RDR2
 
             // if (ScriptSettings::getBool("StaminaIndication"))
             {
-                staminaTarget = characterPed.Handle;
+                this.staminaTarget = characterPed.Handle;
                 if (characterPed.IsOnMount)
                 {
-                    staminaTarget = RDR2.Native.PED.GET_MOUNT(characterPed.Handle);
+                    this.staminaTarget = RDR2.Native.PED.GET_MOUNT(characterPed.Handle);
                 }
 
-                float stamina = RDR2.Native.PED._GET_PED_STAMINA(staminaTarget) / RDR2.Native.PED._GET_PED_MAX_STAMINA(staminaTarget);
-                pulseRate = 1 - stamina;
+                float stamina = RDR2.Native.PED._GET_PED_STAMINA(this.staminaTarget) / RDR2.Native.PED._GET_PED_MAX_STAMINA(this.staminaTarget);
+                this.pulseRate = 1 - stamina;
             }
             // else
             // {
@@ -192,7 +189,7 @@ namespace DualSense4RDR2
             {
                 SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 20);
 
-                var degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(characterPed.Handle, 0));
+                float degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(characterPed.Handle, 0));
 
                 // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
 
@@ -241,12 +238,12 @@ namespace DualSense4RDR2
                 SetAndSendPacket(packet, controllerIndex, Trigger.Right);
                 SetAndSendPacket(packet, controllerIndex, Trigger.Left);
             }
-            
+
             // updateLights();
             // health = Math.Min(health, 1);
-            health = (int)((float)characterPed.Health / (float)characterPed.MaxHealth * 255f);
-            int myblue = (health);
-            int myred = ((255 - health));
+            this.health = (int)((float)characterPed.Health / (float)characterPed.MaxHealth * 255f);
+            int myblue = (this.health);
+            int myred = ((255 - this.health));
             packet.instructions = new Instruction[4];
             packet.instructions[1].type = InstructionType.RGBUpdate;
             packet.instructions[1].parameters = new object[4]
@@ -267,10 +264,9 @@ namespace DualSense4RDR2
             //RDR2.UI.Screen.DisplaySubtitle(health + " - " + pulseRate + " - " + staminaTarget);
             add add2 = new();
             iO obj = new();
-            int bat = 0;
             Send(packet);
             Script.Wait(235);
-            obj.getstat(out bat, out bool _);
+            obj.getstat(out int bat, out bool _);
 
 
             if ((false) && showconmes)
@@ -296,9 +292,7 @@ namespace DualSense4RDR2
 
                 case 1:
                     {
-                        int blue = 0;
-                        int red = 0;
-                        add2.rgbupdat2e(10, characterPed.Health, out red, out blue);
+                        add2.rgbupdat2e(10, characterPed.Health, out int red, out int blue);
                         wanted = true;
                         packet.instructions[2].type = InstructionType.PlayerLED;
                         packet.instructions[2].parameters = new object[6] { controllerIndex, true, false, false, false, false };

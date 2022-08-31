@@ -11,7 +11,6 @@ namespace DualSense4RDR2
 {
     public class iO
     {
-        private static bool wanted;
 
         private static UdpClient client;
 
@@ -19,15 +18,6 @@ namespace DualSense4RDR2
 
         private static Socket Socke;
 
-        private static bool engine;
-
-        private static ServicePoint ser;
-
-        private bool playeralive;
-
-        private int brig;
-
-        private int batterylevel;
         private static void Connect()
         {
             _ = DateTime.Now;

@@ -47,7 +47,7 @@ namespace DualSense4GTAV
 
         public add()
         {
-            base.Tick += onTick;
+            base.Tick += this.onTick;
         }
 
         private void onTick(object sender, EventArgs e)
@@ -55,15 +55,15 @@ namespace DualSense4GTAV
             Connect();
             if (Game.Player.Character.Health <= 150)
             {
-                brig = 40;
+                this.brig = 40;
             }
             if (Game.Player.Character.Health <= 100)
             {
-                brig = 70;
+                this.brig = 70;
             }
             if (Game.Player.Character.Health <= 40)
             {
-                brig = 200;
+                this.brig = 200;
                 Script.Wait(1999);
             }
         }
@@ -85,9 +85,9 @@ namespace DualSense4GTAV
                 packet.instructions[1].parameters = new object[4]
                 {
                     num,
-                    blue - brig,
+                    blue - this.brig,
                     0,
-                    red - brig
+                    red - this.brig
                 };
                 Send(packet);
             }
@@ -97,9 +97,9 @@ namespace DualSense4GTAV
                 packet.instructions[1].parameters = new object[4]
                 {
                     num,
-                    blue - brig,
+                    blue - this.brig,
                     0,
-                    red - brig
+                    red - this.brig
                 };
                 Send(packet);
                 Script.Wait(10);

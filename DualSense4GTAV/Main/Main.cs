@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
-using DSX_Base.Client;
 using static DSX_Base.Client.iO;
 
 namespace DualSense4GTAV
@@ -29,12 +28,11 @@ namespace DualSense4GTAV
         public Main()
         {
             playerped = Game.Player.Character;
-            base.Tick += onTick;
-            base.KeyDown += onKeyDown;
+            base.Tick += this.onTick;
+            base.KeyDown += this.onKeyDown;
             Connect();
             Process.GetProcessesByName("DSX");
         }
-
 
         private void onKeyDown(object sender, KeyEventArgs e)
         {
@@ -43,10 +41,8 @@ namespace DualSense4GTAV
             if (e.KeyCode == Keys.F9)
             {
                 iO obj = new();
-                int bat = 0;
-                bool isconnected = false;
                 Send(packet);
-                obj.getstat(out bat, out isconnected);
+                obj.getstat(out int bat, out bool isconnected);
                 GTA.UI.Notification.Show("Controller connection status: " + isconnected + " controller battery status: " + bat + "% \n to hide this Press F10");
             }
             if (e.KeyCode == Keys.F10)
@@ -64,7 +60,7 @@ namespace DualSense4GTAV
             Packet packet = new();
             int controllerIndex = 0;
             packet.instructions = new Instruction[4];
-            playerped = Game.Player.Character;
+
             playerWeapon = playerped.Weapons.Current;
             if (!wanted)
             {
@@ -98,32 +94,80 @@ namespace DualSense4GTAV
                     // GTA.UI.Screen.ShowSubtitle(red + " - " + green + " - " + blue);
                     packet.instructions[1].type = InstructionType.RGBUpdate;
                     packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
-
                 }
                 */
 
                 Send(packet);
             }
-            if (playerped.IsInVehicle())
+
+            if (playerped.IsInBoat)
+            {
+                Vehicle currentVehicle = playerped.CurrentVehicle;
+                float health = (currentVehicle.EngineHealth / 1000f);
+                float healthMalus = (int)((1f - health) * 4f);
+                int currentGear = currentVehicle.CurrentGear;
+                float currentRpm = currentVehicle.CurrentRPM;
+                float currentSpeed = currentVehicle.Speed;
+
+                int resistance = 4 - currentGear;
+                //GTA.Native.Hash.traction
+
+                //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { (int)(6f -
+                //    healthMalus), Math.Min(resistance + (int)healthMalus, 8) });
+                int forceR = Math.Max(1, Math.Min(resistance + (int)healthMalus, 8));
+                // GTA.UI.Screen.ShowSubtitle(forceR.ToString());
+                if (currentGear >= 1)
+                {
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
+                    {
+                        1 + (int)(currentRpm * health * 7),
+                        forceR
+                    });
+
+
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
+                    {
+                        6 -
+                        (currentGear) -
+                        (int)(healthMalus / 2f),
+                        8 - resistance
+                    });
+
+                }
+                else
+                {
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
+                    {
+                        (int)(currentRpm * health * 7),
+                        forceR
+                    });
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
+                    {
+                        8 - (int)(currentRpm * health * 8),
+                        forceR
+                    });
+
+
+                }
+            }
+            else if (playerped.IsInVehicle())
             {
                 Vehicle currentVehicle = playerped.CurrentVehicle;
 
-
                 if (!currentVehicle.IsEngineRunning)
                 {
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Rigid);
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Rigid);
                 }
-                else if (currentVehicle.IsInAir)
+                else if (currentVehicle.IsInAir || !currentVehicle.IsOnAllWheels)
                 {
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right);
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left);
-
                 }
                 else if (currentVehicle.EngineHealth <= 0f)
                 {
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest);
                 }
                 // else if (currentVehicle.EngineHealth <= 400f)
                 // {
@@ -140,38 +184,69 @@ namespace DualSense4GTAV
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Choppy);
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Choppy);
                 //}
-                
-                else if (currentVehicle.Wheels.Any(x=> x.IsBursted))
+                else if (currentVehicle.Wheels.Any(x => x.IsBursted))
                 {
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest);
+
+                    int resistance = 4 ;
+
+                    SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue,
+                        CustomTriggerValueMode.VibrateResistanceAB,
+                        127, 255, 144, 60, 120, 220, (int)currentVehicle.Speed);
+                    SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue,
+                        CustomTriggerValueMode.VibrateResistanceAB,
+                        127, 255, 144, 60, 120, 220, (int)currentVehicle.Speed);
                 }
                 else // if (playerped.CurrentVehicle.EngineHealth >= 1000f)
                 {
-                    float health = 1f - (currentVehicle.EngineHealth / 1000f);
-                    float healthMalus = (int)(health * 2.5f);
+                    float health =  (currentVehicle.EngineHealth / 1000f);
+                    float healthMalus = (int)((1f - health) * 4f);
                     int currentGear = currentVehicle.CurrentGear;
                     float currentRpm = currentVehicle.CurrentRPM;
-                    var currentSpeed = currentVehicle.Speed;
-                
+                    float currentSpeed = currentVehicle.Speed;
+
                     int resistance = 4 - currentGear;
                     //GTA.Native.Hash.traction
-                    // UI.ShowSubtitle(resistance.ToString());
 
                     //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { (int)(6f -
                     //    healthMalus), Math.Min(resistance + (int)healthMalus, 8) });
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 5, Math.Max(1, Math.Min(resistance + (int)healthMalus, 8)) });
+                    int forceR = Math.Max(1, Math.Min(resistance + (int)healthMalus, 8));
+                    // GTA.UI.Screen.ShowSubtitle(forceR.ToString());
+                    if (currentGear >= 1)
+                    {
+                        SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
+                        {
+                            1+(int)(currentRpm*health * 7 ),
+                            forceR
+                        });
 
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 7-
-                        (currentGear) -
-                        (int)(healthMalus / 2f), 8-resistance });
 
+                        SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
+                        {
+                            6 -
+                            (currentGear) -
+                            (int)(healthMalus / 2f),
+                            8 - resistance
+                        });
+
+                    }
+                    else
+                    {
+                        SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
+                        {
+                            (int)(currentRpm*health * 7),
+                            forceR
+                        });
+                        SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
+                        {
+                            8-(int)(currentRpm*health * 8),
+                            forceR
+                        });
+
+                    }
                     // SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 220 *
                     //     (int)( health), 40);
                     // SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 220 *
                     //     (int)( health), 40);
-
-
 
                     // if (currentGear <= 1)
                     // {
@@ -193,13 +268,11 @@ namespace DualSense4GTAV
 
                 if (playerped.IsReloading || playerWeapon.AmmoInClip == 0)
                 {
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 8, 8 });
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 8 });
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left);
                 }
                 else
                 {
-                    
-
                     float fireRate = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
                     float weaponDamage = Function.Call<float>(Hash.GET_WEAPON_DAMAGE, playerWeapon.Hash);
 
@@ -208,7 +281,6 @@ namespace DualSense4GTAV
                     int fireRateAutomaticInt = (int)(1.4f / fireRate);
                     //GTA.UI.Notification.Show(weaponStrength.ToString());
 
-                    
                     switch (playerWeapon.Group)
                     {
                         case WeaponGroup.Pistol:
@@ -216,15 +288,14 @@ namespace DualSense4GTAV
                             // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Soft);
                             // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.SemiAutomaticGun, new() { 2, 7, 8 });
                             SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 1 });
-                          //  if (playerWeapon.Hash == WeaponHash.APPistol)
-                        {
-                            //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
-                            //    new() { 8, weaponStrength, fireRateAutomaticInt });
-
-                        }
-                         //   else
+                            //  if (playerWeapon.Hash == WeaponHash.APPistol)
                             {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 8, 8 });
+                                //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                                //    new() { 8, weaponStrength, fireRateAutomaticInt });
+                            }
+                            //   else
+                            {
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 8 });
                             }
                             //UI.ShowSubtitle("Doing great, aiming widda pistal");
                             break;
@@ -261,8 +332,7 @@ namespace DualSense4GTAV
                             }
                             else
                             {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 2, 4, 8, 4 });
-
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 2, 4, 4, 4 });
                             }
                             // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hardest);
                             // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.Bow, new() { 0, 8, 2, 5 });
@@ -275,7 +345,7 @@ namespace DualSense4GTAV
                             //SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Galloping, new(){4,9,1,7,1});
                             //SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.SemiAutomaticGun, new(){4,6,8});
                             SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.SemiAutomaticGun, new() { 2, 6, 8 });
+                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.SemiAutomaticGun, new() { 2, 7, 4 });
                             //UI.ShowSubtitle("Sniper");
 
                             break;
@@ -285,21 +355,16 @@ namespace DualSense4GTAV
                             {
                                 SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 });
                                 //SetAndSendPacket(packet, controllerIndex, Trigger.Right,  TriggerMode.VibrateTrigger, new() { 39 });
-                                if(playerped.IsShooting)
-                                {
+                                
                                     SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
                                         new() { 8, weaponStrength, fireRateAutomaticInt });
-                                }                                
-                                else
-                                {
-                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 1 });
+                                
 
-                                }
                             }
                             else
                             {
                                 SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 });
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 8, 8 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 4, 8 });
                             }
                             break;
 
@@ -315,19 +380,18 @@ namespace DualSense4GTAV
                 }
             }
 
-            if (_add2 == null)
+            if (this._add2 == null)
             {
-                _add2 = InstantiateScript<add>();
+                this._add2 = InstantiateScript<add>();
             }
 
-            if (_obj == null)
+            if (this._obj == null)
             {
-                _obj = new iO();
+                this._obj = new iO();
             }
-            int bat = 0;
-            Send(packet);
+
             Script.Wait(235);
-            _obj.getstat(out bat, out bool _);
+            this._obj.getstat(out int bat, out bool _);
             if ((false) && showconmes)
             {
                 GTA.UI.Notification.Show("controller is disconnected or discharged, please fix or press F11");
@@ -347,34 +411,30 @@ namespace DualSense4GTAV
                     packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.AllOff };
                     Send(packet);
 
-
                     Script.Wait(299);
                     Script.Wait(299);
                     wanted = false;
                     break;
 
                 case 1:
-                {
-                    int blue = 0;
-                    int red = 0;
-                    _add2.rgbupdat2e(10, playerped.Health, out red, out blue);
-                    wanted = true;
-                    packet.instructions[2].type = InstructionType.PlayerLED;
-                    packet.instructions[2].parameters = new object[6] { controllerIndex, true, false, false, false, false };
-                    Send(packet);
+                    {
+                        this._add2.rgbupdat2e(10, playerped.Health, out int red, out int blue);
+                        wanted = true;
+                        packet.instructions[2].type = InstructionType.PlayerLED;
+                        packet.instructions[2].parameters = new object[6] { controllerIndex, true, false, false, false, false };
+                        Send(packet);
 
-                    packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                    packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.One};
-                    Send(packet);
+                        packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
+                        packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.One };
+                        Send(packet);
 
-
-                    packet.instructions[1].type = InstructionType.RGBUpdate;
-                    packet.instructions[1].parameters = new object[4] { controllerIndex, blue, 0, red };
-                    Send(packet);
-                    break;
-                }
+                        packet.instructions[1].type = InstructionType.RGBUpdate;
+                        packet.instructions[1].parameters = new object[4] { controllerIndex, blue, 0, red };
+                        Send(packet);
+                        break;
+                    }
                 case 2:
-                    _add2.rgbupdat2e(30, playerped.Health, out int _, out int _);
+                    this._add2.rgbupdat2e(30, playerped.Health, out int _, out int _);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, false, false, false };
                     Send(packet);
@@ -383,53 +443,48 @@ namespace DualSense4GTAV
                     packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Two };
                     Send(packet);
 
-
                     wanted = true;
                     break;
 
                 case 3:
-                    _add2.rgbupdat2e(40, playerped.Health, out int _, out int _);
+                    this._add2.rgbupdat2e(40, playerped.Health, out int _, out int _);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, false, false };
                     Send(packet);
 
                     packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                    packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Three};
+                    packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Three };
                     Send(packet);
-
 
                     wanted = true;
                     break;
 
                 case 4:
+                    this._add2.rgbupdat2e(50, playerped.Health, out int _, out int _);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, false };
                     Send(packet);
 
                     packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                    packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Four};
+                    packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Four };
                     Send(packet);
 
-
-                    _add2.rgbupdat2e(50, playerped.Health, out int _, out int _);
                     wanted = true;
                     break;
 
                 case 5:
-                    _add2.rgbupdat2e(70, playerped.Health, out int _, out int _);
+                    this._add2.rgbupdat2e(70, playerped.Health, out int _, out int _);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, true };
                     Send(packet);
 
                     packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                    packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Five};
+                    packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Five };
                     Send(packet);
-
 
                     wanted = true;
                     break;
             }
         }
-
     }
 }

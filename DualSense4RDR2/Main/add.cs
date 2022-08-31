@@ -39,7 +39,7 @@ namespace DualSense4RDR2
         {
             characterPed = Game.Player.Character;
 
-            Tick += OnTick;
+            Tick += this.OnTick;
             Connect();
             Process.GetProcessesByName("DSX");
 
@@ -48,7 +48,7 @@ namespace DualSense4RDR2
         {
             // if (ScriptSettings::getBool("HealthIndication"))
             {
-                health = RDR2.Native.ENTITY.GET_ENTITY_HEALTH(characterPed.Handle) / RDR2.Native.PED.GET_PED_MAX_HEALTH(characterPed.Handle);
+                this.health = RDR2.Native.ENTITY.GET_ENTITY_HEALTH(characterPed.Handle) / RDR2.Native.PED.GET_PED_MAX_HEALTH(characterPed.Handle);
             }
             // else
             // {
@@ -57,14 +57,14 @@ namespace DualSense4RDR2
 
             // if (ScriptSettings::getBool("StaminaIndication"))
             {
-                staminaTarget = characterPed.Handle;
+                this.staminaTarget = characterPed.Handle;
                 if (characterPed.IsOnMount)
                 {
-                    staminaTarget = RDR2.Native.PED.GET_MOUNT(characterPed.Handle);
+                    this.staminaTarget = RDR2.Native.PED.GET_MOUNT(characterPed.Handle);
                 }
 
-                float stamina = RDR2.Native.PED._GET_PED_STAMINA(staminaTarget) / RDR2.Native.PED._GET_PED_MAX_STAMINA(staminaTarget);
-                pulseRate = 1 - stamina;
+                float stamina = RDR2.Native.PED._GET_PED_STAMINA(this.staminaTarget) / RDR2.Native.PED._GET_PED_MAX_STAMINA(this.staminaTarget);
+                this.pulseRate = 1 - stamina;
             }
             // else
             // {
@@ -79,28 +79,28 @@ namespace DualSense4RDR2
 
         private void OnTick(object sender, EventArgs e)
         {
-            updateLights();
-            health = Math.Max(Math.Min(health, 1), 0);
+            this.updateLights();
+            this.health = Math.Max(Math.Min(this.health, 1), 0);
 
-            if (pulseRate > 0)
+            if (this.pulseRate > 0)
             {
-                pulseRate = Math.Max(Math.Min(pulseRate, 1), 0.2f);
+                this.pulseRate = Math.Max(Math.Min(this.pulseRate, 1), 0.2f);
 
             }
 
             //RDR2.UI.Screen.ShowSubtitle(Game.Player.Character.Health.ToString());
             //return;
-            if (health <= 1)
+            if (this.health <= 1)
             {
-                brig = 40;
+                this.brig = 40;
             }
-            if (health <= 0.66f)
+            if (this.health <= 0.66f)
             {
-                brig = 70;
+                this.brig = 70;
             }
-            if (health <= 0.3f)
+            if (this.health <= 0.3f)
             {
-                brig = 200;
+                this.brig = 200;
                 Script.Wait(1999);
             }
         }
@@ -175,9 +175,9 @@ namespace DualSense4RDR2
                 packet.instructions[1].parameters = new object[4]
                 {
                     num,
-                    blue - brig,
+                    blue - this.brig,
                     0,
-                    red - brig
+                    red - this.brig
                 };
                 DSX_Base.Client.iO.Send(packet);
             }
@@ -187,9 +187,9 @@ namespace DualSense4RDR2
                 packet.instructions[1].parameters = new object[4]
                 {
                     num,
-                    blue - brig,
+                    blue - this.brig,
                     0,
-                    red - brig
+                    red - this.brig
                 };
                 Send(packet);
                 Script.Wait(10);
