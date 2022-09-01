@@ -12,7 +12,6 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <PackageReference Include="FusionLibrary.SHVDN3" Version="1.5.0" />
     <PackageReference Include="ScriptHookVDotNet3" Version="3.5.1" />
   </ItemGroup>
   <ItemGroup>
@@ -74,7 +73,10 @@
       <CopyLocal>False</CopyLocal>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="__RELEASE\" />
+  </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;C:\Rockstar Games\Grand Theft Auto V\Scripts\&quot; /S /Y&#xD;&#xA;" />
+    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;C:\Rockstar Games\Grand Theft Auto V\Scripts\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)..\..\..\__RELEASE\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\__RELEASE\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\__RELEASE\&quot; /S /Y&#xD;&#xA;" />
   </Target>
 </Project>
