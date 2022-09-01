@@ -25,6 +25,7 @@ namespace DualSense4GTAV
         private add _add2 = null;
         private iO _obj = null;
 
+        static bool hasPlayerColor = false;
         public Main()
         {
             playerped = Game.Player.Character;
@@ -32,6 +33,22 @@ namespace DualSense4GTAV
             base.KeyDown += this.onKeyDown;
             Connect();
             Process.GetProcessesByName("DSX");
+        }
+
+        public static bool Wanted
+        {
+            get => wanted;
+            set
+            {
+                wanted = value;
+                hasPlayerColor = false;
+            }
+        }
+
+        float Lerp(float a, float b, float t)
+        {
+            //return firstFloat * by + secondFloat * (1 - by);
+            return (1f - t) * a + t * b;
         }
 
         private void onKeyDown(object sender, KeyEventArgs e)
@@ -60,49 +77,23 @@ namespace DualSense4GTAV
             Packet packet = new();
             int controllerIndex = 0;
             packet.instructions = new Instruction[4];
+            Vehicle currentVehicle = playerped.CurrentVehicle;
 
             playerWeapon = playerped.Weapons.Current;
-            if (!wanted)
+            if (Function.Call<bool>(GTA.Native.Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
             {
-                if (playerped.Model == "player_zero")
-                {
-                    packet.instructions[1].type = InstructionType.RGBUpdate;
-                    packet.instructions[1].parameters = new object[4] { controllerIndex, 0, 0, 255 };
-                }
-                if (playerped.Model == "player_two")
-                {
-                    packet.instructions[1].type = InstructionType.RGBUpdate;
-                    packet.instructions[1].parameters = new object[4] { controllerIndex, 255, 121, 0 };
-                }
-                if (playerped.Model == "player_one")
-                {
-                    packet.instructions[1].type = InstructionType.RGBUpdate;
-                    packet.instructions[1].parameters = new object[4] { controllerIndex, 0, 255, 0 };
-                }
-                /*
-                if (playerped.IsInVehicle())
-                {
-                    Vehicle currentVehicle = playerped.CurrentVehicle;
-                    OutputArgument outR = new();
-                    OutputArgument outG = new();
-                    OutputArgument outB = new();
+                SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+                SetAndSendPacket(packet, controllerIndex, Trigger.Left);
 
-                    Function.Call(GTA.Native.Hash.GET_VEHICLE_COLOR, currentVehicle, outR, outG, outB);
-                    int red = outR.GetResult<int>();
-                    int green = outG.GetResult<int>();
-                    int blue = outB.GetResult<int>();
-                    // GTA.UI.Screen.ShowSubtitle(red + " - " + green + " - " + blue);
-                    packet.instructions[1].type = InstructionType.RGBUpdate;
-                    packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
-                }
-                */
-
-                Send(packet);
             }
-
-            if (playerped.IsInBoat)
+            else if (Game .IsPaused)
             {
-                Vehicle currentVehicle = playerped.CurrentVehicle;
+                SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+                SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+
+            }
+            else if (playerped.IsInBoat)
+            {
                 float health = (currentVehicle.EngineHealth / 1000f);
                 float healthMalus = (int)((1f - health) * 4f);
                 int currentGear = currentVehicle.CurrentGear;
@@ -150,9 +141,8 @@ namespace DualSense4GTAV
 
                 }
             }
-            else if (playerped.IsInVehicle())
+            else if (playerped.IsInVehicle() || playerped.IsOnBike)
             {
-                Vehicle currentVehicle = playerped.CurrentVehicle;
 
                 if (!currentVehicle.IsEngineRunning)
                 {
@@ -203,6 +193,9 @@ namespace DualSense4GTAV
                     int currentGear = currentVehicle.CurrentGear;
                     float currentRpm = currentVehicle.CurrentRPM;
                     float currentSpeed = currentVehicle.Speed;
+                    float maxSpeed = Function.Call<float>(GTA.Native.Hash.GET_VEHICLE_ESTIMATED_MAX_SPEED, currentVehicle.Handle);
+
+                    float currentSurfingSpeed = Math.Min(1, currentSpeed/maxSpeed);
 
                     int resistance = 4 - currentGear;
                     //GTA.Native.Hash.traction
@@ -213,6 +206,10 @@ namespace DualSense4GTAV
                     // GTA.UI.Screen.ShowSubtitle(forceR.ToString());
                     if (currentGear >= 1)
                     {
+/*                        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue,
+                            CustomTriggerValueMode.Rigid, (int)Lerp(10, 160, currentRpm),
+                            (int)Lerp(120, 20, currentRpm), 255);
+*/
                         SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
                         {
                             1+(int)(currentRpm*health * 7 ),
@@ -295,7 +292,7 @@ namespace DualSense4GTAV
                             }
                             //   else
                             {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 8 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 4, 8 });
                             }
                             //UI.ShowSubtitle("Doing great, aiming widda pistal");
                             break;
@@ -400,9 +397,22 @@ namespace DualSense4GTAV
             {
                 GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press F10", true);
             }
+
             switch (Game.Player.WantedLevel)
             {
                 case 0:
+                    if (currentVehicle != null && currentVehicle.IsSirenActive)
+                    {
+                        this._add2.rgbupdat2e(10, playerped.Health);
+                        Wanted = true;
+
+                    }
+                    else
+                    {
+                        wanted = false;
+
+                    }
+
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, false, false, false, false, false };
                     Send(packet);
@@ -413,13 +423,12 @@ namespace DualSense4GTAV
 
                     Script.Wait(299);
                     Script.Wait(299);
-                    wanted = false;
                     break;
 
                 case 1:
                     {
-                        this._add2.rgbupdat2e(10, playerped.Health, out int red, out int blue);
-                        wanted = true;
+                        this._add2.rgbupdat2e(10, playerped.Health);
+                        Wanted = true;
                         packet.instructions[2].type = InstructionType.PlayerLED;
                         packet.instructions[2].parameters = new object[6] { controllerIndex, true, false, false, false, false };
                         Send(packet);
@@ -428,13 +437,10 @@ namespace DualSense4GTAV
                         packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.One };
                         Send(packet);
 
-                        packet.instructions[1].type = InstructionType.RGBUpdate;
-                        packet.instructions[1].parameters = new object[4] { controllerIndex, blue, 0, red };
-                        Send(packet);
                         break;
                     }
                 case 2:
-                    this._add2.rgbupdat2e(30, playerped.Health, out int _, out int _);
+                    this._add2.rgbupdat2e(8, playerped.Health);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, false, false, false };
                     Send(packet);
@@ -443,11 +449,11 @@ namespace DualSense4GTAV
                     packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Two };
                     Send(packet);
 
-                    wanted = true;
+                    Wanted = true;
                     break;
 
                 case 3:
-                    this._add2.rgbupdat2e(40, playerped.Health, out int _, out int _);
+                    this._add2.rgbupdat2e(6, playerped.Health);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, false, false };
                     Send(packet);
@@ -456,11 +462,11 @@ namespace DualSense4GTAV
                     packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Three };
                     Send(packet);
 
-                    wanted = true;
+                    Wanted = true;
                     break;
 
                 case 4:
-                    this._add2.rgbupdat2e(50, playerped.Health, out int _, out int _);
+                    this._add2.rgbupdat2e(4, playerped.Health);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, false };
                     Send(packet);
@@ -469,11 +475,11 @@ namespace DualSense4GTAV
                     packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Four };
                     Send(packet);
 
-                    wanted = true;
+                    Wanted = true;
                     break;
 
                 case 5:
-                    this._add2.rgbupdat2e(70, playerped.Health, out int _, out int _);
+                    this._add2.rgbupdat2e(2, playerped.Health);
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, true };
                     Send(packet);
@@ -482,9 +488,49 @@ namespace DualSense4GTAV
                     packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Five };
                     Send(packet);
 
-                    wanted = true;
+                    Wanted = true;
                     break;
             }
+
+            if (!Wanted && !hasPlayerColor) 
+            {
+                if (playerped.Model == "player_zero")
+                {
+                    packet.instructions[1].type = InstructionType.RGBUpdate;
+                    packet.instructions[1].parameters = new object[4] { controllerIndex, 0, 0, 255 };
+                }
+                if (playerped.Model == "player_two")
+                {
+                    packet.instructions[1].type = InstructionType.RGBUpdate;
+                    packet.instructions[1].parameters = new object[4] { controllerIndex, 255, 121, 0 };
+                }
+                if (playerped.Model == "player_one")
+                {
+                    packet.instructions[1].type = InstructionType.RGBUpdate;
+                    packet.instructions[1].parameters = new object[4] { controllerIndex, 0, 255, 0 };
+                }
+                /*
+                if (playerped.IsInVehicle())
+                {
+                    Vehicle currentVehicle = playerped.CurrentVehicle;
+                    OutputArgument outR = new();
+                    OutputArgument outG = new();
+                    OutputArgument outB = new();
+
+                    Function.Call(GTA.Native.Hash.GET_VEHICLE_COLOR, currentVehicle, outR, outG, outB);
+                    int red = outR.GetResult<int>();
+                    int green = outG.GetResult<int>();
+                    int blue = outB.GetResult<int>();
+                    // GTA.UI.Screen.ShowSubtitle(red + " - " + green + " - " + blue);
+                    packet.instructions[1].type = InstructionType.RGBUpdate;
+                    packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
+                }
+                */
+
+                Send(packet);
+                hasPlayerColor = true;
+            }
+
         }
     }
 }

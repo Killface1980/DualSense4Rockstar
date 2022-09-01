@@ -68,43 +68,49 @@ namespace DualSense4GTAV
             }
         }
 
-        public void rgbupdat2e(int speed, int brightnes, out int red, out int blue)
+
+        int red = 250;
+        private int blue = 0;
+        public void rgbupdat2e(int speed, int brightnes)
         {
-            blue = 255;
-            red = 1;
             Connect();
             Packet packet = new();
             int num = 0;
             packet.instructions = new Instruction[4];
-            while (red <= 255)
-            {
-                Script.Wait(10);
-                red += speed;
-                blue -= speed;
-                packet.instructions[1].type = InstructionType.RGBUpdate;
-                packet.instructions[1].parameters = new object[4]
-                {
-                    num,
-                    blue - this.brig,
-                    0,
-                    red - this.brig
-                };
-                Send(packet);
-            }
             while (blue <= 255)
             {
                 packet.instructions[1].type = InstructionType.RGBUpdate;
                 packet.instructions[1].parameters = new object[4]
                 {
                     num,
-                    blue - this.brig,
+                    red - this.brig,
                     0,
-                    red - this.brig
+                    blue - this.brig
                 };
                 Send(packet);
-                Script.Wait(10);
-                red -= speed;
-                blue += speed;
+
+                Script.Wait(speed);
+                red -= 50;
+                blue += 50;
+            }
+            Script.Wait(speed*50);
+
+            while (red <= 255)
+            {
+                packet.instructions[1].type = InstructionType.RGBUpdate;
+                packet.instructions[1].parameters = new object[4]
+                {
+                    num,
+                    red - this.brig,
+                    0,
+                    blue - this.brig
+                };
+                Send(packet);
+
+                Script.Wait(speed);
+                red+=50;
+                blue-=50;
+
             }
         }
     }
