@@ -1,0 +1,339 @@
+using RDR2;
+using Shared;
+using System;
+using System.Diagnostics;
+using System.Windows.Forms;
+using static DSX_Base.Client.iO;
+using RDR2.Native;
+
+namespace DualSense4RDR2
+{
+    public class Main : Script
+    {
+        private static Ped characterPed;
+        private static bool engine;
+        private static int lastBrakeFreq = 0;
+        private static int lastBrakeResistance = 200;
+        private static int lastThrottleResistance = 1;
+        private static bool noammo;
+        private static Weapon playerweapon;
+        private static bool showbatstat = true;
+        private static bool showconmes = true;
+        private static bool wanted = false;
+        private int health = 0;
+        private int staminaTarget = 0;
+        private float pulseRate = 0;
+        private int brig;
+
+        public Main()
+        {
+            characterPed = Game.Player.Character;
+            Tick += this.OnTick;
+            KeyDown += this.OnKeyDown;
+            Connect();
+            Process.GetProcessesByName("DSX");
+        }
+        public void rgbupdat2e(int speed, int brightnes, out int red, out int blue)
+        {
+            blue = 255;
+            red = 1;
+            Connect();
+            Packet packet = new();
+            int num = 0;
+            packet.instructions = new Instruction[4];
+            while (red <= 255)
+            {
+                Wait(10);
+                red += speed;
+                blue -= speed;
+                packet.instructions[1].type = InstructionType.RGBUpdate;
+                packet.instructions[1].parameters = new object[4]
+                {
+                    num,
+                    blue - this.brig,
+                    0,
+                    red - this.brig
+                };
+                Send(packet);
+            }
+            while (blue <= 255)
+            {
+                packet.instructions[1].type = InstructionType.RGBUpdate;
+                packet.instructions[1].parameters = new object[4]
+                {
+                    num,
+                    blue - this.brig,
+                    0,
+                    red - this.brig
+                };
+                Send(packet);
+                Wait(10);
+                red -= speed;
+                blue += speed;
+            }
+        }
+
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            return;
+            Packet packet = new();
+            packet.instructions = new Instruction[4];
+            if (e.KeyCode == Keys.F9)
+            {
+                iO obj = new();
+                Send(packet);
+                obj.getstat(out int bat, out bool isconnected);
+                RDR2.UI.Screen.ShowSubtitle("Controller connection status: " + isconnected + " controller battery status: " + bat + "% \n to hide this Press F10");
+            }
+            if (e.KeyCode == Keys.F10)
+            {
+                showbatstat = !showbatstat;
+            }
+            if (e.KeyCode == Keys.F11)
+            {
+                showconmes = !showconmes;
+            }
+        }
+        void updateLights()
+        {
+            // if (ScriptSettings::getBool("HealthIndication"))
+            {
+                this.health = characterPed.Health / characterPed.MaxHealth;
+            }
+            // else
+            // {
+            //     health = 1;
+            // }
+
+            // if (ScriptSettings::getBool("StaminaIndication"))
+            {
+                this.staminaTarget = characterPed.Handle;
+                if (characterPed.IsOnMount)
+                {
+                    this.staminaTarget = Function.Call<int>(Hash.GET_MOUNT, characterPed.Handle);
+                }
+
+                float stamina = Function.Call<float>(Hash._0x775A1CA7893AA8B5, this.staminaTarget) / Function.Call<float>(Hash._GET_PED_MAX_STAMINA, this.staminaTarget);
+                this.pulseRate = 1 - stamina;
+            }
+            // else
+            // {
+            //     pulseRate = 0;
+            // }
+        }
+
+        private unsafe void OnTick(object sender, EventArgs e)
+        {
+            Packet packet = new();
+            int controllerIndex = 0;
+            packet.instructions = new Instruction[4];
+            Player player = Game.Player;
+            characterPed = player.Character;
+            playerweapon = characterPed?.Weapons?.Current;
+
+            // SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 1 });
+            // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 5, 8, 8 });
+            bool weaponIsReadyToShoot = Function.Call<bool>(Hash.IS_PED_WEAPON_READY_TO_SHOOT,characterPed.Handle);
+            bool weaponIsAGun = Function.Call<bool>(Hash._0x705BE297EEBDB95D, (uint)playerweapon.Hash); //IS_WEAPON_A_GUN
+            bool weaponIsThrowable = Function.Call<bool>(Hash._0x30E7C16B12DA8211, (uint)playerweapon.Hash); // _IS_WEAPON_THROWABLE
+
+            //uint* numbi = null;
+            //var mount = GET_CURRENT_PED_VEHICLE_WEAPON(characterPed.Handle, numbi); //
+
+            bool hasMountedWeapon = characterPed?.Weapons?.Current?.Group == 0 && characterPed.IsSittingInVehicle();
+
+            bool isMounted = hasMountedWeapon && characterPed?.CurrentVehicle != null;
+
+            uint number = 0;
+
+            bool currentPedVehicleWeapon = Function.Call<bool>(Hash.GET_CURRENT_PED_VEHICLE_WEAPON,characterPed.Handle, &number);
+
+            // RDR2.UI.Screen.DisplaySubtitle(weaponIsAGun.ToString());
+
+            if (isMounted)
+            {
+            }
+            // return;
+            bool playerIsAiming = player.IsAiming;
+
+            //RDR2.UI.Screen.DisplaySubtitle(weaponIsAGun.ToString());
+            // return;
+
+            //RDR2.UI.Screen.DisplaySubtitle(playerweapon.Group.ToString());
+            if (characterPed.IsReloading) // Mode reloading
+            {
+                SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+                SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+            }
+            else if (weaponIsThrowable)
+            {
+                SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 20);
+
+                SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue,
+                    CustomTriggerValueMode.Pulse, 160, 30, 230);
+            }
+            else if (playerweapon.Group == WeaponGroup.Bow)
+            {
+                SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 20);
+
+                if (player.IsAiming)
+                {
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 2, 8 });
+                }
+                else
+                {
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 1 });
+                }
+            }
+            else if (weaponIsAGun)
+            {
+                SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 20);
+
+                float degradation = Function.Call<float>(Hash._0x0D78E1097F89E637, Function.Call<int>(Hash.GET_CURRENT_PED_WEAPON_ENTITY_INDEX,characterPed.Handle, 0)); //GET_WEAPON_DEGRADATION
+
+                // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
+
+                if (playerIsAiming && !weaponIsReadyToShoot) // Mode Gun Cock
+                {
+                    SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Pulse, 1, 20 *
+                        (int)(1 + degradation));
+
+                    // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
+                }
+                else // GUN_MANUAL
+                {
+                    SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Pulse, 1, 90 *
+                        (int)(1 + degradation));
+
+                    //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 4,1+(int)(degradation * 7), 4 });
+                }
+            }
+            else if (currentPedVehicleWeapon)
+            {
+                if (number == 3666182381 || //gat
+                 number == 3101324918)// maxi
+                {
+                    SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 20);
+                    if (characterPed.IsShooting) // Auto
+                    {
+                        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue,
+                            CustomTriggerValueMode.PulseB, 9, 190);
+                    }
+                    else // Prepare
+                    {
+                        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue,
+                            CustomTriggerValueMode.Rigid, 30, 255);
+                    }
+                }
+                else if (number == 2465730487 || //hotch - cannons
+                         number == 1609145491)// breach
+                {
+                    SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, TriggerMode.CustomTriggerValue, CustomTriggerValueMode.Rigid, 1, 20);
+                    SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, TriggerMode.CustomTriggerValue,
+                        CustomTriggerValueMode.PulseA, 255, 200, 255);
+                }
+            }
+            else // turn off
+            {
+                SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+                SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+            }
+
+            // updateLights();
+            // health = Math.Min(health, 1);
+            this.health = (int)((float)characterPed.Health / (float)characterPed.MaxHealth * 255f);
+            int myblue = (this.health);
+            int myred = ((255 - this.health));
+            packet.instructions = new Instruction[4];
+            packet.instructions[1].type = InstructionType.RGBUpdate;
+            packet.instructions[1].parameters = new object[4]
+            {
+                0,
+                myred, // red
+                myblue, // green
+                0 // blue
+            };
+            Send(packet);
+            //RDR2.UI.Screen.DisplaySubtitle((myred).ToString());
+            return;
+
+            //else
+            return;
+
+
+            //RDR2.UI.Screen.DisplaySubtitle(health + " - " + pulseRate + " - " + staminaTarget);
+            add add2 = new();
+            iO obj = new();
+            Send(packet);
+            Wait(235);
+            obj.getstat(out int bat, out bool _);
+
+
+            if ((false) && showconmes)
+            {
+                RDR2.UI.Screen.ShowSubtitle("controller is disconnected or discharged, please fix or press F11");
+            }
+            if (bat <= 15 && showbatstat)
+            {
+                RDR2.UI.Screen.ShowSubtitle("Your controller battery is  " + bat + " to hide this message press F10");
+                // RDR2.UI.Screen.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);
+            }
+
+            switch (player.WantedLevel)
+            {
+                case 0:
+                    packet.instructions[2].type = InstructionType.PlayerLED;
+                    packet.instructions[2].parameters = new object[6] { controllerIndex, false, false, false, false, false };
+                    Send(packet);
+                    Wait(299);
+                    Wait(299);
+                    wanted = false;
+                    break;
+
+                case 1:
+                    {
+                        add2.rgbupdat2e(10, characterPed.Health, out int red, out int blue);
+                        wanted = true;
+                        packet.instructions[2].type = InstructionType.PlayerLED;
+                        packet.instructions[2].parameters = new object[6] { controllerIndex, true, false, false, false, false };
+                        Send(packet);
+                        packet.instructions[1].type = InstructionType.RGBUpdate;
+                        packet.instructions[1].parameters = new object[4] { controllerIndex, blue, 0, red };
+                        Send(packet);
+                        break;
+                    }
+                case 2:
+                    add2.rgbupdat2e(30, characterPed.Health, out int _, out int _);
+                    packet.instructions[2].type = InstructionType.PlayerLED;
+                    packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, false, false, false };
+                    Send(packet);
+                    wanted = true;
+                    break;
+
+                case 3:
+                    add2.rgbupdat2e(40, characterPed.Health, out int _, out int _);
+                    packet.instructions[2].type = InstructionType.PlayerLED;
+                    packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, false, false };
+                    Send(packet);
+                    wanted = true;
+                    break;
+
+                case 4:
+                    packet.instructions[2].type = InstructionType.PlayerLED;
+                    packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, false };
+                    Send(packet);
+                    add2.rgbupdat2e(50, characterPed.Health, out int _, out int _);
+                    wanted = true;
+                    break;
+
+                case 5:
+                    add2.rgbupdat2e(70, characterPed.Health, out int _, out int _);
+                    packet.instructions[2].type = InstructionType.PlayerLED;
+                    packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, true };
+                    Send(packet);
+                    wanted = true;
+                    break;
+            }
+        }
+    }
+}

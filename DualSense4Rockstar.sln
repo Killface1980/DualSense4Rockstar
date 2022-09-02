@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DualSense4GTAV", "DualSense
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DSX_Base", "DSX_Base\DSX_Base.csproj", "{40680CE8-D1E1-4C9B-92A7-37BB696BF0FD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DualSense4RDR2_SHV1", "DualSense4RDR2_SHV1\DualSense4RDR2_SHV1.csproj", "{041EE694-BB68-423B-AA0A-C561DFE0321F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{40680CE8-D1E1-4C9B-92A7-37BB696BF0FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40680CE8-D1E1-4C9B-92A7-37BB696BF0FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40680CE8-D1E1-4C9B-92A7-37BB696BF0FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{041EE694-BB68-423B-AA0A-C561DFE0321F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{041EE694-BB68-423B-AA0A-C561DFE0321F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{041EE694-BB68-423B-AA0A-C561DFE0321F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{041EE694-BB68-423B-AA0A-C561DFE0321F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

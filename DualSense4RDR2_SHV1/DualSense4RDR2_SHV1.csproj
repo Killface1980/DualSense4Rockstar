@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>DualSense4RDR2</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>Preview</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\DSX_Base\DSX_Base.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:\Rockstar Games\Grand Theft Auto V\Scripts\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="ScriptHookRDRNetAPI">
+      <HintPath>dll\ScriptHookRDRNetAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4RDR2.dll&quot; &quot;D:\Rockstar Games\Red Dead Redemption 2\scripts\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4RDR2.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y" />
+  </Target>
+
+</Project>

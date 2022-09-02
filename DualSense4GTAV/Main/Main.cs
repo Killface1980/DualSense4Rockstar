@@ -16,25 +16,22 @@ namespace DualSense4GTAV
         private static int lastBrakeResistance = 200;
         private static int lastThrottleResistance = 1;
         private static bool noammo;
-        private static Ped playerped;
-        private static Weapon playerWeapon;
+
         private static bool showbatstat = true;
         private static bool showconmes = true;
         private static DateTime TimeSent;
         private add _add2 = null;
         private iO _obj = null;
 
-        static bool hasPlayerColor = false;
         public Main()
         {
-            playerped = Game.Player.Character;
             base.Tick += this.onTick;
             base.KeyDown += this.onKeyDown;
             Connect();
             Process.GetProcessesByName("DSX");
         }
 
-        public static bool Wanted { get; set; } = false;
+        public static bool Wanted = false;
 
         float Lerp(float a, float b, float t)
         {
@@ -74,9 +71,9 @@ namespace DualSense4GTAV
             Packet packet = new();
             int controllerIndex = 0;
             packet.instructions = new Instruction[4];
-            Vehicle currentVehicle = playerped.CurrentVehicle;
+            var playerped = Game.Player.Character;
 
-            playerWeapon = playerped.Weapons.Current;
+            var playerWeapon = playerped.Weapons.Current;
             if (Function.Call<bool>(GTA.Native.Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
             {
                 SetAndSendPacket(packet, controllerIndex, Trigger.Right);
@@ -89,58 +86,9 @@ namespace DualSense4GTAV
                 SetAndSendPacket(packet, controllerIndex, Trigger.Left);
 
             }
-/*            else if (playerped.IsInBoat || playerped.IsInHeli)
-            {
-                float health = (currentVehicle.EngineHealth / 1000f);
-                float healthMalus = (int)((1f - health) * 4f);
-                int currentGear = currentVehicle.CurrentGear;
-                float currentRpm = currentVehicle.CurrentRPM;
-                float currentSpeed = currentVehicle.Speed;
-
-                int resistance = 4 - currentGear;
-                //GTA.Native.Hash.traction
-
-                //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { (int)(6f -
-                //    healthMalus), Math.Min(resistance + (int)healthMalus, 8) });
-                int forceR = Math.Max(1, Math.Min(resistance + (int)healthMalus, 8));
-                // GTA.UI.Screen.ShowSubtitle(forceR.ToString());
-                if (currentGear >= 1)
-                {
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
-                    {
-                        1 + (int)(currentRpm * health * 7),
-                        forceR
-                    });
-
-
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
-                    {
-                        6 -
-                        (currentGear) -
-                        (int)(healthMalus / 2f),
-                        8 - resistance
-                    });
-
-                }
-                else
-                {
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
-                    {
-                        (int)(currentRpm * health * 7),
-                        forceR
-                    });
-                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
-                    {
-                        8 - (int)(currentRpm * health * 8),
-                        forceR
-                    });
-
-
-                }
-            }
-*/            
             else if (playerped.IsInVehicle() || playerped.IsOnBike || playerped.IsInBoat || playerped.IsInHeli)
             {
+                Vehicle currentVehicle = playerped.CurrentVehicle;
 
                 if (!currentVehicle.IsEngineRunning)
                 {
@@ -172,12 +120,12 @@ namespace DualSense4GTAV
                     });
 
                 }
-                else if (currentVehicle.IsPlane)
+                else if (playerped.IsInPlane)
                 {
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 5, 1 });
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 5, 1 });
                 }
-                else if (!currentVehicle.IsPlane&&(currentVehicle.IsInAir  || !currentVehicle.IsOnAllWheels))
+                else if (currentVehicle.IsInAir  || !currentVehicle.IsOnAllWheels)
                 {
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right);
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left);
@@ -202,7 +150,7 @@ namespace DualSense4GTAV
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Choppy);
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Choppy);
                 //}
-                else if (currentVehicle.Wheels.Any(x => x.IsBursted) && (
+                else if (currentVehicle.Wheels != null && currentVehicle.Wheels.Any(x => x.IsBursted) && (
                              (!playerped.IsInBoat && !playerped.IsInHeli) ||
                              (playerped.IsInPlane && !currentVehicle.IsInAir)))
                 {
@@ -293,120 +241,144 @@ namespace DualSense4GTAV
             {
                 _ = Wanted;
 
-                if (playerped.IsReloading || playerWeapon.AmmoInClip == 0)
+                if (playerWeapon != null && (playerped.IsReloading || playerWeapon.AmmoInClip == 0))
                 {
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 8 });
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left);
                 }
                 else
                 {
-                    float fireRate = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
-                    float weaponDamage = Function.Call<float>(Hash.GET_WEAPON_DAMAGE, playerWeapon.Hash);
-
-                    int weaponStrength = 4 + (int)(weaponDamage / 8f);
-                    weaponStrength = Math.Min(weaponStrength, 8);
-                    int fireRateAutomaticInt = (int)(1.4f / fireRate);
-                    //GTA.UI.Notification.Show(weaponStrength.ToString());
-
-                    switch (playerWeapon.Group)
+                    if (playerWeapon != null)
                     {
-                        case WeaponGroup.Pistol:
+                        float fireRate = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
+                        float weaponDamage = Function.Call<float>(Hash.GET_WEAPON_DAMAGE, playerWeapon.Hash);
 
-                            // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Soft);
-                            // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.SemiAutomaticGun, new() { 2, 7, 8 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 1 });
-                            //  if (playerWeapon.Hash == WeaponHash.APPistol)
-                            {
-                                //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
-                                //    new() { 8, weaponStrength, fireRateAutomaticInt });
-                            }
-                            //   else
-                            {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 4, 8 });
-                            }
-                            //UI.ShowSubtitle("Doing great, aiming widda pistal");
-                            break;
+                        int weaponStrength = 4 + (int)(weaponDamage / 8f);
+                        weaponStrength = Math.Min(weaponStrength, 8);
+                        int fireRateAutomaticInt = (int)(1.4f / fireRate);
+                        //GTA.UI.Notification.Show(weaponStrength.ToString());
 
-                        case WeaponGroup.SMG:
-                            // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
-                            // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.VibrateTrigger, new() { 40 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 2 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Machine, new() { 7, 9, 4, 4, fireRateAutomaticInt, 0 });
-                            break;
+                        switch (playerWeapon.Group)
+                        {
+                            case WeaponGroup.Pistol:
 
-                        case WeaponGroup.AssaultRifle:
-                            // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
-                            // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.AutomaticGun, new() { 2, 7, 8 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 3 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
-                                    new() { 8, weaponStrength, fireRateAutomaticInt });
-
-                            break;
-
-                        case WeaponGroup.MG:
-                            // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
-                            // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.VibrateTrigger, new() { 40 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 }); //1,3
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 8, weaponStrength, fireRateAutomaticInt });
-                            break;
-
-                        case WeaponGroup.Shotgun:
-
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 2 });
-                            if (playerWeapon.Hash == WeaponHash.AssaultShotgun || playerWeapon.Hash == WeaponHash.SweeperShotgun || playerWeapon.Hash == WeaponHash.HeavyShotgun || playerWeapon.Hash == WeaponHash.BullpupShotgun)
-                            {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new() { 8, weaponStrength, fireRateAutomaticInt });
-                            }
-                            else
-                            {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 2, 4, 4, 4 });
-                            }
-                            // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hardest);
-                            // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.Bow, new() { 0, 8, 2, 5 });
-                            //UI.ShowSubtitle("Shotgun");
-                            break;
-
-                        case WeaponGroup.Sniper:
-                            //SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hardest);
-                            //SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.Hard);
-                            //SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Galloping, new(){4,9,1,7,1});
-                            //SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.SemiAutomaticGun, new(){4,6,8});
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 });
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.SemiAutomaticGun, new() { 2, 7, 4 });
-                            //UI.ShowSubtitle("Sniper");
-
-                            break;
-
-                        case WeaponGroup.Heavy:
-                            if (playerWeapon.Hash == WeaponHash.Minigun)
-                            {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 });
-                                //SetAndSendPacket(packet, controllerIndex, Trigger.Right,  TriggerMode.VibrateTrigger, new() { 39 });
-                                
+                                // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Soft);
+                                // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.SemiAutomaticGun, new() { 2, 7, 8 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                    new() { 1, 1 });
+                                if (playerWeapon.Hash == WeaponHash.APPistol)
+                                {
                                     SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
                                         new() { 8, weaponStrength, fireRateAutomaticInt });
-                                
+                                }
+                                else
+                                {
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow,
+                                        new() { 1, 6, 4, 8 });
+                                }
 
-                            }
-                            else
-                            {
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 4 });
-                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 4, 8 });
-                            }
-                            break;
+                                //UI.ShowSubtitle("Doing great, aiming widda pistal");
+                                break;
 
-                        default:
-                        case WeaponGroup.Unarmed:
-                        case WeaponGroup.Melee:
-                        case WeaponGroup.Thrown:
-                        case WeaponGroup.PetrolCan:
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Left);
-                            SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-                            break;
-                    }
-                }
+                            case WeaponGroup.SMG:
+                                // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
+                                // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.VibrateTrigger, new() { 40 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                    new() { 1, 2 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Machine,
+                                    new() { 7, 9, 4, 4, fireRateAutomaticInt, 0 });
+                                break;
+
+                            case WeaponGroup.AssaultRifle:
+                                // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
+                                // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.AutomaticGun, new() { 2, 7, 8 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                    new() { 1, 3 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                                    new() { 8, weaponStrength, fireRateAutomaticInt });
+
+                                break;
+
+                            case WeaponGroup.MG:
+                                // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hard);
+                                // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.VibrateTrigger, new() { 40 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                    new() { 1, 4 }); //1,3
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                                    new() { 8, weaponStrength, fireRateAutomaticInt });
+                                break;
+
+                            case WeaponGroup.Shotgun:
+
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                    new() { 1, 2 });
+                                if (playerWeapon.Hash == WeaponHash.AssaultShotgun ||
+                                    playerWeapon.Hash == WeaponHash.SweeperShotgun ||
+                                    playerWeapon.Hash == WeaponHash.HeavyShotgun ||
+                                    playerWeapon.Hash == WeaponHash.BullpupShotgun)
+                                {
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                                        new() { 8, weaponStrength, fireRateAutomaticInt });
+                                }
+                                else
+                                {
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow,
+                                        new() { 2, 4, 4, 4 });
+                                }
+
+                                // SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hardest);
+                                // SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.Bow, new() { 0, 8, 2, 5 });
+                                //UI.ShowSubtitle("Shotgun");
+                                break;
+
+                            case WeaponGroup.Sniper:
+                                //SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Hardest);
+                                //SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.Hard);
+                                //SetAndSendPacket(packet, num, Trigger.Left, TriggerMode.Galloping, new(){4,9,1,7,1});
+                                //SetAndSendPacket(packet, num, Trigger.Right, TriggerMode.SemiAutomaticGun, new(){4,6,8});
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                    new() { 1, 4 });
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.SemiAutomaticGun,
+                                    new() { 2, 7, 4 });
+                                //UI.ShowSubtitle("Sniper");
+
+                                break;
+
+                            case WeaponGroup.Heavy:
+                                if (playerWeapon.Hash == WeaponHash.Minigun)
+                                {
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                        new() { 1, 4 });
+                                    //SetAndSendPacket(packet, controllerIndex, Trigger.Right,  TriggerMode.VibrateTrigger, new() { 39 });
+
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+                                        new() { 8, weaponStrength, fireRateAutomaticInt });
+
+
+                                }
+                                else
+                                {
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                                        new() { 1, 4 });
+                                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow,
+                                        new() { 1, 6, 4, 8 });
+                                }
+
+                                break;
+
+                            default:
+                            case WeaponGroup.Unarmed:
+                            case WeaponGroup.Melee:
+                            case WeaponGroup.Thrown:
+                            case WeaponGroup.PetrolCan:
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+                                SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+                                break;
+                        }
+                    }                }
             }
 
+            
             if (this._add2 == null)
             {
                 this._add2 = InstantiateScript<add>();
@@ -430,8 +402,9 @@ namespace DualSense4GTAV
 
             switch (Game.Player.WantedLevel)
             {
+
                 case 0:
-                    if (currentVehicle != null && currentVehicle.IsSirenActive)
+                    if (playerped.CurrentVehicle != null && playerped.CurrentVehicle.IsSirenActive)
                     {
                         this._add2.rgbupdat2e(10, playerped.Health);
                         Wanted = true;
