@@ -21,7 +21,6 @@ namespace DualSense4GTAV
         private static bool showbatstat = true;
         private static bool showconmes = true;
         private static DateTime TimeSent;
-        private static bool wanted = false;
         private add _add2 = null;
         private iO _obj = null;
 
@@ -35,20 +34,18 @@ namespace DualSense4GTAV
             Process.GetProcessesByName("DSX");
         }
 
-        public static bool Wanted
-        {
-            get => wanted;
-            set
-            {
-                wanted = value;
-                hasPlayerColor = false;
-            }
-        }
+        public static bool Wanted { get; set; } = false;
 
         float Lerp(float a, float b, float t)
         {
             //return firstFloat * by + secondFloat * (1 - by);
             return (1f - t) * a + t * b;
+        }
+
+        int LerpInt(float a, float b, float t)
+        {
+            //return firstFloat * by + secondFloat * (1 - by);
+            return (int)((1f - t) * a + t * b);
         }
 
         private void onKeyDown(object sender, KeyEventArgs e)
@@ -92,7 +89,7 @@ namespace DualSense4GTAV
                 SetAndSendPacket(packet, controllerIndex, Trigger.Left);
 
             }
-            else if (playerped.IsInBoat)
+/*            else if (playerped.IsInBoat || playerped.IsInHeli)
             {
                 float health = (currentVehicle.EngineHealth / 1000f);
                 float healthMalus = (int)((1f - health) * 4f);
@@ -141,7 +138,8 @@ namespace DualSense4GTAV
 
                 }
             }
-            else if (playerped.IsInVehicle() || playerped.IsOnBike)
+*/            
+            else if (playerped.IsInVehicle() || playerped.IsOnBike || playerped.IsInBoat || playerped.IsInHeli)
             {
 
                 if (!currentVehicle.IsEngineRunning)
@@ -149,7 +147,37 @@ namespace DualSense4GTAV
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Rigid);
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Rigid);
                 }
-                else if (currentVehicle.IsInAir || !currentVehicle.IsOnAllWheels)
+                else if (playerped.IsInHeli)
+                {
+                    float health = (currentVehicle.HeliEngineHealth/1000f* currentVehicle.HeliMainRotorHealth / 1000f * currentVehicle.HeliTailRotorHealth / 1000f);
+                    float healthMalus = (int)((1f - health) * 4f);
+
+                    //GTA.Native.Hash.traction
+
+                    //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { (int)(6f -
+                    //    healthMalus), Math.Min(resistance + (int)healthMalus, 8) });
+                     //GTA.UI.Screen.ShowSubtitle(LerpInt(0, 6, health) + "-"+ LerpInt(8, 1, health) + "-" + health);
+
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
+                    {
+                        1 + LerpInt(0,6,health),
+                        LerpInt(8,1,health)
+                    });
+                    
+                    
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
+                    {
+                        1 + LerpInt(0, 6, health),
+                        LerpInt(8, 1, health)
+                    });
+
+                }
+                else if (currentVehicle.IsPlane)
+                {
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 5, 1 });
+                    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 5, 1 });
+                }
+                else if (!currentVehicle.IsPlane&&(currentVehicle.IsInAir  || !currentVehicle.IsOnAllWheels))
                 {
                     SetAndSendPacket(packet, controllerIndex, Trigger.Right);
                     SetAndSendPacket(packet, controllerIndex, Trigger.Left);
@@ -174,7 +202,9 @@ namespace DualSense4GTAV
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Choppy);
                 //    SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Choppy);
                 //}
-                else if (currentVehicle.Wheels.Any(x => x.IsBursted))
+                else if (currentVehicle.Wheels.Any(x => x.IsBursted) && (
+                             (!playerped.IsInBoat && !playerped.IsInHeli) ||
+                             (playerped.IsInPlane && !currentVehicle.IsInAir)))
                 {
 
                     int resistance = 4 ;
@@ -235,7 +265,7 @@ namespace DualSense4GTAV
                         });
                         SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
                         {
-                            8-(int)(currentRpm*health * 8),
+                            7-(int)(currentRpm*health * 7),
                             forceR
                         });
 
@@ -257,11 +287,11 @@ namespace DualSense4GTAV
                     // }
                 }
 
-                _ = wanted;
+                _ = Wanted;
             }
             else
             {
-                _ = wanted;
+                _ = Wanted;
 
                 if (playerped.IsReloading || playerWeapon.AmmoInClip == 0)
                 {
@@ -409,7 +439,7 @@ namespace DualSense4GTAV
                     }
                     else
                     {
-                        wanted = false;
+                        Wanted = false;
 
                     }
 
@@ -492,7 +522,7 @@ namespace DualSense4GTAV
                     break;
             }
 
-            if (!Wanted && !hasPlayerColor) 
+            if (!Wanted) 
             {
                 if (playerped.Model == "player_zero")
                 {
