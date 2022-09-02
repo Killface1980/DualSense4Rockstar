@@ -1,7 +1,8 @@
 # DualSense4Rockstar
 
 Adds support for DualSense controllers to GTAV and RDR2.
-Merge of the GTAV mod by JohnD and the RDR mod by Shtivi with rewrites and refinements.
+Merge of the GTAV mod by JohnD https://github.com/zelmer69/dualsense4GTA5 and the RDR mod by Shtivi https://github.com/Shtivi/RDR2-DualSense
+ with rewrites and refinements.
 New controller scheme for GTA V.
 
 Requires DualSenseX by Paliverse https://dualsensex.com/download/
