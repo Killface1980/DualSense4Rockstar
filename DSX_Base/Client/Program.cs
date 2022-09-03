@@ -22,14 +22,14 @@ namespace DSX_UDP_Example
         static void Connect()
         {
             client = new UdpClient();
-            var portNumber = File.ReadAllText(@"C:\Temp\DualSenseX\DualSenseX_PortNumber.txt");
+            string portNumber = File.ReadAllText(@"C:\Temp\DualSenseX\DualSenseX_PortNumber.txt");
             endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(portNumber));
             Console.WriteLine($"Port number found is: {portNumber}\n");
         }
 
         static void Send(Packet data)
         {
-            var RequestData = Encoding.ASCII.GetBytes(Triggers.PacketToJson(data));
+            byte[] RequestData = Encoding.ASCII.GetBytes(Triggers.PacketToJson(data));
             client.Send(RequestData, RequestData.Length, endPoint);
             TimeSent = DateTime.Now;
         }
