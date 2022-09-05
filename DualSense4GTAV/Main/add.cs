@@ -93,7 +93,7 @@ namespace DualSense4GTAV
                 red -= 50;
                 blue += 50;
             }
-            Script.Wait(speed*50);
+            //Script.Wait(speed*50);
 
             while (red <= 255)
             {

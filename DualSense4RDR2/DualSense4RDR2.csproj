@@ -12,6 +12,9 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\DSX_Base\DSX_Base.csproj" />
   </ItemGroup>
 
