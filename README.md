@@ -29,3 +29,7 @@ Redefined controller layout and bug fixing
 ### RDR 2
 - Added support for DSX using ScriptHook.
 - Adapted controller layout and features from Shtivi. All credits to the excellent feel of this layout go to him.
+
+## Download
+Current test version can be found here
+https://github.com/Killface1980/DualSense4Rockstar/tree/master/__RELEASE
