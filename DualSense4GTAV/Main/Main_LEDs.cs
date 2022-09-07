@@ -203,25 +203,24 @@ namespace DualSense4GTAV.Main_LEDs
           {
             willShift = true;
           }
-          if (currentVehicle.CurrentGear > 1)
-          {
-            engineIdleRpm = 0.2f;
-
-            if (Game.IsControlPressed(GTA.Control.VehicleBrake))
-            {
-              packet.instructions[1].type = InstructionType.MicLED;
-              packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.On };
-              Send(packet);
-
-            }
-          }
-          else
-          {
-            packet.instructions[1].type = InstructionType.MicLED;
-            packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.Off };
-            Send(packet);
-
-          }
+          //if (currentVehicle.CurrentGear > 1)
+          //{
+          //
+          //  if (Game.IsControlPressed(GTA.Control.VehicleBrake))
+          //  {
+          //    packet.instructions[1].type = InstructionType.MicLED;
+          //    packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.On };
+          //    Send(packet);
+          //
+          //  }
+          //}
+          //else
+          //{
+          //  packet.instructions[1].type = InstructionType.MicLED;
+          //  packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.Off };
+          //  Send(packet);
+          //
+          //}
 
 
           float currentRPMRatio = Main.InvLerp(engineIdleRpm, 1f, currentRPM);

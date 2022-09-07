@@ -68,6 +68,11 @@ namespace DualSense4GTAV
       return (int)((1f - t) * a + t * b);
     }
 
+    public enum Hash2 : ulong
+    {
+      GET_VEHICLE_WHEEL_SURFACE_MATERIAL = 0xA7F04022
+    }
+
     private void OnTick(object sender, EventArgs e)
     {
       controllerConfig.pool.Process();
@@ -76,6 +81,8 @@ namespace DualSense4GTAV
       int controllerIndex = 0;
       packet.instructions = new Instruction[4];
       Ped playerped = Game.Player.Character;
+
+
 
       Weapon playerWeapon = playerped.Weapons.Current;
       if (Function.Call<bool>(GTA.Native.Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
@@ -86,6 +93,13 @@ namespace DualSense4GTAV
       else if (playerped.IsInVehicle() || playerped.IsOnBike || playerped.IsInBoat || playerped.IsInHeli)
       {
         Vehicle currentVehicle = playerped.CurrentVehicle;
+
+        // BUG: Crashing, need the wheel surface for haptic feedback
+        //int hash = Function.Call<int>(Hash.GET_HASH_KEY, "GET_VEHICLE_WHEEL_SURFACE_MATERIAL");
+
+        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)hash, currentVehicle.Handle, 0).ToString());
+        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)0xA7F04022, currentVehicle.Handle, 0).ToString());
+
 
         if (!currentVehicle.IsEngineRunning)
         {
@@ -191,14 +205,14 @@ namespace DualSense4GTAV
           float startOfGear = 1f;
           startOfGear *= Lerp(0.7f, 1f, initialDriveForce);
           startOfGear *= Lerp(0.5f, 1f, engineHealthFloat);
-          startOfGear *= Lerp(1f, 0.5f, gearForce);
+          startOfGear *= Lerp(1f, 0.7f, gearForce);
           startOfGear *= Lerp(0.6f, 1f, driveInertia);
           //startOfGear*= Lerp(0.4f, 1f, currentVehicle.Clutch);
 
           float lightnessVehicle = 1f;
-          lightnessVehicle *= Lerp(1f, 0.6f, gearForce);
+          lightnessVehicle *= Lerp(1f, 0.8f, gearForce);
           lightnessVehicle *= spinnie;
-          lightnessVehicle *= Lerp(0.6f, 1f, currentRPMRatio);
+          lightnessVehicle *= Lerp(0.8f, 1f, currentRPMRatio);
           lightnessVehicle *= engineHealthFloat;
           //lightnessVehicle *= Lerp(0.2f, 1f, currentVehicle.Clutch);
 
@@ -226,6 +240,14 @@ namespace DualSense4GTAV
 
           float lighnessBrake = 1f * Lerp(0.5f, 1f, gearForce);
           lighnessBrake *= engineHealthFloat;
+
+          
+          /*
+          0xA7F04022
+          // GetVehicleWheelSurfaceMaterial
+          int GET_VEHICLE_WHEEL_SURFACE_MATERIAL(Vehicle vehicle, int wheelIndex);
+          */
+
           if (currentGear != currentVehicle.NextGear)
           {
             SetAndSendPacket(packet, controllerIndex, Trigger.Left);
