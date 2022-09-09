@@ -186,9 +186,9 @@ namespace DualSense4GTAV.Main_LEDs
           int BlueChannel = 0;
 
           float rpmShiftDown = 0.4f;
-          float rpmLow = 0.6f;
+          float rpmLow = 0.65f;
           float rpmMed = 0.8f;
-          float rpmHigh = 0.9f;
+          float rpmHigh = 0.95f;
 
           float currentRPM = currentVehicle.CurrentRPM;
 
@@ -199,7 +199,8 @@ namespace DualSense4GTAV.Main_LEDs
           }
 
           float engineIdleRpm = 0.2f;
-          if (currentVehicle.CurrentGear != currentVehicle.NextGear)
+          int currentGear = currentVehicle.CurrentGear;
+          if (currentGear != currentVehicle.NextGear)
           {
             willShift = true;
           }
@@ -226,8 +227,26 @@ namespace DualSense4GTAV.Main_LEDs
           float currentRPMRatio = Main.InvLerp(engineIdleRpm, 1f, currentRPM);
 
           var curVal = 0f;
-          if (currentVehicle.CurrentGear > 0)
+          if (currentGear > 0)
           {
+
+/*            if (currentVehicle.HighGear > 1)
+            {
+              float ratio = currentGear / currentVehicle.HighGear;
+              switch (currentGear)
+              {
+                case 0:
+                case 1:
+                  engineIdleRpm = 0.2f;
+                  break;
+                default:
+                  engineIdleRpm = 0.5f;
+                  break;
+              }
+          
+              currentRPMRatio = Main.InvLerp(engineIdleRpm +0.3f, 1f, currentRPM);
+            }
+*/
             if (currentRPMRatio < rpmShiftDown)
             {
               curVal = Main.InvLerp(0, rpmShiftDown, currentRPMRatio);

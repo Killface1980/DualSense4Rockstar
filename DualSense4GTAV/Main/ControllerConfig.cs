@@ -28,7 +28,7 @@ public class ControllerConfig
     {
         // File load / save ...
 
-        settings = GTA.ScriptSettings.Load("DualSense4GTAV");
+        settings = GTA.ScriptSettings.Load("Scripts\\DualSense4GTAV.ini");
 
         startofResistanceVehicle = settings.GetValue("Controls", nameof(startofResistanceVehicle), 1) * 25;
         endofResistanceVehicle = settings.GetValue("Controls", nameof(endofResistanceVehicle), 7) * 25;

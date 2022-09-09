@@ -68,10 +68,7 @@ namespace DualSense4GTAV
       return (int)((1f - t) * a + t * b);
     }
 
-    public enum Hash2 : ulong
-    {
-      GET_VEHICLE_WHEEL_SURFACE_MATERIAL = 0xA7F04022
-    }
+
 
     private void OnTick(object sender, EventArgs e)
     {
@@ -95,10 +92,20 @@ namespace DualSense4GTAV
         Vehicle currentVehicle = playerped.CurrentVehicle;
 
         // BUG: Crashing, need the wheel surface for haptic feedback
-        //int hash = Function.Call<int>(Hash.GET_HASH_KEY, "GET_VEHICLE_WHEEL_SURFACE_MATERIAL");
+        //ulong GET_VEHICLE_WHEEL_SURFACE_MATERIAL = 0xA7F04022;
 
-        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)hash, currentVehicle.Handle, 0).ToString());
-        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)0xA7F04022, currentVehicle.Handle, 0).ToString());
+       // uint hash = Function.Call<uint>(Hash.GET_HASH_KEY, "GET_VEHICLE_WHEEL_SURFACE_MATERIAL");
+
+        //GTA.UI.Screen.ShowSubtitle(hash.ToString());
+        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)hash, currentVehicle.Handle, 0).ToString()); // this one crashes
+        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)0xA7F04022, currentVehicle.Handle, 0).ToString()); // this one too
+
+        /*
+         -- Surfaces which are counted as road (https://docs.fivem.net/natives/?_0xA7F04022)
+          Config.roadSurfaces = {
+              1, 3, 4, 12
+          }
+        */
 
 
         if (!currentVehicle.IsEngineRunning)
@@ -248,7 +255,7 @@ namespace DualSense4GTAV
           int GET_VEHICLE_WHEEL_SURFACE_MATERIAL(Vehicle vehicle, int wheelIndex);
           */
 
-          if (currentGear != currentVehicle.NextGear)
+          if (currentGear != currentVehicle.NextGear) // here comes the clutch!
           {
             SetAndSendPacket(packet, controllerIndex, Trigger.Left);
             SetAndSendPacket(packet, controllerIndex, Trigger.Right);
