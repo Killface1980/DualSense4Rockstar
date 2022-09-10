@@ -16,7 +16,7 @@ namespace DualSense4GTAV.Main_LEDs
     private add _add2 = null;
 
     private iO _obj = null;
-    private bool useHealthIndicator;
+    private bool useHealthIndicator = true;
     private bool usePlayerColors = true; // TODO: menu options
 
     // TODO: menu options
@@ -291,6 +291,22 @@ namespace DualSense4GTAV.Main_LEDs
           packet.instructions[1].parameters = new object[] { controllerIndex, RedChannel, GreenChannel, BlueChannel };
           Send(packet);
         }  // TODO: options; shows current rpm
+        else if (useHealthIndicator) // health indicator
+        {
+          packet.instructions[1].type = InstructionType.RGBUpdate;
+          float health = playerped.HealthFloat / playerped.MaxHealthFloat;
+
+          int red = 0;
+          int green = 0;
+          int blue = 0;
+
+          green = (int)Main.Lerp(0, 255, health);
+          red = (int)Main.Lerp(255, 0, health);
+
+          packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
+
+          Send(packet);
+        }
         else if (usePlayerColors) // TODO: options
         {
           packet.instructions[1].type = InstructionType.RGBUpdate;
@@ -308,22 +324,6 @@ namespace DualSense4GTAV.Main_LEDs
           }
           Send(packet);
           Script.Wait(235);
-        }
-        else if (useHealthIndicator) // health indicator
-        {
-          packet.instructions[1].type = InstructionType.RGBUpdate;
-          float health = playerped.HealthFloat / playerped.MaxHealthFloat;
-
-          int red = 0;
-          int green = 0;
-          int blue = 0;
-
-          green = (int)Main.Lerp(0, 255, health);
-          red = (int)Main.Lerp(255, 0, health);
-
-          packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
-
-          Send(packet);
         }
         /*
         if (playerped.IsInVehicle())
