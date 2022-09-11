@@ -266,14 +266,14 @@ namespace DualSense4RDR2
             iO obj = new();
             Send(packet);
             Wait(235);
-            obj.getstat(out int bat, out bool _);
+            obj.getstat(out int bat, out bool isConnected);
 
 
-            if ((false) && showconmes)
+            if (!isConnected && showconmes)
             {
                 RDR2.UI.Screen.ShowSubtitle("controller is disconnected or discharged, please fix or press F11");
             }
-            if (bat <= 15 && showbatstat)
+            else if (bat <= 15 && showbatstat)
             {
                 RDR2.UI.Screen.ShowSubtitle("Your controller battery is  " + bat + " to hide this message press F10");
                 // RDR2.UI.Screen.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);

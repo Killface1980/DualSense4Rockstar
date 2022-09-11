@@ -28,7 +28,7 @@ public class ControllerConfig
     {
         // File load / save ...
 
-        settings = GTA.ScriptSettings.Load("Scripts\\DualSense4GTAV.ini");
+        settings = ScriptSettings.Load("Scripts\\DualSense4GTAV.ini");
 
         startofResistanceVehicle = settings.GetValue("Controls", nameof(startofResistanceVehicle), 1) * 25;
         endofResistanceVehicle = settings.GetValue("Controls", nameof(endofResistanceVehicle), 7) * 25;
@@ -59,7 +59,7 @@ public class ControllerConfig
         item_maxResistanceVehicle.ValueChanged += DS4GTAV_Controls_SettingsChanged;
         menu.Add(item_maxResistanceVehicle);
 
-        var checkbox = new NativeCheckboxItem("Test");
+        NativeCheckboxItem checkbox = new NativeCheckboxItem("Test");
         // menu.AddSubMenu(menuVehicle);
 
         pool.Add(menu);

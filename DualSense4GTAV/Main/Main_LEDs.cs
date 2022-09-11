@@ -24,11 +24,11 @@ namespace DualSense4GTAV.Main_LEDs
 
     public Main_LEDs()
     {
-      base.Tick += this.OnTick;
-      base.KeyDown += this.OnKeyDown;
+      Tick += this.OnTick;
+      KeyDown += this.OnKeyDown;
 
-      Connect();
-      Process.GetProcessesByName("DSX");
+      // Connect();
+      // Process.GetProcessesByName("DSX");
       // Interval = 50;
     }
 
@@ -57,6 +57,7 @@ namespace DualSense4GTAV.Main_LEDs
 
     private void OnTick(object sender, EventArgs e)
     {
+
       Packet packet = new();
       int controllerIndex = 0;
       packet.instructions = new Instruction[4];
@@ -65,14 +66,16 @@ namespace DualSense4GTAV.Main_LEDs
 
       this._obj ??= new iO();
 
-      this._obj.getstat(out int bat, out bool _);
-      if ((false) && showconmes)
+      this._obj.getstat(out int bat, out bool isConnected);
+      if (!isConnected && showconmes)
       {
         GTA.UI.Notification.Show("controller is disconnected or discharged, please fix or press F11");
+        return;
       }
       if (bat <= 15 && showbatstat)
       {
         GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press F10", true);
+        return;
       }
       Ped playerped = Game.Player.Character;
 
@@ -177,10 +180,14 @@ namespace DualSense4GTAV.Main_LEDs
             break;
         }
       }
+      else{ Wanted = false; }
       if (!Wanted)
       {
         if (playerped.IsInVehicle() && currentVehicle.Driver == playerped)
         {
+          float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
+
+
           int RedChannel = 0;
           int GreenChannel = 0;
           int BlueChannel = 0;
@@ -224,40 +231,22 @@ namespace DualSense4GTAV.Main_LEDs
           //}
 
 
-          float currentRPMRatio = Main.InvLerp(engineIdleRpm, 1f, currentRPM);
+          float currentRPMRatio = Main.InvLerpCapped(engineIdleRpm, 1f, currentRPM);
 
-          var curVal = 0f;
+          float curVal = 0f;
           if (currentGear > 0)
           {
-
-/*            if (currentVehicle.HighGear > 1)
-            {
-              float ratio = currentGear / currentVehicle.HighGear;
-              switch (currentGear)
-              {
-                case 0:
-                case 1:
-                  engineIdleRpm = 0.2f;
-                  break;
-                default:
-                  engineIdleRpm = 0.5f;
-                  break;
-              }
-          
-              currentRPMRatio = Main.InvLerp(engineIdleRpm +0.3f, 1f, currentRPM);
-            }
-*/
             if (currentRPMRatio < rpmShiftDown)
             {
               curVal = Main.InvLerp(0, rpmShiftDown, currentRPMRatio);
-              BlueChannel = (int)Main.Lerp(10, 255, curVal);
-              GreenChannel = (int)Main.Lerp(5, 60, curVal);
+              BlueChannel = (int)Main.Lerp(96, 0, curVal);
+              GreenChannel = (int)Main.Lerp(0, 32, curVal);
             }
             else if (currentRPMRatio < rpmLow)
             {
               curVal = Main.InvLerp(rpmShiftDown, rpmLow, currentRPMRatio);
-              BlueChannel = (int)Main.Lerp(255, 0, curVal);
-              GreenChannel = (int)Main.Lerp(60, 255, curVal);
+              //BlueChannel = (int)Main.Lerp(128, 0, curVal);
+              GreenChannel = (int)Main.Lerp(32, 255, curVal);
             }
             else if (currentRPMRatio <= rpmMed)
             {
@@ -283,9 +272,12 @@ namespace DualSense4GTAV.Main_LEDs
           }
           else
           {
-            RedChannel = BlueChannel = GreenChannel = (int)Main.Lerp(10, 255, currentRPMRatio);
+            RedChannel = BlueChannel = GreenChannel = (int)Main.Lerp(10, 255, currentRPM);
           }
-          //GTA.UI.Screen.ShowSubtitle( playerped.CurrentVehicle.CurrentGear+ " | "+ currentRPM.ToString("N2")+ "/"+ currentRPMRatio.ToString("N2") + " - " + RedChannel + " / " + GreenChannel);
+
+          RedChannel = (int)(RedChannel * engineHealthFloat * engineHealthFloat);
+          GreenChannel = (int)(GreenChannel * engineHealthFloat * engineHealthFloat);
+          BlueChannel = (int)(BlueChannel * engineHealthFloat * engineHealthFloat);
 
           packet.instructions[1].type = InstructionType.RGBUpdate;
           packet.instructions[1].parameters = new object[] { controllerIndex, RedChannel, GreenChannel, BlueChannel };
@@ -323,7 +315,7 @@ namespace DualSense4GTAV.Main_LEDs
             packet.instructions[1].parameters = new object[4] { controllerIndex, 0, 255, 0 };
           }
           Send(packet);
-          Script.Wait(235);
+          Wait(235);
         }
         /*
         if (playerped.IsInVehicle())

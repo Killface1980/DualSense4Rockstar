@@ -101,7 +101,7 @@ namespace DualSense4RDR2
             if (this.health <= 0.3f)
             {
                 this.brig = 200;
-                Script.Wait(1999);
+                Wait(1999);
             }
         }
 
@@ -162,13 +162,13 @@ namespace DualSense4RDR2
         {
             blue = 255;
             red = 1;
-            DSX_Base.Client.iO.Connect();
+            Connect();
             Packet packet = new();
             int num = 0;
             packet.instructions = new Instruction[4];
             while (red <= 255)
             {
-                Script.Wait(10);
+                Wait(10);
                 red += speed;
                 blue -= speed;
                 packet.instructions[1].type = InstructionType.RGBUpdate;
@@ -179,7 +179,7 @@ namespace DualSense4RDR2
                     0,
                     red - this.brig
                 };
-                DSX_Base.Client.iO.Send(packet);
+                Send(packet);
             }
             while (blue <= 255)
             {
@@ -192,7 +192,7 @@ namespace DualSense4RDR2
                     red - this.brig
                 };
                 Send(packet);
-                Script.Wait(10);
+                Wait(10);
                 red -= speed;
                 blue += speed;
             }

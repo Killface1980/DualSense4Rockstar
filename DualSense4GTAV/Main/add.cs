@@ -47,7 +47,7 @@ namespace DualSense4GTAV
 
         public add()
         {
-            base.Tick += this.onTick;
+            Tick += this.onTick;
         }
 
         private void onTick(object sender, EventArgs e)
@@ -64,7 +64,7 @@ namespace DualSense4GTAV
             if (Game.Player.Character.Health <= 40)
             {
                 this.brig = 200;
-                Script.Wait(1999);
+                Wait(1999);
             }
         }
 
@@ -89,7 +89,7 @@ namespace DualSense4GTAV
                 };
                 Send(packet);
 
-                Script.Wait(speed);
+                Wait(speed);
                 red -= 50;
                 blue += 50;
             }
@@ -107,7 +107,7 @@ namespace DualSense4GTAV
                 };
                 Send(packet);
 
-                Script.Wait(speed);
+                Wait(speed);
                 red+=50;
                 blue-=50;
 

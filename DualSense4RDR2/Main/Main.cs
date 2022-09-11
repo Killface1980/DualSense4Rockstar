@@ -28,8 +28,8 @@ namespace DualSense4RDR2
         public Main()
         {
             playerPed = Game.Player.Character;
-            base.Tick += this.OnTick;
-            base.KeyDown += this.OnKeyDown;
+            Tick += this.OnTick;
+            KeyDown += this.OnKeyDown;
             Connect();
             Process.GetProcessesByName("DSX");
         }
@@ -37,13 +37,13 @@ namespace DualSense4RDR2
         {
             blue = 255;
             red = 1;
-            DSX_Base.Client.iO.Connect();
+            Connect();
             Packet packet = new();
             int num = 0;
             packet.instructions = new Instruction[4];
             while (red <= 255)
             {
-                Script.Wait(10);
+                Wait(10);
                 red += speed;
                 blue -= speed;
                 packet.instructions[1].type = InstructionType.RGBUpdate;
@@ -54,7 +54,7 @@ namespace DualSense4RDR2
                     0,
                     red - this.brig
                 };
-                DSX_Base.Client.iO.Send(packet);
+                Send(packet);
             }
             while (blue <= 255)
             {
@@ -66,8 +66,8 @@ namespace DualSense4RDR2
                     0,
                     red - this.brig
                 };
-                DSX_Base.Client.iO.Send(packet);
-                Script.Wait(10);
+                Send(packet);
+                Wait(10);
                 red -= speed;
                 blue += speed;
             }
@@ -265,28 +265,28 @@ namespace DualSense4RDR2
             add add2 = new();
             iO obj = new();
             Send(packet);
-            Script.Wait(235);
-            obj.getstat(out int bat, out bool _);
+            Wait(235);
+            obj.getstat(out int bat, out bool isConnected);
 
 
-            if ((false) && showconmes)
+            if (!isConnected && showconmes)
             {
-                RDR2.UI.Screen.DisplaySubtitle("controller is disconnected or discharged, please fix or press F11");
+              RDR2.UI.Screen.DisplaySubtitle("controller is disconnected or discharged, please fix or press F11");
             }
-            if (bat <= 15 && showbatstat)
+            else if (bat <= 15 && showbatstat)
             {
-                RDR2.UI.Screen.DisplaySubtitle("Your controller battery is  " + bat + " to hide this message press F10");
-                // RDR2.UI.Screen.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);
+              RDR2.UI.Screen.DisplaySubtitle("Your controller battery is  " + bat + " to hide this message press F10");
+              // RDR2.UI.Screen.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);
             }
 
-            switch (player.WantedLevel)
+      switch (player.WantedLevel)
             {
                 case 0:
                     packet.instructions[2].type = InstructionType.PlayerLED;
                     packet.instructions[2].parameters = new object[6] { controllerIndex, false, false, false, false, false };
                     Send(packet);
-                    Script.Wait(299);
-                    Script.Wait(299);
+                    Wait(299);
+                    Wait(299);
                     wanted = false;
                     break;
 
