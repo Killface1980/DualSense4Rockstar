@@ -19,19 +19,19 @@ namespace DualSense4GTAV
 
     private static DateTime TimeSent;
 
-    private readonly ControllerConfig controllerConfig;
+    public static readonly ControllerConfig controllerConfig = new();
 
     public Main()
     {
       Tick += this.OnTick;
-
+      //Tick += Main_LEDs.Ontick;
       Connect();
       Process.GetProcessesByName("DSX");
       //Interval = 50;
-
-      controllerConfig = new ControllerConfig();
       KeyDown += controllerConfig.OnKeyDown;
     }
+
+
 
     /// <summary>
     /// Returns float: A value between zero and one, representing where the "value" parameter falls within the range defined by a and b.
@@ -105,7 +105,7 @@ namespace DualSense4GTAV
 
         /*
          -- Surfaces which are counted as road (https://docs.fivem.net/natives/?_0xA7F04022)
-          Config.roadSurfaces = {
+          roadSurfaces = {
               1, 3, 4, 12
           }
         */
@@ -127,7 +127,6 @@ namespace DualSense4GTAV
             CustomTriggerValueMode.VibrateResistanceAB,
             resStart, 255, 144, 90, 120, 220, (int)currentVehicle.WheelSpeed);
           Wait(300);
-
         }
         else if (playerped.IsInHeli)
         {
@@ -151,6 +150,78 @@ namespace DualSense4GTAV
             1 + LerpInt(0, 6, health),
             LerpInt(8, 1, health)
           });
+        }
+        else if (playerped.IsInBoat && currentVehicle.IsInWater)
+        {
+          float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
+
+          float initialDriveForce = InvLerpCapped(0.1f, 0.4f, currentVehicle.HandlingData.InitialDriveForce); // most cars 0.1f < df < 0.4f
+          float driveInertia = InvLerpCapped(0.3f, 1.0f, currentVehicle.HandlingData.DriveInertia);
+
+          float startOfGear = 0.8f;
+          startOfGear *= Lerp(0.7f, 1f, initialDriveForce);
+          startOfGear *= Lerp(0.5f, 1f, engineHealthFloat);
+
+          //startOfGear*= Lerp(0.4f, 1f, currentVehicle.Clutch);
+
+          float lightnessVehicle = 0.9f;
+          lightnessVehicle *= Lerp(0.6f, 1f, driveInertia);
+          lightnessVehicle *= Lerp(0.3f, 0.8f, currentVehicle.CurrentRPM);
+          lightnessVehicle *= engineHealthFloat;
+          //lightnessVehicle *= Lerp(0.2f, 1f, currentVehicle.Clutch);
+
+          float brakeForce = InvLerpCapped(0.2f, 1.2f, currentVehicle.HandlingData.BrakeForce); // Bigger number = harder braking 0.01 - 2.0 and above. 1.0 uses brake force calculation unmodified.
+
+          float startOfResistanceBrake = 1f * Lerp(0.4f, 1f, brakeForce);
+          startOfResistanceBrake *= engineHealthFloat;
+
+          float lighnessBrake = 0.8f;
+          lighnessBrake *= engineHealthFloat;
+          int currentGear = currentVehicle.CurrentGear;
+          /*
+          0xA7F04022
+          // GetVehicleWheelSurfaceMaterial
+          int GET_VEHICLE_WHEEL_SURFACE_MATERIAL(Vehicle vehicle, int wheelIndex);
+          */
+
+          if (currentGear > 0)
+          {
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
+
+              (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
+              (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lightnessVehicle),
+              255
+            );
+            //GTA.UI.Screen.ShowSubtitle(spinnie.ToString("N2") + " - "+ (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear) + " - " + (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, vehicleLightness));
+
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid,
+              (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfResistanceBrake),
+              (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lighnessBrake),
+              255
+            );
+
+            //              BrakeForce / DriveInertia / Mass / InitialDriveForce
+            // Betonmisch:  0,3        / 0,5          / 6000 / 0,11
+            // Barracks:    0,3        / 0,5          / 9000 / 0,11
+            // Mule:        0,25       / 1            / 5500 / 0,11
+            // Coach:       0,25       / 0,5          / 8500 / 0,12
+            // Ambulance:   0,6        / 1            / 2500 / 0,18
+            // Tampa:       0,8        / 1            / 1200 / 0,27
+            // Obey Sports: 1          / 1            / 1300 / 0,33
+            // Banshee:     1          / 1            / 1200 / 0,34
+          }
+          else
+          {
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid,
+              (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
+              (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lightnessVehicle),
+              255);
+
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
+              (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfResistanceBrake),
+              (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lighnessBrake),
+              255);
+          }
         }
         else if (playerped.IsInPlane)
         {
