@@ -23,7 +23,7 @@ Redefined controller layout and bug fixing
 
 ![image](https://user-images.githubusercontent.com/16738568/190234195-d3b623f1-ab29-48db-b357-997e5ba13d5f.png)
 
-- Adds support for all weapons and switches the adaptive feedback. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP) Automatic weapons will switch from semi automativ trigger mode to automatic mode once the gun starts firing.
+- Adds support for all weapons and switches the adaptive feedback. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP). Automatic weapons will switch from semi automativ trigger mode to automatic mode once the gun actually starts firing.
 - (WIP)Reworked feedback during driving, depending on gear, if wheels are on ground, rpm, vehicle health etc. Adds haptic feedback for shifting gears.
 - adds colored speedometer, brake light (mic LED)
 - Changed Player LED, police siren loop; LED will also go into siren loop if the player is not wanted and has the vehicle's siren turned on
