@@ -6,15 +6,13 @@ Merge of the GTAV mod by JohnD https://github.com/zelmer69/dualsense4GTA5 and th
 New controller scheme for GTA V.
 
 ### Requires DualSenseX by Paliverse
-Github Link: https://github.com/Paliverse/DualSenseX 
-Steam Link:  https://store.steampowered.com/app/1812620/DSX/
-These mods were built against the Steam version, which is fully supported. The GiitHub is not supported and/or recommended.
+Github Link: https://github.com/Paliverse/DualSenseX | Steam Link:  https://store.steampowered.com/app/1812620/DSX/
 
-GTA V requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies
+These mods were built against the Steam version of DualSenseX which is fully supported. The GiitHub is not supported and/or recommended.
 
-RDR 2 ScriptHook v1 requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
-
-RDR 2 requires ScriptHookRDR2DotNet v2 by TuffyTown https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and its dependencies
+- GTA V requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies
+- RDR 2 ScriptHook v1 requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
+- RDR 2 requires ScriptHookRDR2DotNet v2 by TuffyTown https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and its dependencies
 
 
 ## Features
