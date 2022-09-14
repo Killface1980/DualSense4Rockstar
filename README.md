@@ -8,7 +8,7 @@ New controller scheme for GTA V.
 ### Requires DualSenseX by Paliverse
 Github Link: https://github.com/Paliverse/DualSenseX | Steam Link:  https://store.steampowered.com/app/1812620/DSX/
 
-These mods were built against the Steam version of DualSenseX which is fully supported. The GiitHub is not supported and/or recommended.
+These mods were built against the Steam version of DualSenseX which is fully supported. The GitHub version of DSX is *not* supported and/or recommended.
 
 - GTA V requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies
 - RDR 2 ScriptHook v1 requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
