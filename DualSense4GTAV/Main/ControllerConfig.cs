@@ -9,16 +9,16 @@ namespace DualSense4GTAV;
 public class ControllerConfig
 {
   public readonly ObjectPool pool;
+  public int startofResistanceVehicle = 0;
   public int endofResistanceVehicle = 6;
-  public int maxResistanceVehicle = 10;
   public int minResistanceVehicle = 0;
+  public int maxResistanceVehicle = 10;
   public bool showbatstat = true;
   public bool showconmes = true;
   public bool showHealth;
   public bool showPlayerColor;
   public bool showRPM;
   public bool showWanted;
-  public int startofResistanceVehicle = 0;
   private NativeSliderItem item_endofResistanceVehicle;
   private NativeSliderItem item_maxResistanceVehicle;
   private NativeSliderItem item_minResistanceVehicle;

@@ -90,7 +90,8 @@ namespace DualSense4GTAV
         SetAndSendPacket(packet, controllerIndex, Trigger.Right);
         SetAndSendPacket(packet, controllerIndex, Trigger.Left);
       }
-      else if (playerped.IsInVehicle() || playerped.IsOnBike || playerped.IsInBoat || playerped.IsInHeli)
+      else if ((playerped.IsInVehicle() || playerped.IsOnBike || playerped.IsInBoat || playerped.IsInHeli) &&
+               playerped.CurrentVehicle.Driver == playerped)
       {
         Vehicle currentVehicle = playerped.CurrentVehicle;
 

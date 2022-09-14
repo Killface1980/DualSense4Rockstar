@@ -38,14 +38,14 @@ namespace DualSense4GTAV.Main_LEDs
       this._obj.getstat(out int bat, out bool isConnected);
       if (!isConnected && controllerConfig.showconmes)
       {
-        GTA.UI.Notification.Show("Your controller is disconnected or discharged, please fix or press " + nameof(KeyConf
-          .showCommStat) );
+        GTA.UI.Notification.Show("Your controller is disconnected or discharged, please fix or press " + KeyConf
+          .showCommStat + " to hide this message.") ;
         return;
       }
       if (bat <= 15 && controllerConfig.showbatstat)
       {
-        GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press "+nameof(KeyConf
-          .hideBatStat), true);
+        GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press "+KeyConf
+          .hideBatStat, true);
         //return;
       }
       Ped playerped = Game.Player.Character;
@@ -263,7 +263,7 @@ namespace DualSense4GTAV.Main_LEDs
         green = (int)Lerp(0, 255, health);
         red = (int)Lerp(255, 0, health);
 
-        packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
+        packet.instructions[1].parameters = new object[] { controllerIndex, red, green, blue };
 
         Send(packet);
       }
@@ -272,7 +272,7 @@ namespace DualSense4GTAV.Main_LEDs
         packet.instructions[1].type = InstructionType.RGBUpdate;
         if (playerped.Model == "player_zero")
         {
-          packet.instructions[1].parameters = new object[4] { controllerIndex, 0, 0, 255 };
+          packet.instructions[1].parameters = new object[] { controllerIndex, 0, 0, 255 };
         }
         if (playerped.Model == "player_two")
         {
