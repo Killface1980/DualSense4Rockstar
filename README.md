@@ -5,7 +5,8 @@ Merge of the GTAV mod by JohnD https://github.com/zelmer69/dualsense4GTA5 and th
  with rewrites and refinements.
 New controller scheme for GTA V.
 
-Requires DualSenseX by Paliverse https://dualsensex.com/download/
+Requires DualSenseX by Paliverse
+Steam Link:  https://store.steampowered.com/app/1812620/DSX/
 
 GTA V requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies
 
