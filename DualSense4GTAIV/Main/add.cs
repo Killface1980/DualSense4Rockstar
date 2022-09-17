@@ -8,7 +8,6 @@ using Shared;
 
 namespace DualSense4GTAV
 {
-    [ScriptAttributes(NoDefaultInstance = true)]
     public class add : Script
     {
         private static bool wanted;
@@ -53,15 +52,15 @@ namespace DualSense4GTAV
         private void onTick(object sender, EventArgs e)
         {
             Connect();
-            if (Game.Player.Character.Health <= 150)
+            if (Player.Character.Health <= 150)
             {
                 this.brig = 40;
             }
-            if (Game.Player.Character.Health <= 100)
+            if (Player.Character.Health <= 100)
             {
                 this.brig = 70;
             }
-            if (Game.Player.Character.Health <= 40)
+            if (Player.Character.Health <= 40)
             {
                 this.brig = 200;
                 Wait(1999);
@@ -73,6 +72,7 @@ namespace DualSense4GTAV
         private int blue = 0;
         public void rgbupdat2e(int speed, int brightnes)
         {
+            Connect();
             Packet packet = new();
             int num = 0;
             packet.instructions = new Instruction[4];

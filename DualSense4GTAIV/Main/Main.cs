@@ -82,7 +82,7 @@ namespace DualSense4GTAV
       Packet packet = new();
       int controllerIndex = 0;
       packet.instructions = new Instruction[4];
-      Ped playerped = Game.Player.Character;
+      Ped playerped = Player.Character;
 
       Weapon playerWeapon = playerped.Weapons.Current;
       if (Function.Call<bool>(Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
@@ -90,28 +90,13 @@ namespace DualSense4GTAV
         SetAndSendPacket(packet, controllerIndex, Trigger.Right);
         SetAndSendPacket(packet, controllerIndex, Trigger.Left);
       }
-      else if ((playerped.IsInVehicle() || playerped.IsOnBike || playerped.IsInBoat || playerped.IsInHeli) &&
+      else if ((playerped.isSittingInVehicle() || playerped.isInVehicle() || playerped.isInWater || playerped.isInAir) &&
                playerped.CurrentVehicle.Driver == playerped)
       {
         Vehicle currentVehicle = playerped.CurrentVehicle;
 
-        // BUG: Crashing, need the wheel surface for haptic feedback
-        //ulong GET_VEHICLE_WHEEL_SURFACE_MATERIAL = 0xA7F04022;
 
-        // uint hash = Function.Call<uint>(Hash.GET_HASH_KEY, "GET_VEHICLE_WHEEL_SURFACE_MATERIAL");
-
-        //GTA.UI.Screen.ShowSubtitle(hash.ToString());
-        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)hash, currentVehicle.Handle, 0).ToString()); // this one crashes
-        // GTA.UI.Screen.ShowSubtitle(Function.Call<int>((Hash)0xA7F04022, currentVehicle.Handle, 0).ToString()); // this one too
-
-        /*
-         -- Surfaces which are counted as road (https://docs.fivem.net/natives/?_0xA7F04022)
-          roadSurfaces = {
-              1, 3, 4, 12
-          }
-        */
-
-        if (!currentVehicle.IsEngineRunning)
+        if (!currentVehicle.EngineRunning)
         {
           SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 5 });
           SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Bow, new() { 5, 6, 4, 5 });
@@ -152,7 +137,7 @@ namespace DualSense4GTAV
             LerpInt(8, 1, health)
           });
         }
-        else if (playerped.IsInBoat && currentVehicle.IsInWater)
+        else if (playerped.isInWater && !playerped.isSwimming)
         {
           float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
 
@@ -300,7 +285,7 @@ namespace DualSense4GTAV
           {
             SetAndSendPacket(packet, controllerIndex, Trigger.Left);
             SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-            Script.Wait(100);
+            Wait(100);
           }
           else if (currentGear > 0)
           {
@@ -361,13 +346,14 @@ namespace DualSense4GTAV
             float animationLength = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
             float weaponDamage = Function.Call<float>(Hash.GET_WEAPON_DAMAGE, playerWeapon.Hash);
 
-            int weaponStrength = Math.Min(8, 3 + (int)(weaponDamage / 6f));
+            int weaponStrength = 2 + (int)(weaponDamage / 6f);
+            weaponStrength = Math.Min(weaponStrength, 8);
 
             int fireRateAutomaticInt = (int)(1.4f / animationLength);
             // GTA.UI.Notification.Show(fireFrequency.ToString());
 
-            int triggerForce = Math.Min(8, weaponStrength + 2);
-            int triggerSnapForce = Math.Min(8, (int)(weaponStrength * 2f));
+            int triggerForce = weaponStrength;
+            int triggerSnapForce = weaponStrength;
             switch (playerWeapon.Group)
             {
               case WeaponGroup.Pistol:
@@ -375,7 +361,7 @@ namespace DualSense4GTAV
               case WeaponGroup.AssaultRifle:
               case WeaponGroup.MG:
               case WeaponGroup.Shotgun:
-                ApplyAutomaticWeaponHandling(packet, controllerIndex, playerped, weaponStrength, fireRateAutomaticInt, new() { 1, 5, triggerForce, triggerSnapForce }, animationLength);
+                ApplyAutomaticWeaponHandling(packet, controllerIndex, playerped, weaponStrength, fireRateAutomaticInt, new() { 1, 6, triggerForce, triggerSnapForce }, animationLength);
                 break;
 
               case WeaponGroup.Sniper:
@@ -417,7 +403,7 @@ namespace DualSense4GTAV
 
     private static int lastAmmo = 0;
 
-    private static void ApplyAutomaticWeaponHandling(Packet packet, int controllerIndex, Ped playerPed, int weaponStrength,
+    private void ApplyAutomaticWeaponHandling(Packet packet, int controllerIndex, Ped playerPed, int weaponStrength,
       int fireRateAutomaticInt, List<int> triggerParameters, float timeBetweenShots)
     {
       SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
@@ -426,7 +412,7 @@ namespace DualSense4GTAV
 
       bool doDefault = false;
       int ammoInClip = playerPed.Weapons.Current.AmmoInClip;
-      if (Game.IsControlPressed(Control.Attack) || playerPed.IsShooting)
+      if (Game.isGameKeyPressed(GameKey.Attack) || playerPed.isShooting)
       {
         if (lastAmmo != ammoInClip)
         {

@@ -8,8 +8,7 @@ namespace DualSense4GTAV.Main_LEDs
 {
   public class Main_LEDs : Script
   {
-    public static bool isWanted = false;
-    public static bool isSirenOn = false;
+    public static bool Wanted = false;
     private static float currentIdleRPM = 0.2f;
     private static bool willShift = false;
     private add _add2 = null;
@@ -46,32 +45,27 @@ namespace DualSense4GTAV.Main_LEDs
       if (bat <= 15 && controllerConfig.showbatstat)
       {
         GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press "+KeyConf
-          .toggleBatStat, true);
+          .hideBatStat, true);
         //return;
       }
-      Ped playerped = Game.Player.Character;
+      Ped playerped = Player.Character;
 
       Vehicle currentVehicle = playerped.CurrentVehicle;
-
-      if (controllerConfig.showWanted && playerped.IsInVehicle() && currentVehicle.IsSirenActive)
-      {
-        isSirenOn = true;
-      }
-      else
-      {
-        isSirenOn = false;
-      }
       if (controllerConfig.showWanted)
       {
-        if (isSirenOn)
-        {
-          this._add2.rgbupdat2e(40, playerped.Health);
-          return;
-        }
-
-        switch (Game.Player.WantedLevel)
+        switch (Player.WantedLevel)
         {
           case 0:
+            if (currentVehicle != null && currentVehicle.IsSirenActive)
+            {
+              this._add2.rgbupdat2e(40, playerped.Health);
+              Wanted = true;
+            }
+            else
+            {
+              Wanted = false;
+            }
+
             packet.instructions[2].type = InstructionType.PlayerLED;
             packet.instructions[2].parameters = new object[6]
                 { controllerIndex, false, false, false, false, false };
@@ -81,13 +75,13 @@ namespace DualSense4GTAV.Main_LEDs
             packet.instructions[2].parameters = new object[]
                 { controllerIndex, PlayerLEDNewRevision.AllOff };
             Send(packet);
-            isWanted = false;
+
             break;
 
           case 1:
             {
               this._add2.rgbupdat2e(40, playerped.Health);
-              isWanted = true;
+              Wanted = true;
               packet.instructions[2].type = InstructionType.PlayerLED;
               packet.instructions[2].parameters = new object[6]
                   { controllerIndex, true, false, false, false, false };
@@ -110,7 +104,7 @@ namespace DualSense4GTAV.Main_LEDs
             packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Two };
             Send(packet);
 
-            isWanted = true;
+            Wanted = true;
             break;
 
           case 3:
@@ -125,11 +119,11 @@ namespace DualSense4GTAV.Main_LEDs
                 { controllerIndex, PlayerLEDNewRevision.Three };
             Send(packet);
 
-            isWanted = true;
+            Wanted = true;
             break;
 
           case 4:
-            this._add2.rgbupdat2e(15, playerped.Health);
+            this._add2.rgbupdat2e(10, playerped.Health);
             packet.instructions[2].type = InstructionType.PlayerLED;
             packet.instructions[2].parameters = new object[6]
                 { controllerIndex, true, true, true, true, false };
@@ -139,7 +133,7 @@ namespace DualSense4GTAV.Main_LEDs
             packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Four };
             Send(packet);
 
-            isWanted = true;
+            Wanted = true;
             break;
 
           case 5:
@@ -153,14 +147,13 @@ namespace DualSense4GTAV.Main_LEDs
             packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Five };
             Send(packet);
 
-            isWanted = true;
+            Wanted = true;
             break;
         }
       }
-      else { isWanted = false; }
+      else { Wanted = false; }
 
-      if (isSirenOn ) return;
-      if (isWanted ) return;
+      if (Wanted && controllerConfig.showWanted) return;
       if (controllerConfig.showRPM && playerped.IsInVehicle() && currentVehicle.Driver == playerped)
       {
         float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
@@ -215,13 +208,13 @@ namespace DualSense4GTAV.Main_LEDs
           {
             curVal = InvLerp(0, rpmShiftDown, currentRPMRatio);
             BlueChannel = (int)Lerp(96, 0, curVal);
-            GreenChannel = (int)Lerp(0, 96, curVal);
+            GreenChannel = (int)Lerp(0, 32, curVal);
           }
           else if (currentRPMRatio <= rpmLow)
           {
             curVal = InvLerp(rpmShiftDown, rpmLow, currentRPMRatio);
             //BlueChannel = (int)Main.Lerp(128, 0, curVal);
-            GreenChannel = (int)Lerp(96, 255, curVal);
+            GreenChannel = (int)Lerp(32, 255, curVal);
           }
           else if (currentRPMRatio <= rpmMed)
           {

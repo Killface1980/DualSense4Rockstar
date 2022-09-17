@@ -106,7 +106,7 @@ public class ControllerConfig
       GTA.UI.Notification.Show("Controller connection status: " + isconnected + " controller battery status: " + bat +
                                ".");// "% \n to hide this Press F8");
     }
-    else if (e.KeyCode == KeyConf.toggleBatStat)
+    else if (e.KeyCode == KeyConf.hideBatStat)
     {
       showbatstat = !showbatstat;
     }

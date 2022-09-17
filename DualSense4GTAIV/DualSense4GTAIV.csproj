@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>DualSense4GTAIV</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>Preview</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Remove="__RELEASE\**" />
+    <EmbeddedResource Remove="__RELEASE\**" />
+    <None Remove="__RELEASE\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DSX_Base\DSX_Base.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:\Rockstar Games\Grand Theft Auto V\Scripts\Newtonsoft.Json.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+    <Reference Include="ScriptHookDotNet">
+      <HintPath>bin\ScriptHookDotNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Core">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Data">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Drawing">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.IO.Compression.FileSystem">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Numerics">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Runtime.Serialization">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Windows.Forms">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml.Linq">
+      <CopyLocal>False</CopyLocal>
+    </Reference>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAIV.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto IV\GTAIV\scripts\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAIV.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAIV\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAIV\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAIV\&quot; /S /Y&#xD;&#xA;" />
+  </Target>
+</Project>
