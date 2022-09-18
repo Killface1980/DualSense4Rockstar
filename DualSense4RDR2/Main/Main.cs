@@ -4,6 +4,7 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using DSX_Base.Client;
 using static DSX_Base.Client.iO;
 using static RDR2.Native.WEAPON;
 
@@ -23,10 +24,13 @@ namespace DualSense4RDR2
     private static bool wanted = false;
     private int brig;
     private float health = 0;
-    private float pulseRate = 0;
+    //private float pulseRate = 0;
     private int staminaTarget = 0;
     private float interval_pos = 0;
     private int interval_direction = 1;
+    private float currentStaminaDisplay = 1f;
+    private SimpleCurve pulseRateCurve;
+
     public Main()
     {
       playerPed = Game.Player.Character;
@@ -34,6 +38,13 @@ namespace DualSense4RDR2
       KeyDown += this.OnKeyDown;
       Connect();
       Process.GetProcessesByName("DSX");
+      pulseRateCurve = new SimpleCurve()
+      {
+        new(0f,25f),
+        new(0.2f,8f),
+        new(0.7f, 1.2f),
+        new(1f,0.3f)
+      };
     }
 
     public void rgbupdat2e(int speed, int brightnes, out int red, out int blue)
@@ -166,58 +177,62 @@ namespace DualSense4RDR2
           SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 1 });
         }
       }
-      else if (weaponIsAGun)
+      else
       {
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
-
-        float degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, 0));
-
-        // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
-
-        if (playerIsAiming && !weaponIsReadyToShoot) // Mode Gun Cock
-        {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 15 *
-              (int)(1 + degradation));
-
-          // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
-        }
-        else // GUN_MANUAL
-        {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 90 *
-              (int)(1 + degradation));
-
-          //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 4,1+(int)(degradation * 7), 4 });
-        }
-      }
-      else if (currentPedVehicleWeapon)
-      {
-        if (number == 3666182381 || //gat
-         number == 3101324918)// maxi
+        bool isPedDuelling = TASK._IS_PED_DUELLING(player.Handle);
+        if (weaponIsAGun || isPedDuelling)
         {
           SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
-          if (playerPed.IsShooting) // Auto
+
+          float degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, 0));
+
+          // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
+
+          if (playerIsAiming && !weaponIsReadyToShoot) // Mode Gun Cock
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 15 *
+              (int)(1 + degradation));
+
+            // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
+          }
+          else // GUN_MANUAL
+          {
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 90 *
+              (int)(1 + degradation));
+
+            //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 4,1+(int)(degradation * 7), 4 });
+          }
+        }
+        else if (currentPedVehicleWeapon)
+        {
+          if (number == 3666182381 || //gat
+              number == 3101324918)// maxi
+          {
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+            if (playerPed.IsShooting) // Auto
+            {
+              SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
                 CustomTriggerValueMode.PulseB, 9, 190);
-          }
-          else // Prepare
-          {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
+            }
+            else // Prepare
+            {
+              SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
                 CustomTriggerValueMode.Rigid, 30, 255);
+            }
+          }
+          else if (number == 2465730487 || //hotch - cannons
+                   number == 1609145491)// breach
+          {
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
+              CustomTriggerValueMode.PulseA, 255, 200, 255);
           }
         }
-        else if (number == 2465730487 || //hotch - cannons
-                 number == 1609145491)// breach
+        else // turn off
         {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
-              CustomTriggerValueMode.PulseA, 255, 200, 255);
+          SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+          SetAndSendPacket(packet, controllerIndex, Trigger.Left);
         }
-      }
-      else // turn off
-      {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-        SetAndSendPacket(packet, controllerIndex, Trigger.Left);
       }
 
       updateLights();
@@ -310,7 +325,7 @@ namespace DualSense4RDR2
     {
       // if (ScriptSettings::getBool("HealthIndication"))
       {
-         this.health = playerPed.Health / (playerPed.MaxHealth * 1f);
+         this.health =  playerPed.Health*1f / (playerPed.MaxHealth * 1f);
       }
 
       // else
@@ -323,11 +338,13 @@ namespace DualSense4RDR2
         this.staminaTarget = playerPed.Handle;
         if (playerPed.IsOnMount)
         {
-          this.staminaTarget = RDR2.Native.PED.GET_MOUNT(playerPed.Handle);
+          this.staminaTarget = PED.GET_MOUNT(playerPed.Handle);
         }
 
-        float stamina = RDR2.Native.PED._GET_PED_STAMINA(this.staminaTarget)*1f / RDR2.Native.PED._GET_PED_MAX_STAMINA(this.staminaTarget)*1f;
-        this.pulseRate = Math.Max(0.2f, Math.Min(1f, 1f - stamina));
+        //float stamina = RDR2.Native.PED._GET_PED_STAMINA(this.staminaTarget)*1f / RDR2.Native.PED._GET_PED_MAX_STAMINA(this.staminaTarget)*1f;
+        float stamina = PED._GET_PED_STAMINA_NORMALIZED(this.staminaTarget);
+        currentStaminaDisplay = stamina;// DSX_Math.LerpCapped(0.1f,0.8f,stamina);
+        //this.pulseRate = DSX_Math.LerpCapped(1f, 0.2f, stamina);// Math.Max(0.2f, Math.Min(1f, 1f - stamina));
         //RDR2.UI.Screen.DisplaySubtitle(playerPed.Health + " - " + playerPed.MaxHealth + " - " + pulseRate);
 
       }
@@ -340,7 +357,7 @@ namespace DualSense4RDR2
     public void HandleLEDs()
     {
 
-      if (pulseRate == 0)
+      if (currentStaminaDisplay == 1f && interval_pos >= 0.95f)
       {
         interval_pos = 1;
       }
@@ -369,8 +386,7 @@ namespace DualSense4RDR2
       };
       Send(packet);
 
-
-      interval_pos += interval_direction * 0.02f * pulseRate;
+      interval_pos += interval_direction *0.01f * pulseRateCurve.Evaluate(currentStaminaDisplay);
     }
     
 

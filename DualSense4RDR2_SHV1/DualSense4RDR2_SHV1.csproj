@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4RDR2.dll&quot; &quot;D:\Rockstar Games\Red Dead Redemption 2\scripts\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4RDR2.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y" />
+    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4RDR2.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\RDR2 ScriptHook v1\&quot; /S /Y" />
   </Target>
 
 </Project>

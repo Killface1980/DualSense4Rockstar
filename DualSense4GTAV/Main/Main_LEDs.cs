@@ -1,6 +1,7 @@
 ﻿using GTA;
 using Shared;
 using System;
+using DSX_Base.Client;
 using static DSX_Base.Client.iO;
 using static DualSense4GTAV.Main;
 
@@ -206,48 +207,48 @@ namespace DualSense4GTAV.Main_LEDs
         //
         //}
 
-        float currentRPMRatio = InvLerpCapped(engineIdleRpm, 1f, currentRPM);
+        float currentRPMRatio = DSX_Math.InvLerpCapped(engineIdleRpm, 1f, currentRPM);
 
         float curVal = 0f;
         if (currentGear > 0)
         {
           if (currentRPMRatio < rpmShiftDown)
           {
-            curVal = InvLerp(0, rpmShiftDown, currentRPMRatio);
-            BlueChannel = (int)Lerp(96, 0, curVal);
-            GreenChannel = (int)Lerp(0, 96, curVal);
+            curVal = DSX_Math.InvLerp(0, rpmShiftDown, currentRPMRatio);
+            BlueChannel = (int)DSX_Math.Lerp(96, 0, curVal);
+            GreenChannel = (int)DSX_Math.Lerp(0, 96, curVal);
           }
           else if (currentRPMRatio <= rpmLow)
           {
-            curVal = InvLerp(rpmShiftDown, rpmLow, currentRPMRatio);
+            curVal = DSX_Math.InvLerp(rpmShiftDown, rpmLow, currentRPMRatio);
             //BlueChannel = (int)Main.Lerp(128, 0, curVal);
-            GreenChannel = (int)Lerp(96, 255, curVal);
+            GreenChannel = (int)DSX_Math.Lerp(96, 255, curVal);
           }
           else if (currentRPMRatio <= rpmMed)
           {
-            curVal = InvLerp(rpmLow, rpmMed, currentRPMRatio);
+            curVal = DSX_Math.InvLerp(rpmLow, rpmMed, currentRPMRatio);
 
-            RedChannel = (int)Lerp(0, 255, curVal);
-            GreenChannel = (int)Lerp(255, 127, curVal);
+            RedChannel = (int)DSX_Math.Lerp(0, 255, curVal);
+            GreenChannel = (int)DSX_Math.Lerp(255, 127, curVal);
             //GreenChannel = (int)Main.Lerp(0, 255, evalValue);
             //BlueChannel = (int)Main.Lerp(255, 0, evalValue);
           }
           else if (currentRPMRatio <= rpmHigh)
           {
-            curVal = InvLerp(rpmMed, rpmHigh, currentRPMRatio);
-            RedChannel = (int)Lerp(255, 180, curVal);
-            GreenChannel = (int)Lerp(127, 5, curVal);
+            curVal = DSX_Math.InvLerp(rpmMed, rpmHigh, currentRPMRatio);
+            RedChannel = (int)DSX_Math.Lerp(255, 180, curVal);
+            GreenChannel = (int)DSX_Math.Lerp(127, 5, curVal);
           }
           else
           {
-            curVal = InvLerp(rpmHigh, 1f, currentRPMRatio);
-            RedChannel = (int)Lerp(180, 255, curVal);
+            curVal = DSX_Math.InvLerp(rpmHigh, 1f, currentRPMRatio);
+            RedChannel = (int)DSX_Math.Lerp(180, 255, curVal);
             GreenChannel = 5; // (int)Main.Lerp(173, 0, evalValue);
           }
         }
         else
         {
-          RedChannel = BlueChannel = GreenChannel = (int)Lerp(10, 255, currentRPM);
+          RedChannel = BlueChannel = GreenChannel = (int)DSX_Math.Lerp(10, 255, currentRPM);
         }
 
         RedChannel = (int)(RedChannel * engineHealthFloat * engineHealthFloat);
@@ -267,8 +268,8 @@ namespace DualSense4GTAV.Main_LEDs
         int green = 0;
         int blue = 0;
 
-        green = (int)Lerp(0, 255, health);
-        red = (int)Lerp(255, 0, health);
+        green = (int)DSX_Math.Lerp(0, 255, health);
+        red = (int)DSX_Math.Lerp(255, 0, health);
 
         packet.instructions[1].parameters = new object[] { controllerIndex, red, green, blue };
 
