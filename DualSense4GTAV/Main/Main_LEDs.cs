@@ -29,13 +29,13 @@ namespace DualSense4GTAV.Main_LEDs
         { 0.75f, Color.FromArgb(255, 255,0) },
         { 0.85f, Color.FromArgb(255, 127,0) },
         { 0.95f, Color.FromArgb(255, 0,0) },
-        { 1f,    Color.FromArgb(255, 152,152) },
+        { 1f,    Color.FromArgb(255, 64,64) },
       };
       rpmRed = new();
       rpmGreen= new();
       rpmBlue= new();
 
-      foreach (var rpm in rpmColorDict)
+      foreach (KeyValuePair<float, Color> rpm in rpmColorDict)
       {
         rpmRed.Add(rpm.Key, rpm.Value.R);
         rpmGreen.Add(rpm.Key, rpm.Value.G);

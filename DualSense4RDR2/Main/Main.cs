@@ -47,45 +47,6 @@ namespace DualSense4RDR2
       };
     }
 
-    public void rgbupdat2e(int speed, int brightnes, out int red, out int blue)
-    {
-      blue = 255;
-      red = 1;
-      Connect();
-      Packet packet = new();
-      int num = 0;
-      packet.instructions = new Instruction[4];
-      while (red <= 255)
-      {
-        Wait(10);
-        red += speed;
-        blue -= speed;
-        packet.instructions[1].type = InstructionType.RGBUpdate;
-        packet.instructions[1].parameters = new object[4]
-        {
-                    num,
-                    blue - this.brig,
-                    0,
-                    red - this.brig
-        };
-        Send(packet);
-      }
-      while (blue <= 255)
-      {
-        packet.instructions[1].type = InstructionType.RGBUpdate;
-        packet.instructions[1].parameters = new object[4]
-        {
-                    num,
-                    blue - this.brig,
-                    0,
-                    red - this.brig
-        };
-        Send(packet);
-        Wait(10);
-        red -= speed;
-        blue += speed;
-      }
-    }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
@@ -157,24 +118,32 @@ namespace DualSense4RDR2
         SetAndSendPacket(packet, controllerIndex, Trigger.Right);
         SetAndSendPacket(packet, controllerIndex, Trigger.Left);
       }
-      else if (weaponIsThrowable)
+      else if (weaponIsThrowable || playerweapon.Group == eWeaponGroup.GROUP_BOW || playerweapon.Group == eWeaponGroup.GROUP_FISHINGROD || playerweapon.Group == eWeaponGroup.GROUP_LASSO)
       {
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
 
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
-            CustomTriggerValueMode.Pulse, 160, 30, 230);
-      }
-      else if (playerweapon.Group == eWeaponGroup.GROUP_BOW)
-      {
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
-
-        if (player.IsAiming)
+        if (PED._GET_LASSO_TARGET(playerPed.Handle) != 0)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 2, 8 });
+          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest);
+          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
+        }
+/*        else if (player.IsTargettingAnything) // not working on the lasso
+        {
+          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 2, 8 });
+
+          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 6, 8,2,3 });
+        }
+*/        else if (player.IsAiming)
+        {
+
+          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 2, 8 });
+
+          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6,8,4 });
         }
         else
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 1 });
+          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 4, 2 });
+
+          SetAndSendPacket(packet, controllerIndex, Trigger.Right);
         }
       }
       else
@@ -357,7 +326,7 @@ namespace DualSense4RDR2
     public void HandleLEDs()
     {
 
-      if (currentStaminaDisplay == 1f && interval_pos >= 0.95f)
+      if (currentStaminaDisplay >= 0.99f && interval_pos >= 0.95f)
       {
         interval_pos = 1;
       }
