@@ -4,7 +4,7 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
-using DSX_Base.Client;
+using DSX_Base.MathExtended;
 using static DSX_Base.Client.iO;
 using static RDR2.Native.WEAPON;
 
@@ -29,7 +29,7 @@ namespace DualSense4RDR2
     private float interval_pos = 0;
     private int interval_direction = 1;
     private float currentStaminaDisplay = 1f;
-    private SimpleCurve pulseRateCurve;
+    private BasicCurve pulseRateCurve;
 
     public Main()
     {
@@ -38,7 +38,7 @@ namespace DualSense4RDR2
       KeyDown += this.OnKeyDown;
       Connect();
       Process.GetProcessesByName("DSX");
-      pulseRateCurve = new SimpleCurve()
+      pulseRateCurve = new BasicCurve()
       {
         new(0f,25f),
         new(0.2f,8f),

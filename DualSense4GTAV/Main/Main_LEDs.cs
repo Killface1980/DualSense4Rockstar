@@ -1,7 +1,9 @@
 ﻿using GTA;
 using Shared;
 using System;
-using DSX_Base.Client;
+using System.Collections.Generic;
+using System.Drawing;
+using DSX_Base.MathExtended;
 using static DSX_Base.Client.iO;
 using static DualSense4GTAV.Main;
 
@@ -20,6 +22,26 @@ namespace DualSense4GTAV.Main_LEDs
 
     public Main_LEDs()
     {
+      rpmColorDict = new Dictionary<float, Color> {
+        { 0f,    Color.FromArgb(0, 0, 96) },
+        { 0.4f,  Color.FromArgb(0, 96,0) },
+        { 0.65f, Color.FromArgb(0, 255,0) },
+        { 0.75f, Color.FromArgb(255, 255,0) },
+        { 0.85f, Color.FromArgb(255, 127,0) },
+        { 0.95f, Color.FromArgb(255, 0,0) },
+        { 1f,    Color.FromArgb(255, 152,152) },
+      };
+      rpmRed = new();
+      rpmGreen= new();
+      rpmBlue= new();
+
+      foreach (var rpm in rpmColorDict)
+      {
+        rpmRed.Add(rpm.Key, rpm.Value.R);
+        rpmGreen.Add(rpm.Key, rpm.Value.G);
+        rpmBlue.Add(rpm.Key, rpm.Value.B);
+      }
+
       Tick += this.OnTick;
 
       // Connect();
@@ -166,14 +188,17 @@ namespace DualSense4GTAV.Main_LEDs
       {
         float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
 
-        int RedChannel = 0;
-        int GreenChannel = 0;
-        int BlueChannel = 0;
+        int RedChannel;
+        int GreenChannel;
+        int BlueChannel;
 
         float rpmShiftDown = 0.4f;
         float rpmLow = 0.65f;
         float rpmMed = 0.8f;
         float rpmHigh = 0.95f;
+
+
+
 
         float currentRPM = currentVehicle.CurrentRPM;
 
@@ -207,48 +232,55 @@ namespace DualSense4GTAV.Main_LEDs
         //
         //}
 
-        float currentRPMRatio = DSX_Math.InvLerpCapped(engineIdleRpm, 1f, currentRPM);
+        float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
 
-        float curVal = 0f;
+        float curVal ;
         if (currentGear > 0)
         {
-          if (currentRPMRatio < rpmShiftDown)
+          GetColorForRPM(currentRPMRatio, out RedChannel, out GreenChannel, out BlueChannel);
+          
+/*          if (currentRPMRatio < rpmShiftDown)
           {
-            curVal = DSX_Math.InvLerp(0, rpmShiftDown, currentRPMRatio);
-            BlueChannel = (int)DSX_Math.Lerp(96, 0, curVal);
-            GreenChannel = (int)DSX_Math.Lerp(0, 96, curVal);
+            curVal = Mathf.InverseLerp(0, rpmShiftDown, currentRPMRatio);
+            BlueChannel = (int)Mathf.Lerp(96, 0, curVal);
+            GreenChannel = (int)Mathf.Lerp(0, 96, curVal);
           }
           else if (currentRPMRatio <= rpmLow)
           {
-            curVal = DSX_Math.InvLerp(rpmShiftDown, rpmLow, currentRPMRatio);
+            curVal = Mathf.InverseLerp(rpmShiftDown, rpmLow, currentRPMRatio);
             //BlueChannel = (int)Main.Lerp(128, 0, curVal);
-            GreenChannel = (int)DSX_Math.Lerp(96, 255, curVal);
+            GreenChannel = (int)Mathf.Lerp(96, 255, curVal);
           }
           else if (currentRPMRatio <= rpmMed)
           {
-            curVal = DSX_Math.InvLerp(rpmLow, rpmMed, currentRPMRatio);
+            curVal = Mathf.InverseLerp(rpmLow, rpmMed, currentRPMRatio);
 
-            RedChannel = (int)DSX_Math.Lerp(0, 255, curVal);
-            GreenChannel = (int)DSX_Math.Lerp(255, 127, curVal);
+            RedChannel = (int)Mathf.Lerp(0, 255, curVal);
+            GreenChannel = (int)Mathf.Lerp(255, 127, curVal);
             //GreenChannel = (int)Main.Lerp(0, 255, evalValue);
             //BlueChannel = (int)Main.Lerp(255, 0, evalValue);
           }
           else if (currentRPMRatio <= rpmHigh)
           {
-            curVal = DSX_Math.InvLerp(rpmMed, rpmHigh, currentRPMRatio);
-            RedChannel = (int)DSX_Math.Lerp(255, 180, curVal);
-            GreenChannel = (int)DSX_Math.Lerp(127, 5, curVal);
+            curVal = Mathf.InverseLerp(rpmMed, rpmHigh, currentRPMRatio);
+            RedChannel = (int)Mathf.Lerp(255, 180, curVal);
+            GreenChannel = (int)Mathf.Lerp(127, 5, curVal);
           }
           else
           {
-            curVal = DSX_Math.InvLerp(rpmHigh, 1f, currentRPMRatio);
-            RedChannel = (int)DSX_Math.Lerp(180, 255, curVal);
+            curVal = Mathf.InverseLerp(rpmHigh, 1f, currentRPMRatio);
+            RedChannel = (int)Mathf.Lerp(180, 255, curVal);
             GreenChannel = 5; // (int)Main.Lerp(173, 0, evalValue);
           }
+*/
+
         }
         else
         {
-          RedChannel = BlueChannel = GreenChannel = (int)DSX_Math.Lerp(10, 255, currentRPM);
+          curVal = MathExtended.InverseLerp(0.2f, 1f, currentRPM);
+
+          RedChannel = GreenChannel = (int)MathExtended.Lerp(0, 255, curVal);
+          BlueChannel = (int)MathExtended.Lerp(96, 255, curVal);
         }
 
         RedChannel = (int)(RedChannel * engineHealthFloat * engineHealthFloat);
@@ -264,12 +296,12 @@ namespace DualSense4GTAV.Main_LEDs
         packet.instructions[1].type = InstructionType.RGBUpdate;
         float health = playerped.HealthFloat / playerped.MaxHealthFloat;
 
-        int red = 0;
-        int green = 0;
-        int blue = 0;
+        int red   ;
+        int green ;
+        int blue  ;
 
-        green = (int)DSX_Math.Lerp(0, 255, health);
-        red = (int)DSX_Math.Lerp(255, 0, health);
+        green = (int)MathExtended.Lerp(0, 255, health);
+        red = (int)MathExtended.Lerp(255, 0, health);
 
         packet.instructions[1].parameters = new object[] { controllerIndex, red, green, blue };
 
@@ -317,6 +349,17 @@ namespace DualSense4GTAV.Main_LEDs
           packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
       }
       */
+    }
+
+    private Dictionary<float, Color> rpmColorDict;
+    BasicCurve rpmRed;
+    BasicCurve rpmGreen;
+    BasicCurve rpmBlue;
+    public void GetColorForRPM(float theRPM, out int red, out int green, out int blue)
+    {
+      red = (int)rpmRed.Evaluate(theRPM);
+      green = (int)rpmGreen.Evaluate(theRPM);
+      blue = (int)rpmBlue.Evaluate(theRPM);
     }
   }
 }
