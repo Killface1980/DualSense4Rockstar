@@ -296,12 +296,10 @@ namespace DualSense4GTAV.Main_LEDs
         packet.instructions[1].type = InstructionType.RGBUpdate;
         float health = playerped.HealthFloat / playerped.MaxHealthFloat;
 
-        int red   ;
-        int green ;
-        int blue  ;
 
-        green = (int)MathExtended.Lerp(0, 255, health);
-        red = (int)MathExtended.Lerp(255, 0, health);
+        int red = (int)MathExtended.Lerp(255, 0, health);
+        int green = (int)MathExtended.Lerp(0, 255, health);
+        int blue = 0;
 
         packet.instructions[1].parameters = new object[] { controllerIndex, red, green, blue };
 
