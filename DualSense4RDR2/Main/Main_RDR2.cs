@@ -157,17 +157,23 @@ namespace DualSense4RDR2
 
           // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
 
-          if (playerIsAiming && !weaponIsReadyToShoot) // Mode Gun Cock
+          if ( !weaponIsReadyToShoot) // Mode Gun Cock
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 15 *
-              (int)(1 + degradation));
+            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new(){3,5,1, (int)(1+degradation *
+              7)});
 
             // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
           }
           else // GUN_MANUAL
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 90 *
-              (int)(1 + degradation));
+            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
+            {
+              0,
+              2,
+              (int)(3 + (5f * degradation)),
+              (int)(4+degradation * 4)
+            });
+            RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
 
             //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 4,1+(int)(degradation * 7), 4 });
           }
