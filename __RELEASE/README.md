@@ -12,5 +12,6 @@ Drop the contents of these folder in their respective GTA V / RDR 2 **Scripts** 
 
 The mod is primarily created to be used with ScriptHookRDR2DotNet V2. New features might not find their way into the V1 version.
 - RDR 2 requires ScriptHookRDR2DotNet V2 by TuffyTown https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and its dependencies
+
 *Use the V1 version only if you have older mods without updates to V2.* 
 - RDR 2 ScriptHook v1 requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
