@@ -37,5 +37,5 @@ Redefined controller layout and bug fixing
 - Adapted controller layout and features from Shtivi. All credits to the excellent feel of this layout go to him.
 
 ## Installation Instructions & Download
-Current test version can be found here
+Nightly builts version can be found here. As it's currently WIP, I have no 1.0 release planned.
 https://github.com/Killface1980/DualSense4Rockstar/tree/master/__RELEASE
