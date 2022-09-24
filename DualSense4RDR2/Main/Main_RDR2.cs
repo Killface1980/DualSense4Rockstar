@@ -10,7 +10,7 @@ using static RDR2.Native.WEAPON;
 
 namespace DualSense4RDR2
 {
-  public class Main : Script
+  public class Main_RDR2 : Script
   {
     private static bool engine;
     private static int lastBrakeFreq = 0;
@@ -31,7 +31,7 @@ namespace DualSense4RDR2
     private float currentStaminaDisplay = 1f;
     private BasicCurve pulseRateCurve;
 
-    public Main()
+    public Main_RDR2()
     {
       playerPed = Game.Player.Character;
       Tick += this.OnTick;

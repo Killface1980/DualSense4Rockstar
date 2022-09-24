@@ -10,7 +10,7 @@ using static DSX_Base.Client.iO;
 
 namespace DualSense4GTAV
 {
-  public class Main : Script
+  public class Main_GTAV : Script
   {
     private static bool engine;
     private static int lastBrakeFreq = 0;
@@ -22,7 +22,7 @@ namespace DualSense4GTAV
 
     public static readonly ControllerConfig controllerConfig = new();
 
-    public Main()
+    public Main_GTAV()
     {
       Tick += this.OnTick;
       //Tick += Main_LEDs.Ontick;
@@ -209,12 +209,18 @@ namespace DualSense4GTAV
           float currentRPM = currentVehicle.CurrentRPM;
           float engineIdleRpm = 0.2f;
           float engineRange = 1f - engineIdleRpm;
-          float currentRPMRatio = MathExtended.InverseLerp(0.2f + 0.6f * (Math.Max(0, currentVehicle.CurrentGear - 1)) / currentVehicle.HighGear, 1f, currentRPM);
+          engineIdleRpm = 0.2f * (float)Math.Pow(1.2f, (currentGear - 1)  *  currentVehicle.HandlingData.ClutchChangeRateScaleUpShift);
+          float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
+
+          //GTA.UI.Screen.ShowSubtitle(engineIdleRpm + " - " + currentRPMRatio);
+
+
+          //float currentRPMRatio = MathExtended.InverseLerp(0.2f + 0.6f * (Math.Max(0, currentVehicle.CurrentGear - 1)) / currentVehicle.HighGear, 1f, currentRPM);
           //(currentRPM - engineIdleRpm) / engineRange;
           float currentSpeed = currentVehicle.Speed;
           float maxSpeed = Function.Call<float>(Hash.GET_VEHICLE_ESTIMATED_MAX_SPEED, currentVehicle.Handle);
 
-          //GTA.UI.Screen.ShowSubtitle(engineHealthFloat.ToString());
+          // GTA.UI.Screen.ShowSubtitle(currentVehicle.HandlingData.ClutchChangeRateScaleDownShift + " - " + currentVehicle.HandlingData.ClutchChangeRateScaleUpShift);
 
           float initialDriveForce = MathExtended.InverseLerp(0.1f, 0.4f, currentVehicle.HandlingData.InitialDriveForce); // most cars 0.1f < df < 0.4f
           float driveInertia = MathExtended.InverseLerp(0.3f, 1.0f, currentVehicle.HandlingData.DriveInertia);
@@ -229,7 +235,7 @@ namespace DualSense4GTAV
 
           float startOfGear = 1f;
           startOfGear *= MathExtended.Lerp(0.7f, 1f, initialDriveForce);
-          startOfGear *= MathExtended.Lerp(0.5f, 1f, engineHealthFloat);
+          startOfGear *= MathExtended.Lerp(0.3f, 1f, engineHealthFloat);
           startOfGear *= MathExtended.Lerp(1f, 0.7f, gearForce);
           startOfGear *= MathExtended.Lerp(0.6f, 1f, driveInertia);
           startOfGear *= spinnie;
@@ -238,7 +244,7 @@ namespace DualSense4GTAV
 
           float lightnessVehicle = 1f;
           lightnessVehicle *= MathExtended.Lerp(1f, 0.8f, gearForce);
-          lightnessVehicle *= MathExtended.Lerp(0.8f, 1f, currentRPMRatio);
+          lightnessVehicle *= MathExtended.Lerp(0.6f, 1f, currentRPMRatio);
           lightnessVehicle *= engineHealthFloat;
           //lightnessVehicle *= Lerp(0.2f, 1f, currentVehicle.Clutch);
 
@@ -262,7 +268,7 @@ namespace DualSense4GTAV
             SetAndSendPacket(packet, controllerIndex, Trigger.Right);
             Script.Wait(100);
           }
-          else if (currentGear > 0)
+          else if (currentGear > 0 || currentRPM == 0.2f)
           {
             SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
 

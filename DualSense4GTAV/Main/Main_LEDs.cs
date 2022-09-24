@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using DSX_Base.MathExtended;
 using static DSX_Base.Client.iO;
-using static DualSense4GTAV.Main;
+using static DualSense4GTAV.Main_GTAV;
 
 namespace DualSense4GTAV.Main_LEDs
 {
@@ -16,14 +16,15 @@ namespace DualSense4GTAV.Main_LEDs
     private static float currentIdleRPM = 0.2f;
     private static bool willShift = false;
     private add _add2 = null;
-
+    private static int brakeLight = 228;
+    private static int reverseLight = 96;
     private iO _obj = null;
 
 
     public Main_LEDs()
     {
       rpmColorDict = new Dictionary<float, Color> {
-        { 0f,    Color.FromArgb(0, 0, 96) },
+        { 0f,    Color.FromArgb(0, 32,0) },
         { 0.4f,  Color.FromArgb(0, 96,0) },
         { 0.65f, Color.FromArgb(0, 255,0) },
         { 0.75f, Color.FromArgb(255, 255,0) },
@@ -76,14 +77,8 @@ namespace DualSense4GTAV.Main_LEDs
 
       Vehicle currentVehicle = playerped.CurrentVehicle;
 
-      if (controllerConfig.showWanted && playerped.IsInVehicle() && currentVehicle.IsSirenActive)
-      {
-        isSirenOn = true;
-      }
-      else
-      {
-        isSirenOn = false;
-      }
+      isSirenOn = controllerConfig.showWanted && playerped.IsInVehicle() && currentVehicle.IsSirenActive;
+
       if (controllerConfig.showWanted)
       {
         if (isSirenOn)
@@ -232,55 +227,68 @@ namespace DualSense4GTAV.Main_LEDs
         //
         //}
 
+        // float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
+
+        engineIdleRpm = 0.2f * (float)Math.Pow(1.2f, (currentGear - 1) * currentVehicle.HandlingData.ClutchChangeRateScaleUpShift);
         float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
 
-        float curVal ;
-        if (currentGear > 0)
-        {
-          GetColorForRPM(currentRPMRatio, out RedChannel, out GreenChannel, out BlueChannel);
-          
-/*          if (currentRPMRatio < rpmShiftDown)
-          {
-            curVal = Mathf.InverseLerp(0, rpmShiftDown, currentRPMRatio);
-            BlueChannel = (int)Mathf.Lerp(96, 0, curVal);
-            GreenChannel = (int)Mathf.Lerp(0, 96, curVal);
-          }
-          else if (currentRPMRatio <= rpmLow)
-          {
-            curVal = Mathf.InverseLerp(rpmShiftDown, rpmLow, currentRPMRatio);
-            //BlueChannel = (int)Main.Lerp(128, 0, curVal);
-            GreenChannel = (int)Mathf.Lerp(96, 255, curVal);
-          }
-          else if (currentRPMRatio <= rpmMed)
-          {
-            curVal = Mathf.InverseLerp(rpmLow, rpmMed, currentRPMRatio);
+        
 
-            RedChannel = (int)Mathf.Lerp(0, 255, curVal);
-            GreenChannel = (int)Mathf.Lerp(255, 127, curVal);
-            //GreenChannel = (int)Main.Lerp(0, 255, evalValue);
-            //BlueChannel = (int)Main.Lerp(255, 0, evalValue);
-          }
-          else if (currentRPMRatio <= rpmHigh)
+        float curVal ;
+        if (currentGear > 0 || currentRPM == 0.2f)
+        {
+          if (!Game.IsControlPressed(Control.VehicleBrake))
           {
-            curVal = Mathf.InverseLerp(rpmMed, rpmHigh, currentRPMRatio);
-            RedChannel = (int)Mathf.Lerp(255, 180, curVal);
-            GreenChannel = (int)Mathf.Lerp(127, 5, curVal);
+            GetColorForRPM(currentRPMRatio, out RedChannel, out GreenChannel, out BlueChannel);
           }
           else
           {
-            curVal = Mathf.InverseLerp(rpmHigh, 1f, currentRPMRatio);
-            RedChannel = (int)Mathf.Lerp(180, 255, curVal);
-            GreenChannel = 5; // (int)Main.Lerp(173, 0, evalValue);
+            RedChannel = GreenChannel = BlueChannel = brakeLight;
           }
-*/
+          /*          if (currentRPMRatio < rpmShiftDown)
+                    {
+                      curVal = Mathf.InverseLerp(0, rpmShiftDown, currentRPMRatio);
+                      BlueChannel = (int)Mathf.Lerp(96, 0, curVal);
+                      GreenChannel = (int)Mathf.Lerp(0, 96, curVal);
+                    }
+                    else if (currentRPMRatio <= rpmLow)
+                    {
+                      curVal = Mathf.InverseLerp(rpmShiftDown, rpmLow, currentRPMRatio);
+                      //BlueChannel = (int)Main.Lerp(128, 0, curVal);
+                      GreenChannel = (int)Mathf.Lerp(96, 255, curVal);
+                    }
+                    else if (currentRPMRatio <= rpmMed)
+                    {
+                      curVal = Mathf.InverseLerp(rpmLow, rpmMed, currentRPMRatio);
+
+                      RedChannel = (int)Mathf.Lerp(0, 255, curVal);
+                      GreenChannel = (int)Mathf.Lerp(255, 127, curVal);
+                      //GreenChannel = (int)Main.Lerp(0, 255, evalValue);
+                      //BlueChannel = (int)Main.Lerp(255, 0, evalValue);
+                    }
+                    else if (currentRPMRatio <= rpmHigh)
+                    {
+                      curVal = Mathf.InverseLerp(rpmMed, rpmHigh, currentRPMRatio);
+                      RedChannel = (int)Mathf.Lerp(255, 180, curVal);
+                      GreenChannel = (int)Mathf.Lerp(127, 5, curVal);
+                    }
+                    else
+                    {
+                      curVal = Mathf.InverseLerp(rpmHigh, 1f, currentRPMRatio);
+                      RedChannel = (int)Mathf.Lerp(180, 255, curVal);
+                      GreenChannel = 5; // (int)Main.Lerp(173, 0, evalValue);
+                    }
+          */
 
         }
         else
         {
-          curVal = MathExtended.InverseLerp(0.2f, 1f, currentRPM);
+          // curVal = MathExtended.InverseLerp(0.2f, 1f, currentRPM);
+          // 
+          // RedChannel = BlueChannel = (int)MathExtended.Lerp(0, 255, curVal);
+          // GreenChannel = (int)MathExtended.Lerp(32, 255, curVal);
 
-          RedChannel = GreenChannel = (int)MathExtended.Lerp(0, 255, curVal);
-          BlueChannel = (int)MathExtended.Lerp(96, 255, curVal);
+          RedChannel = GreenChannel = BlueChannel = reverseLight;
         }
 
         RedChannel = (int)(RedChannel * engineHealthFloat * engineHealthFloat);
