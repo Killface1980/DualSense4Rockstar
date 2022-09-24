@@ -13,6 +13,7 @@
   <PropertyGroup />
   <ItemGroup>
     <None Include="..\README.md" Link="README.md" />
+    <None Include="..\__RELEASE\README.md" Link="Shared\README.md" />
   </ItemGroup>
 
   <ItemGroup>
