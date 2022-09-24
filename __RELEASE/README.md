@@ -4,7 +4,7 @@ Drop the contents of these folder in their respective GTA V / RDR 2 **Scripts** 
 ## Prerequisites
 ### GTA V
 - Requires Script Hook V http://www.dev-c.com/gtav/scripthookv/
-- Requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies. Make sure to greab the current version from GitHub, info and installation instructions can be found here https://gta5-mods.com/tools/scripthookv-net
+- Requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies. Make sure to download the current version from GitHub, info and installation instructions can be found here https://gta5-mods.com/tools/scripthookv-net
 - Requires LemonUI for .NET v1.8 by Lemon https://gta5-mods.com/tools/lemonui and its dependencies
 
 ### RDR 2
