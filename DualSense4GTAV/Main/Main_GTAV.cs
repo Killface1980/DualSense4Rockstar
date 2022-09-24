@@ -203,16 +203,17 @@ namespace DualSense4GTAV
         else // if (playerped.CurrentVehicle.EngineHealth >= 1000f)
         {
           float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
-          float healthMalus = (int)((1f - engineHealthFloat) * 4f);
-          int currentGear = currentVehicle.CurrentGear;
-          int maxGear = currentVehicle.HighGear;
-          float currentRPM = currentVehicle.CurrentRPM;
-          float engineIdleRpm = 0.2f;
-          float engineRange = 1f - engineIdleRpm;
-          engineIdleRpm = 0.2f * (float)Math.Pow(1.2f, (currentGear - 1)  *  currentVehicle.HandlingData.ClutchChangeRateScaleUpShift);
+          float healthMalus       = (int)((1f - engineHealthFloat) * 4f);
+          int currentGear         = currentVehicle.CurrentGear;
+          int maxGear             = currentVehicle.HighGear;
+          float currentRPM        = currentVehicle.CurrentRPM;
+          float engineIdleRpm     = 0.2f;
+          float engineRange       = 1f - engineIdleRpm;
+          if (currentGear > 1)
+            engineIdleRpm = 0.2f+ 0.025f* currentVehicle.HandlingData.ClutchChangeRateScaleUpShift * currentGear;
           float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
 
-          //GTA.UI.Screen.ShowSubtitle(engineIdleRpm + " - " + currentRPMRatio);
+          //GTA.UI.Screen.ShowSubtitle(currentVehicle.HandlingData.ClutchChangeRateScaleUpShift + " - " + engineIdleRpm + " - " + currentRPMRatio);
 
 
           //float currentRPMRatio = MathExtended.InverseLerp(0.2f + 0.6f * (Math.Max(0, currentVehicle.CurrentGear - 1)) / currentVehicle.HighGear, 1f, currentRPM);
@@ -234,11 +235,11 @@ namespace DualSense4GTAV
           }
 
           float startOfGear = 1f;
-          startOfGear *= MathExtended.Lerp(0.7f, 1f, initialDriveForce);
-          startOfGear *= MathExtended.Lerp(0.3f, 1f, engineHealthFloat);
-          startOfGear *= MathExtended.Lerp(1f, 0.7f, gearForce);
-          startOfGear *= MathExtended.Lerp(0.6f, 1f, driveInertia);
-          startOfGear *= spinnie;
+          startOfGear      *= MathExtended.Lerp(0.7f, 1f, initialDriveForce);
+          startOfGear      *= MathExtended.Lerp(0.3f, 1f, engineHealthFloat);
+          startOfGear      *= MathExtended.Lerp(1f, 0.7f, gearForce);
+          startOfGear      *= MathExtended.Lerp(0.6f, 1f, driveInertia);
+          startOfGear      *= spinnie;
 
           //startOfGear*= Lerp(0.4f, 1f, currentVehicle.Clutch);
 
@@ -268,10 +269,9 @@ namespace DualSense4GTAV
             SetAndSendPacket(packet, controllerIndex, Trigger.Right);
             Script.Wait(100);
           }
-          else if (currentGear > 0 || currentRPM == 0.2f)
+          else if (currentGear > 0 )
           {
             SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
-
               (int)MathExtended.Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
               (int)MathExtended.Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lightnessVehicle),
               255

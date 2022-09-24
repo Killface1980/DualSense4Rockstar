@@ -3,6 +3,7 @@ using LemonUI;
 using LemonUI.Menus;
 using System;
 using System.Windows.Forms;
+using GTA.Native;
 
 namespace DualSense4GTAV;
 
@@ -110,10 +111,11 @@ public class ControllerConfig
     {
       showbatstat = !showbatstat;
     }
-    else if (e.KeyCode == KeyConf.showCommStat)
+    else if (e.KeyCode ==  KeyConf.showCommStat)
     {
       showconmes = !showconmes;
     }
+
   }
 
   private void DS4GTAV_Controls_SettingsChanged(object sender, EventArgs e)

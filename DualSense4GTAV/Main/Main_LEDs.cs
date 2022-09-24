@@ -1,9 +1,9 @@
-﻿using GTA;
+﻿using DSX_Base.MathExtended;
+using GTA;
 using Shared;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using DSX_Base.MathExtended;
 using static DSX_Base.Client.iO;
 using static DualSense4GTAV.Main_GTAV;
 
@@ -11,15 +11,22 @@ namespace DualSense4GTAV.Main_LEDs
 {
   public class Main_LEDs : Script
   {
-    public static bool isWanted = false;
     public static bool isSirenOn = false;
+    public static bool isWanted = false;
+    private static int brakeLight = 228;
     private static float currentIdleRPM = 0.2f;
+    private static int reverseLight = 196;
     private static bool willShift = false;
     private add _add2 = null;
-    private static int brakeLight = 228;
-    private static int reverseLight = 96;
     private iO _obj = null;
 
+    private BasicCurve rpmBlue;
+
+    private Dictionary<float, Color> rpmColorDict;
+
+    private BasicCurve rpmGreen;
+
+    private BasicCurve rpmRed;
 
     public Main_LEDs()
     {
@@ -33,8 +40,8 @@ namespace DualSense4GTAV.Main_LEDs
         { 1f,    Color.FromArgb(255, 64,64) },
       };
       rpmRed = new();
-      rpmGreen= new();
-      rpmBlue= new();
+      rpmGreen = new();
+      rpmBlue = new();
 
       foreach (KeyValuePair<float, Color> rpm in rpmColorDict)
       {
@@ -48,6 +55,13 @@ namespace DualSense4GTAV.Main_LEDs
       // Connect();
       // Process.GetProcessesByName("DSX");
       // Interval = 50;
+    }
+
+    public void GetColorForRPM(float theRPM, out int red, out int green, out int blue)
+    {
+      red = (int)rpmRed.Evaluate(theRPM);
+      green = (int)rpmGreen.Evaluate(theRPM);
+      blue = (int)rpmBlue.Evaluate(theRPM);
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -64,12 +78,12 @@ namespace DualSense4GTAV.Main_LEDs
       if (!isConnected && controllerConfig.showconmes)
       {
         GTA.UI.Notification.Show("Your controller is disconnected or discharged, please fix or press " + KeyConf
-          .showCommStat + " to hide this message.") ;
+          .showCommStat + " to hide this message.");
         return;
       }
       if (bat <= 15 && controllerConfig.showbatstat)
       {
-        GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press "+KeyConf
+        GTA.UI.Notification.Show("Your controller battery is  " + bat + " to hide this message press " + KeyConf
           .toggleBatStat, true);
         //return;
       }
@@ -177,123 +191,127 @@ namespace DualSense4GTAV.Main_LEDs
       }
       else { isWanted = false; }
 
-      if (isSirenOn ) return;
-      if (isWanted ) return;
+      if (isSirenOn) return;
+      if (isWanted) return;
       if (controllerConfig.showRPM && playerped.IsInVehicle() && currentVehicle.Driver == playerped)
       {
-        float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
-
         int RedChannel;
         int GreenChannel;
         int BlueChannel;
 
-        float rpmShiftDown = 0.4f;
-        float rpmLow = 0.65f;
-        float rpmMed = 0.8f;
-        float rpmHigh = 0.95f;
-
-
-
-
-        float currentRPM = currentVehicle.CurrentRPM;
-
-        if (willShift)
+        if (!currentVehicle.IsEngineRunning)
         {
-          willShift = false;
-        }
-
-        float engineIdleRpm = 0.2f;
-        int currentGear = currentVehicle.CurrentGear;
-        if (currentGear != currentVehicle.NextGear)
-        {
-          willShift = true;
-        }
-        //if (currentVehicle.CurrentGear > 1)
-        //{
-        //
-        //  if (Game.IsControlPressed(GTA.Control.VehicleBrake))
-        //  {
-        //    packet.instructions[1].type = InstructionType.MicLED;
-        //    packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.On };
-        //    Send(packet);
-        //
-        //  }
-        //}
-        //else
-        //{
-        //  packet.instructions[1].type = InstructionType.MicLED;
-        //  packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.Off };
-        //  Send(packet);
-        //
-        //}
-
-        // float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
-
-        engineIdleRpm = 0.2f * (float)Math.Pow(1.2f, (currentGear - 1) * currentVehicle.HandlingData.ClutchChangeRateScaleUpShift);
-        float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
-
-        
-
-        float curVal ;
-        if (currentGear > 0 || currentRPM == 0.2f)
-        {
-          if (!Game.IsControlPressed(Control.VehicleBrake))
-          {
-            GetColorForRPM(currentRPMRatio, out RedChannel, out GreenChannel, out BlueChannel);
-          }
-          else
-          {
-            RedChannel = GreenChannel = BlueChannel = brakeLight;
-          }
-          /*          if (currentRPMRatio < rpmShiftDown)
-                    {
-                      curVal = Mathf.InverseLerp(0, rpmShiftDown, currentRPMRatio);
-                      BlueChannel = (int)Mathf.Lerp(96, 0, curVal);
-                      GreenChannel = (int)Mathf.Lerp(0, 96, curVal);
-                    }
-                    else if (currentRPMRatio <= rpmLow)
-                    {
-                      curVal = Mathf.InverseLerp(rpmShiftDown, rpmLow, currentRPMRatio);
-                      //BlueChannel = (int)Main.Lerp(128, 0, curVal);
-                      GreenChannel = (int)Mathf.Lerp(96, 255, curVal);
-                    }
-                    else if (currentRPMRatio <= rpmMed)
-                    {
-                      curVal = Mathf.InverseLerp(rpmLow, rpmMed, currentRPMRatio);
-
-                      RedChannel = (int)Mathf.Lerp(0, 255, curVal);
-                      GreenChannel = (int)Mathf.Lerp(255, 127, curVal);
-                      //GreenChannel = (int)Main.Lerp(0, 255, evalValue);
-                      //BlueChannel = (int)Main.Lerp(255, 0, evalValue);
-                    }
-                    else if (currentRPMRatio <= rpmHigh)
-                    {
-                      curVal = Mathf.InverseLerp(rpmMed, rpmHigh, currentRPMRatio);
-                      RedChannel = (int)Mathf.Lerp(255, 180, curVal);
-                      GreenChannel = (int)Mathf.Lerp(127, 5, curVal);
-                    }
-                    else
-                    {
-                      curVal = Mathf.InverseLerp(rpmHigh, 1f, currentRPMRatio);
-                      RedChannel = (int)Mathf.Lerp(180, 255, curVal);
-                      GreenChannel = 5; // (int)Main.Lerp(173, 0, evalValue);
-                    }
-          */
-
+          RedChannel = GreenChannel = BlueChannel = 32;
         }
         else
         {
-          // curVal = MathExtended.InverseLerp(0.2f, 1f, currentRPM);
-          // 
-          // RedChannel = BlueChannel = (int)MathExtended.Lerp(0, 255, curVal);
-          // GreenChannel = (int)MathExtended.Lerp(32, 255, curVal);
+          float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
 
-          RedChannel = GreenChannel = BlueChannel = reverseLight;
+          float rpmShiftDown = 0.4f;
+          float rpmLow = 0.65f;
+          float rpmMed = 0.8f;
+          float rpmHigh = 0.95f;
+
+          float currentRPM = currentVehicle.CurrentRPM;
+
+          if (willShift)
+          {
+            willShift = false;
+          }
+
+          float engineIdleRpm = 0.2f;
+          int currentGear = currentVehicle.CurrentGear;
+          if (currentGear != currentVehicle.NextGear)
+          {
+            willShift = true;
+          }
+          //if (currentVehicle.CurrentGear > 1)
+          //{
+          //
+          //  if (Game.IsControlPressed(GTA.Control.VehicleBrake))
+          //  {
+          //    packet.instructions[1].type = InstructionType.MicLED;
+          //    packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.On };
+          //    Send(packet);
+          //
+          //  }
+          //}
+          //else
+          //{
+          //  packet.instructions[1].type = InstructionType.MicLED;
+          //  packet.instructions[1].parameters = new object[] { controllerIndex, MicLEDMode.Off };
+          //  Send(packet);
+          //
+          //}
+
+          // float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
+
+          if (currentGear > 1)
+            engineIdleRpm = 0.2f+ 0.025f * currentVehicle.HandlingData.ClutchChangeRateScaleUpShift * currentGear;
+          float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
+
+          float curVal;
+          if (currentGear > 0)
+          {
+            if (!Game.IsControlPressed(Control.VehicleBrake) || currentVehicle.IsInBurnout)
+            {
+              GetColorForRPM(currentRPMRatio, out RedChannel, out GreenChannel, out BlueChannel);
+            }
+            else
+            {
+              RedChannel = brakeLight;
+              GreenChannel = 30;
+              BlueChannel = 0;
+            }
+            /*          if (currentRPMRatio < rpmShiftDown)
+                      {
+                        curVal = Mathf.InverseLerp(0, rpmShiftDown, currentRPMRatio);
+                        BlueChannel = (int)Mathf.Lerp(96, 0, curVal);
+                        GreenChannel = (int)Mathf.Lerp(0, 96, curVal);
+                      }
+                      else if (currentRPMRatio <= rpmLow)
+                      {
+                        curVal = Mathf.InverseLerp(rpmShiftDown, rpmLow, currentRPMRatio);
+                        //BlueChannel = (int)Main.Lerp(128, 0, curVal);
+                        GreenChannel = (int)Mathf.Lerp(96, 255, curVal);
+                      }
+                      else if (currentRPMRatio <= rpmMed)
+                      {
+                        curVal = Mathf.InverseLerp(rpmLow, rpmMed, currentRPMRatio);
+
+                        RedChannel = (int)Mathf.Lerp(0, 255, curVal);
+                        GreenChannel = (int)Mathf.Lerp(255, 127, curVal);
+                        //GreenChannel = (int)Main.Lerp(0, 255, evalValue);
+                        //BlueChannel = (int)Main.Lerp(255, 0, evalValue);
+                      }
+                      else if (currentRPMRatio <= rpmHigh)
+                      {
+                        curVal = Mathf.InverseLerp(rpmMed, rpmHigh, currentRPMRatio);
+                        RedChannel = (int)Mathf.Lerp(255, 180, curVal);
+                        GreenChannel = (int)Mathf.Lerp(127, 5, curVal);
+                      }
+                      else
+                      {
+                        curVal = Mathf.InverseLerp(rpmHigh, 1f, currentRPMRatio);
+                        RedChannel = (int)Mathf.Lerp(180, 255, curVal);
+                        GreenChannel = 5; // (int)Main.Lerp(173, 0, evalValue);
+                      }
+            */
+          }
+          else
+          {
+            // curVal = MathExtended.InverseLerp(0.2f, 1f, currentRPM);
+            //
+            // RedChannel = BlueChannel = (int)MathExtended.Lerp(0, 255, curVal);
+            // GreenChannel = (int)MathExtended.Lerp(32, 255, curVal);
+
+            RedChannel = GreenChannel = BlueChannel = reverseLight;
+          }
+
+          RedChannel = (int)(RedChannel * engineHealthFloat * engineHealthFloat);
+          GreenChannel = (int)(GreenChannel * engineHealthFloat * engineHealthFloat);
+          BlueChannel = (int)(BlueChannel * engineHealthFloat * engineHealthFloat);
         }
-
-        RedChannel = (int)(RedChannel * engineHealthFloat * engineHealthFloat);
-        GreenChannel = (int)(GreenChannel * engineHealthFloat * engineHealthFloat);
-        BlueChannel = (int)(BlueChannel * engineHealthFloat * engineHealthFloat);
 
         packet.instructions[1].type = InstructionType.RGBUpdate;
         packet.instructions[1].parameters = new object[] { controllerIndex, RedChannel, GreenChannel, BlueChannel };
@@ -303,7 +321,6 @@ namespace DualSense4GTAV.Main_LEDs
       {
         packet.instructions[1].type = InstructionType.RGBUpdate;
         float health = playerped.HealthFloat / playerped.MaxHealthFloat;
-
 
         int red = (int)MathExtended.Lerp(255, 0, health);
         int green = (int)MathExtended.Lerp(0, 255, health);
@@ -355,17 +372,6 @@ namespace DualSense4GTAV.Main_LEDs
           packet.instructions[1].parameters = new object[4] { controllerIndex, red, green, blue };
       }
       */
-    }
-
-    private Dictionary<float, Color> rpmColorDict;
-    BasicCurve rpmRed;
-    BasicCurve rpmGreen;
-    BasicCurve rpmBlue;
-    public void GetColorForRPM(float theRPM, out int red, out int green, out int blue)
-    {
-      red = (int)rpmRed.Evaluate(theRPM);
-      green = (int)rpmGreen.Evaluate(theRPM);
-      blue = (int)rpmBlue.Evaluate(theRPM);
     }
   }
 }
