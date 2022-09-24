@@ -144,14 +144,17 @@ namespace DualSense4RDR2
       // return;
 
       //RDR2.UI.Screen.DisplaySubtitle(playerweapon.Group.ToString());
+      
+      // Weapon Wheel
       if (PAD.IS_CONTROL_PRESSED(0, 3901091606))  //INPUT_FRONTEND_LB
       {
         SetAndSendPacket(packet, controllerIndex, Trigger.Right);
         SetAndSendPacket(packet, controllerIndex, Trigger.Left);
       }
+      // no gun accidents
       else if (playerPed.IsReloading) // Mode reloading
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+        SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
         SetAndSendPacket(packet, controllerIndex, Trigger.Left);
       }
       else if (weaponIsThrowable || playerweapon.Group == eWeaponGroup.GROUP_BOW || playerweapon.Group == eWeaponGroup.GROUP_FISHINGROD || playerweapon.Group == eWeaponGroup.GROUP_LASSO)
@@ -172,13 +175,13 @@ namespace DualSense4RDR2
         {
           SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 2, 8 });
 
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 6, 8, 4 });
+          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 6});
         }
         else
         {
           SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 4, 2 });
 
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 4, 2 });
         }
       }
       else
@@ -191,12 +194,22 @@ namespace DualSense4RDR2
           float degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, 0));
 
           // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
-
-          if (playerPed.IsShooting)
+          if (isPedDuelling)
+          {
+            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
+            {
+              4,
+              7,
+              (int)(4 + (4f * degradation)),
+              (int)(4 + degradation * 4)
+            });
+            Wait(500);
+          }
+          else if (playerPed.IsShooting)
           {
             //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
             SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid, 0,255,255);
-            Wait(100);
+            Wait(75);
           }
           else if ((playerIsAiming || twoHanded) && !weaponIsReadyToShoot) // Mode Gun Cock
           {
@@ -204,7 +217,7 @@ namespace DualSense4RDR2
             {
               7,
               8,
-              1,
+              4,
               (int)(2 + degradation * 6)
             });
 
@@ -216,7 +229,7 @@ namespace DualSense4RDR2
             {
               0,
               2,
-              (int)(3 + (5f * degradation)),
+              (int)(2 + (6f * degradation)),
               (int)(4 + degradation * 4)
             });
             //RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
