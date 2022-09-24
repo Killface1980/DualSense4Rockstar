@@ -1,7 +1,7 @@
 # Installation instructions
 Drop the contents of these folder in their respective GTA V / RDR 2 **Scripts** folder
 
-## prerequisites
+## Prerequisites
 ### GTA V
 - Requires Script Hook V http://www.dev-c.com/gtav/scripthookv/
 - Requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies
