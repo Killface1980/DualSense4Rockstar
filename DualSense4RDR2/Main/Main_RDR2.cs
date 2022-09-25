@@ -56,7 +56,7 @@ namespace DualSense4RDR2
       {
         interval_pos = 1;
       }
-      else if (interval_direction == -1 && interval_pos <= 0)
+      else if (interval_direction == -1 && interval_pos <= 0.05f)
       {
         interval_direction = 1;
       }
@@ -207,18 +207,20 @@ namespace DualSense4RDR2
           }
           else if (playerPed.IsShooting)
           {
+            Wait(50);
+
             //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
             SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid, 0,255,255);
-            Wait(75);
+            Wait(100);
           }
           else if ((playerIsAiming || twoHanded) && !weaponIsReadyToShoot) // Mode Gun Cock
           {
             SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
             {
+              6,
               7,
-              8,
-              4,
-              (int)(2 + degradation * 6)
+              (int)(3 + (5f * degradation)),
+              (int)(4 + degradation * 4)
             });
 
             // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
@@ -229,7 +231,7 @@ namespace DualSense4RDR2
             {
               0,
               2,
-              (int)(2 + (6f * degradation)),
+              (int)(3 + (5f * degradation)),
               (int)(4 + degradation * 4)
             });
             //RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
