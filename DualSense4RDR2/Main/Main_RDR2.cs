@@ -3,6 +3,7 @@ using RDR2;
 using RDR2.Native;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using static DSX_Base.Client.iO;
@@ -107,7 +108,27 @@ namespace DualSense4RDR2
         showconmes = !showconmes;
       }
     }
+    private readonly Dictionary<uint, Weapon> sideArms = new Dictionary<uint, Weapon>();
 
+    public unsafe Weapon CurrentOffHand
+    {
+      get
+      {
+        Ped owner = Game.Player.Character;
+        uint weaponHash;
+        GET_CURRENT_PED_WEAPON(owner!.Handle, &weaponHash, true, (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY, false);
+        
+        //uint weaponHash = WEAPON._GET_PED_CURRENT_HELD_WEAPON(owner.Handle);
+        if (sideArms!.ContainsKey(weaponHash))
+        {
+          return sideArms[weaponHash];
+        }
+
+        Weapon weapon = new Weapon(owner, (eWeapon)weaponHash);
+        sideArms.Add(weaponHash, weapon);
+        return weapon;
+      }
+    }
     private unsafe void OnTick(object sender, EventArgs e)
     {
       Packet packet = new();
@@ -117,12 +138,22 @@ namespace DualSense4RDR2
       playerPed = player.Character;
       playerweapon = playerPed?.Weapons?.Current;
 
+      //if ((uint)CurrentOffHand.Hash == 0xA2719263) // unarmed
+      {
+        //RDR2.UI.Screen.DisplaySubtitle((CurrentOffHand.Hash).ToString());
+
+      }
+
       // SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 1 });
       // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 5, 8, 8 });
-      bool weaponIsReadyToShoot = IS_PED_WEAPON_READY_TO_SHOOT(playerPed.Handle);
+
+      bool mainWeaponIsReadyToShoot = IS_PED_WEAPON_READY_TO_SHOOT(playerPed.Handle);
       bool weaponIsAGun = IS_WEAPON_A_GUN((uint)playerweapon.Hash); //IS_WEAPON_A_GUN
       bool weaponIsThrowable = _IS_WEAPON_THROWABLE((uint)playerweapon.Hash); //
-      bool twoHanded = _IS_WEAPON_TWO_HANDED((uint)playerweapon.Hash);
+      bool mainWeaponIsTwoHanded = _IS_WEAPON_TWO_HANDED((uint)playerweapon.Hash);
+      bool hasOffHandWeapon = (uint)CurrentOffHand.Hash != 0xA2719263 /* unarmed*/ &&
+                              (CurrentOffHand.Group == eWeaponGroup.GROUP_PISTOL ||
+                               CurrentOffHand.Group == eWeaponGroup.GROUP_REVOLVER);
       //uint* numbi = null;
       //var mount = GET_CURRENT_PED_VEHICLE_WEAPON(characterPed.Handle, numbi); //
 
@@ -134,7 +165,7 @@ namespace DualSense4RDR2
 
       bool currentPedVehicleWeapon = GET_CURRENT_PED_VEHICLE_WEAPON(playerPed.Handle, &number);
 
-      // RDR2.UI.Screen.DisplaySubtitle(weaponIsAGun.ToString());
+      // RDR2.UI.Screen.DisplaySubtitle(hasOffHandWeapon.ToString());
 
       if (isMounted)
       {
@@ -214,56 +245,62 @@ namespace DualSense4RDR2
       else
       {
         bool isPedDuelling = TASK._IS_PED_DUELLING(player.Handle);
-        if (weaponIsAGun || isPedDuelling)
+        bool isDeadEyeEnabled = player.IsInDeadEye || player.IsInEagleEye;
+        if (weaponIsAGun || isPedDuelling || isDeadEyeEnabled)
         {
 
           //SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new(){6,1});
+          eWeaponAttachPoint attachPoint;
 
-          float degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, 0));
+          if (hasOffHandWeapon && !mainWeaponIsReadyToShoot) // most likely offhand
+          {
+            attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY;
+          }
+          else
+          {
+            attachPoint =  eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY;
+          }
+          float degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint));
+
           SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 8-(int)(degradation * 7), 10+ (int)(degradation *140));
 
           // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
-          if (isPedDuelling)
+          if (playerPed.IsShooting)
           {
-            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
-            {
-              4,
-              7,
-              (int)(4 + (4f * degradation)),
-              (int)(4 + degradation * 4)
-            });
-            Wait(500);
-          }
-          else if (playerPed.IsShooting)
-          {
+
+           // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new (){0,8, 2} );
+
             Wait(50);
 
-            //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid, 0, 255, 255);
-            Wait(100);
+            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
+             SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid, 0, 255, 255);
+             Wait(75);
           }
-          else if ((playerIsAiming || twoHanded) && !weaponIsReadyToShoot) // Mode Gun Cock
+          else if ((playerIsAiming && mainWeaponIsTwoHanded || !hasOffHandWeapon )  && !mainWeaponIsReadyToShoot || isPedDuelling) // Mode Gun Cock
           {
             SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
             {
               6,
               7,
-              (int)(3 + (5f * degradation)),
-              (int)(4 + degradation * 4)
+              (int)(2 + (6f * degradation)),
+              (int)(2 + (6f * degradation))
             });
 
             // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
           }
-          else // GUN_MANUAL
+          else // GUN_MANUAL; also isDeadEyeEnabled
           {
+
+
+            //RDR2.UI.Screen.DisplaySubtitle((degradation).ToString());
+
             SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
             {
-              0,
+              1,
               2,
               (int)(3 + (5f * degradation)),
-              (int)(4 + degradation * 4)
+              (int)(4 + (4f * degradation))
             });
-            //RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
 
             //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 4,1+(int)(degradation * 7), 4 });
           }
