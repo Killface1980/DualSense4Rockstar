@@ -274,21 +274,22 @@ namespace DualSense4RDR2
 
            // 279042 - double action
            bool isDoubleAction = weaponEntityIndex == 279042;
-          SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 8-(int)(degradation * 7),  amountOfForceExerted: (int)(degradation *100));
 
           if (playerPed.IsShooting)
           {
 
            // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new (){0,8, 2} );
 
-            Wait(50);
+            Wait(30);
 
-            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
+            //SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
+             SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
              SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
-             Wait(75);
+             Wait(120);
           }
           else if (!isDoubleAction && (playerIsAiming && mainWeaponIsTwoHanded || !hasOffHandWeapon )  && !mainWeaponIsReadyToShoot || isPedDuelling || !carriesWeaponOpenly) // Mode Gun Cock
           {
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 140 - (int)(degradation * 110), amountOfForceExerted: (int)(100 + degradation * 120), 180);
             SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
             {
               6,
@@ -301,12 +302,13 @@ namespace DualSense4RDR2
           }
           else // GUN_MANUAL; 
           {
-           // uint modelHash = WEAPON.enti(weaponEntityIndex);
+            // uint modelHash = WEAPON.enti(weaponEntityIndex);
 
 
 
 
             //RDR2.UI.Screen.DisplaySubtitle((degradation).ToString());
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 140 - (int)(degradation * 110), amountOfForceExerted: (int)(100+degradation * 120), 180);
 
             SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
             {
