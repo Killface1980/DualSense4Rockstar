@@ -29,7 +29,10 @@ namespace DSX_Base.Client
             client.Send(bytes, bytes.Length, endPoint);
         }
 
-        public static void SetAndSendPacket(Packet packet, int controllerIndex, Trigger trigger, TriggerMode triggerMode = TriggerMode.Normal, List<int> parameters = null)
+        static int controllerIndex = 0;
+
+    public static void SetAndSendPacket(Packet packet, Trigger trigger,
+          TriggerMode triggerMode = TriggerMode.Normal, List<int> parameters = null)
         {
             packet.instructions[0].type = InstructionType.TriggerUpdate;
             List<object> newList = new()
@@ -49,7 +52,10 @@ namespace DSX_Base.Client
 
             Send(packet);
         }
-        public static void SetAndSendPacketCustom(Packet packet, int controllerIndex, Trigger trigger, CustomTriggerValueMode customMode = CustomTriggerValueMode.OFF, int startOfResistance = 0, int amountOfForceExerted = 0, int forceExertedInRange = 0, int ab_strengthNearRelease = 0, int ab_strengthNearMiddle = 0, int ab_strengthPressedState = 0, int ab_actuationFrequency = 0)
+        public static void SetAndSendPacketCustom(Packet packet, Trigger trigger,
+          CustomTriggerValueMode customMode = CustomTriggerValueMode.OFF, int startOfResistance = 0,
+          int amountOfForceExerted = 0, int forceExertedInRange = 0, int ab_strengthNearRelease = 0,
+          int ab_strengthNearMiddle = 0, int ab_strengthPressedState = 0, int ab_actuationFrequency = 0)
         {
             TriggerMode triggerMode = TriggerMode.CustomTriggerValue;
 

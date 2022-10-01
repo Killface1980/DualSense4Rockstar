@@ -12,12 +12,6 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <Compile Remove="Main\Class1.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Main\Class1.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

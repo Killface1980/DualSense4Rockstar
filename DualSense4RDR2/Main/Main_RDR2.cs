@@ -19,7 +19,7 @@ namespace DualSense4RDR2
     private static int lastThrottleResistance = 1;
     private static bool noammo;
     private static Ped playerPed;
-    private static Weapon playerweapon;
+    private static Weapon playerWeapon;
     private static bool showbatstat = true;
     private static bool showconmes = true;
     private static bool wanted = false;
@@ -129,14 +129,14 @@ namespace DualSense4RDR2
         return weapon;
       }
     }
+
     private unsafe void OnTick(object sender, EventArgs e)
     {
       Packet packet = new();
-      int controllerIndex = 0;
       packet.instructions = new Instruction[4];
       Player player = Game.Player;
       playerPed = player.Character;
-      playerweapon = playerPed?.Weapons?.Current;
+      playerWeapon = playerPed?.Weapons?.Current;
 
       //if ((uint)CurrentOffHand.Hash == 0xA2719263) // unarmed
       {
@@ -148,9 +148,10 @@ namespace DualSense4RDR2
       // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 5, 8, 8 });
 
       bool mainWeaponIsReadyToShoot = IS_PED_WEAPON_READY_TO_SHOOT(playerPed.Handle);
-      bool weaponIsAGun = IS_WEAPON_A_GUN((uint)playerweapon.Hash); //IS_WEAPON_A_GUN
-      bool weaponIsThrowable = _IS_WEAPON_THROWABLE((uint)playerweapon.Hash); //
-      bool mainWeaponIsTwoHanded = _IS_WEAPON_TWO_HANDED((uint)playerweapon.Hash);
+      bool weaponIsAGun = IS_WEAPON_A_GUN((uint)playerWeapon.Hash); //IS_WEAPON_A_GUN
+      bool weaponIsThrowable = _IS_WEAPON_THROWABLE((uint)playerWeapon.Hash); //
+      bool mainWeaponIsTwoHanded = _IS_WEAPON_TWO_HANDED((uint)playerWeapon.Hash);
+      bool carriesWeaponOpenly = (uint)playerWeapon.Hash != 0xA2719263; /* unarmed*/
       bool hasOffHandWeapon = (uint)CurrentOffHand.Hash != 0xA2719263 /* unarmed*/ &&
                               (CurrentOffHand.Group == eWeaponGroup.GROUP_PISTOL ||
                                CurrentOffHand.Group == eWeaponGroup.GROUP_REVOLVER);
@@ -179,48 +180,51 @@ namespace DualSense4RDR2
       //RDR2.UI.Screen.DisplaySubtitle(playerweapon.Group.ToString());
 
       // Weapon Wheel
-      if (PAD.IS_CONTROL_PRESSED(0, 3901091606))  //INPUT_FRONTEND_LB
+      if (PAD.IS_CONTROL_PRESSED(0, 3901091606))  //INPUT_FRONTEND_LB, weapon wheel
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-        SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+        SetAndSendPacket(packet, Trigger.Right);
+        SetAndSendPacket(packet, Trigger.Left);
       }
       // no gun accidents
       else if (playerPed.IsReloading) // Mode reloading
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
-        SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest);
+        SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
+        SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
       }
       else if (currentPedVehicleWeapon)
       {
+        //RDR2.UI.Screen.DisplaySubtitle((number).ToString());
+
         if (number == 3666182381 || //gat
             number == 3101324918)// maxi
         {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+          SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 1, amountOfForceExerted: 20);
           if (playerPed.IsShooting) // Auto
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
-              CustomTriggerValueMode.PulseB, 9, 190);
+            SetAndSendPacket(packet, Trigger.Right,
+              TriggerMode.AutomaticGun, new(){0,4,30});
+            Script.Wait(100);
           }
           else // Prepare
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
-              CustomTriggerValueMode.Rigid, 30, 255);
+            SetAndSendPacketCustom(packet, Trigger.Right,
+              CustomTriggerValueMode.Rigid, startOfResistance: 30, amountOfForceExerted: 128);
           }
         }
         else if (number == 2465730487 || //hotch - cannons
                  number == 1609145491)// breach
         {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
-            CustomTriggerValueMode.PulseA, 255, 200, 255);
+          SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 1, amountOfForceExerted: 20);
+          SetAndSendPacketCustom(packet, Trigger.Right,
+            CustomTriggerValueMode.PulseA, startOfResistance: 255, amountOfForceExerted: 200, forceExertedInRange: 255);
         }
       }
-      else if (weaponIsThrowable || playerweapon.Group == eWeaponGroup.GROUP_BOW || playerweapon.Group == eWeaponGroup.GROUP_FISHINGROD || playerweapon.Group == eWeaponGroup.GROUP_LASSO)
+      else if (weaponIsThrowable || playerWeapon.Group == eWeaponGroup.GROUP_BOW || playerWeapon.Group == eWeaponGroup.GROUP_FISHINGROD || playerWeapon.Group == eWeaponGroup.GROUP_LASSO)
       {
         if (PED._GET_LASSO_TARGET(playerPed.Handle) != 0)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest);
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
         }
         /*        else if (player.IsTargettingAnything) // not working on the lasso
                 {
@@ -231,19 +235,20 @@ namespace DualSense4RDR2
         */
         else if (player.IsAiming)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 2, 8 });
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 2, 8 });
 
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 6 });
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 1, 6 });
         }
         else
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 4, 2 });
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 4, 1 });
 
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 4, 2 });
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 4, 2 });
         }
       }
       else
       {
+       
         bool isPedDuelling = TASK._IS_PED_DUELLING(player.Handle);
         bool isDeadEyeEnabled = player.IsInDeadEye || player.IsInEagleEye;
         if (weaponIsAGun || isPedDuelling || isDeadEyeEnabled)
@@ -252,7 +257,7 @@ namespace DualSense4RDR2
           //SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new(){6,1});
           eWeaponAttachPoint attachPoint;
 
-          if (hasOffHandWeapon && !mainWeaponIsReadyToShoot) // most likely offhand
+          if (hasOffHandWeapon && !mainWeaponIsReadyToShoot || !carriesWeaponOpenly) // most likely offhand
           {
             attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY;
           }
@@ -260,11 +265,17 @@ namespace DualSense4RDR2
           {
             attachPoint =  eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY;
           }
-          float degradation = GET_WEAPON_DEGRADATION(GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint));
 
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 8-(int)(degradation * 7), 10+ (int)(degradation *140));
+          int weaponEntityIndex = GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint);
+          float degradation = GET_WEAPON_DEGRADATION(weaponEntityIndex);
+          // float permanentDegradation = GET_WEAPON_PERMANENT_DEGRADATION(weaponEntityIndex);
+          // 
+          // RDR2.UI.Screen.DisplaySubtitle(weaponEntityIndex.ToString());
 
-          // RDR2.UI.Screen.DisplaySubtitle(degradation.ToString());
+           // 279042 - double action
+           bool isDoubleAction = weaponEntityIndex == 279042;
+          SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 8-(int)(degradation * 7),  amountOfForceExerted: (int)(degradation *100));
+
           if (playerPed.IsShooting)
           {
 
@@ -272,13 +283,13 @@ namespace DualSense4RDR2
 
             Wait(50);
 
-            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
-             SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid, 0, 255, 255);
+            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
+             SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
              Wait(75);
           }
-          else if ((playerIsAiming && mainWeaponIsTwoHanded || !hasOffHandWeapon )  && !mainWeaponIsReadyToShoot || isPedDuelling) // Mode Gun Cock
+          else if (!isDoubleAction && (playerIsAiming && mainWeaponIsTwoHanded || !hasOffHandWeapon )  && !mainWeaponIsReadyToShoot || isPedDuelling || !carriesWeaponOpenly) // Mode Gun Cock
           {
-            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
+            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
             {
               6,
               7,
@@ -288,16 +299,19 @@ namespace DualSense4RDR2
 
             // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
           }
-          else // GUN_MANUAL; also isDeadEyeEnabled
+          else // GUN_MANUAL; 
           {
+           // uint modelHash = WEAPON.enti(weaponEntityIndex);
+
+
 
 
             //RDR2.UI.Screen.DisplaySubtitle((degradation).ToString());
 
-            SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new()
+            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
             {
+              0,
               1,
-              2,
               (int)(3 + (5f * degradation)),
               (int)(4 + (4f * degradation))
             });
@@ -307,8 +321,8 @@ namespace DualSense4RDR2
         }
         else // turn off
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+          SetAndSendPacket(packet, Trigger.Right);
+          SetAndSendPacket(packet, Trigger.Left);
           
           // SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
           // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 2, 3, 4 });
@@ -344,61 +358,6 @@ namespace DualSense4RDR2
         // RDR2.UI.Screen.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);
       }
 
-      switch (player.WantedLevel)
-      {
-        case 0:
-          packet.instructions[2].type = InstructionType.PlayerLED;
-          packet.instructions[2].parameters = new object[6] { controllerIndex, false, false, false, false, false };
-          Send(packet);
-          Wait(299);
-          Wait(299);
-          wanted = false;
-          break;
-
-        case 1:
-          {
-            add2.rgbupdat2e(10, playerPed.Health, out int red, out int blue);
-            wanted = true;
-            packet.instructions[2].type = InstructionType.PlayerLED;
-            packet.instructions[2].parameters = new object[6] { controllerIndex, true, false, false, false, false };
-            Send(packet);
-            packet.instructions[1].type = InstructionType.RGBUpdate;
-            packet.instructions[1].parameters = new object[4] { controllerIndex, blue, 0, red };
-            Send(packet);
-            break;
-          }
-        case 2:
-          add2.rgbupdat2e(30, playerPed.Health, out int _, out int _);
-          packet.instructions[2].type = InstructionType.PlayerLED;
-          packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, false, false, false };
-          Send(packet);
-          wanted = true;
-          break;
-
-        case 3:
-          add2.rgbupdat2e(40, playerPed.Health, out int _, out int _);
-          packet.instructions[2].type = InstructionType.PlayerLED;
-          packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, false, false };
-          Send(packet);
-          wanted = true;
-          break;
-
-        case 4:
-          packet.instructions[2].type = InstructionType.PlayerLED;
-          packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, false };
-          Send(packet);
-          add2.rgbupdat2e(50, playerPed.Health, out int _, out int _);
-          wanted = true;
-          break;
-
-        case 5:
-          add2.rgbupdat2e(70, playerPed.Health, out int _, out int _);
-          packet.instructions[2].type = InstructionType.PlayerLED;
-          packet.instructions[2].parameters = new object[6] { controllerIndex, true, true, true, true, true };
-          Send(packet);
-          wanted = true;
-          break;
-      }
     }
 
     private void updateLights()

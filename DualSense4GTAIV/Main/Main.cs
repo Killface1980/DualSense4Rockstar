@@ -87,8 +87,8 @@ namespace DualSense4GTAV
       Weapon playerWeapon = playerped.Weapons.Current;
       if (Function.Call<bool>(Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-        SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+        SetAndSendPacket(packet, Trigger.Right);
+        SetAndSendPacket(packet, Trigger.Left);
       }
       else if ((playerped.isSittingInVehicle() || playerped.isInVehicle() || playerped.isInWater || playerped.isInAir) &&
                playerped.CurrentVehicle.Driver == playerped)
@@ -98,8 +98,8 @@ namespace DualSense4GTAV
 
         if (!currentVehicle.EngineRunning)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 5 });
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Bow, new() { 5, 6, 4, 5 });
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 5 });
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Bow, new() { 5, 6, 4, 5 });
         }
         else if (!currentVehicle.IsInAir && currentVehicle.Wheels != null && currentVehicle.Wheels.Any(x => x.IsBursted))
         {
@@ -172,7 +172,7 @@ namespace DualSense4GTAV
 
           if (currentGear > 0)
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid,
 
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lightnessVehicle),
@@ -180,7 +180,7 @@ namespace DualSense4GTAV
             );
             //GTA.UI.Screen.ShowSubtitle(spinnie.ToString("N2") + " - "+ (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear) + " - " + (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, vehicleLightness));
 
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid,
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfResistanceBrake),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lighnessBrake),
               255
@@ -198,12 +198,12 @@ namespace DualSense4GTAV
           }
           else
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid,
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lightnessVehicle),
               255);
 
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid,
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfResistanceBrake),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lighnessBrake),
               255);
@@ -216,13 +216,13 @@ namespace DualSense4GTAV
         }
         else if (currentVehicle.IsInAir || !currentVehicle.IsOnAllWheels)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+          SetAndSendPacket(packet, Trigger.Right);
+          SetAndSendPacket(packet, Trigger.Left);
         }
         else if (currentVehicle.EngineHealth <= 0f)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Hardest);
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Hardest);
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
           Wait(300);
         }
         else // if (playerped.CurrentVehicle.EngineHealth >= 1000f)
@@ -283,13 +283,13 @@ namespace DualSense4GTAV
 
           if (currentGear != currentVehicle.NextGear) // here comes the clutch!
           {
-            SetAndSendPacket(packet, controllerIndex, Trigger.Left);
-            SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+            SetAndSendPacket(packet, Trigger.Left);
+            SetAndSendPacket(packet, Trigger.Right);
             Wait(100);
           }
           else if (currentGear > 0)
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid,
 
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lightnessVehicle),
@@ -297,7 +297,7 @@ namespace DualSense4GTAV
             );
             //GTA.UI.Screen.ShowSubtitle(spinnie.ToString("N2") + " - "+ (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear) + " - " + (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, vehicleLightness));
 
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid,
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfResistanceBrake),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lighnessBrake),
               255
@@ -315,12 +315,12 @@ namespace DualSense4GTAV
           }
           else
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid,
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lightnessVehicle),
               255);
 
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Rigid,
+            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid,
               (int)Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfResistanceBrake),
               (int)Lerp(controllerConfig.maxResistanceVehicle, controllerConfig.minResistanceVehicle, lighnessBrake),
               255);
@@ -334,8 +334,8 @@ namespace DualSense4GTAV
       {
         if (playerWeapon != null && (playerped.IsReloading || playerWeapon.AmmoInClip == 0))
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 4 });
-          SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 4 });
+          SetAndSendPacket(packet, Trigger.Left);
           Wait(50);
           return;
         }
@@ -365,9 +365,9 @@ namespace DualSense4GTAV
                 break;
 
               case WeaponGroup.Sniper:
-                SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
                     new() { 1, 2 });
-                SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.SemiAutomaticGun,
+                SetAndSendPacket(packet, Trigger.Right, TriggerMode.SemiAutomaticGun,
                     new() { 2, 7, 4 });
                 //UI.ShowSubtitle("Sniper");
                 break;
@@ -375,13 +375,13 @@ namespace DualSense4GTAV
               case WeaponGroup.Heavy:
                 if (playerWeapon.Hash == WeaponHash.Minigun)
                 {
-                  ApplyAutomaticWeaponHandling(packet, controllerIndex, playerped, Math.Min (8, weaponStrength+2), fireRateAutomaticInt, new() { 1, 6, 4, 8 }, animationLength);
+                  ApplyAutomaticWeaponHandling(packet, playerped, Math.Min (8, weaponStrength+2), fireRateAutomaticInt, new() { 1, 6, 4, 8 }, animationLength);
                 }
                 else
                 {
-                  SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+                  SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
                       new() { 1, 2 });
-                  SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow,
+                  SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow,
                       new() { 1, 6, 4, 8 });
                 }
 
@@ -392,8 +392,8 @@ namespace DualSense4GTAV
               case WeaponGroup.Melee:
               case WeaponGroup.Thrown:
               case WeaponGroup.PetrolCan:
-                SetAndSendPacket(packet, controllerIndex, Trigger.Left);
-                SetAndSendPacket(packet, controllerIndex, Trigger.Right);
+                SetAndSendPacket(packet, Trigger.Left);
+                SetAndSendPacket(packet, Trigger.Right);
                 break;
             }
           }
@@ -403,10 +403,10 @@ namespace DualSense4GTAV
 
     private static int lastAmmo = 0;
 
-    private void ApplyAutomaticWeaponHandling(Packet packet, int controllerIndex, Ped playerPed, int weaponStrength,
+    private void ApplyAutomaticWeaponHandling(Packet packet, Ped playerPed, int weaponStrength,
       int fireRateAutomaticInt, List<int> triggerParameters, float timeBetweenShots)
     {
-      SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance,
+      SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
         new() { (int)(weaponStrength / 5f), (int)(weaponStrength / 3f) });
 
 
@@ -416,7 +416,7 @@ namespace DualSense4GTAV
       {
         if (lastAmmo != ammoInClip)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun,
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.AutomaticGun,
             new() { 6, weaponStrength, fireRateAutomaticInt });
 
           // GTA.UI.Screen.ShowSubtitle(lastAmmo + " - " + ammoInClip+" - "+ (int)(timeBetweenShots * 1000f));
@@ -436,12 +436,12 @@ namespace DualSense4GTAV
 
       if (playerPed.Weapons.Current.Hash == WeaponHash.Minigun) // not ahooting, only spinning
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Machine,
+        SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
           new(){1,9,2,2,25,1});
       }
       else
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow,
+        SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow,
           triggerParameters);
       }        
       lastAmmo = ammoInClip;

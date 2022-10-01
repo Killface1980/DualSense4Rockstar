@@ -92,7 +92,7 @@ public class ControllerConfig
     UpdateMenuDescriptions();
   }
 
-  public void OnKeyDown(object sender, KeyEventArgs e)
+  public void OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
   {
     if (e.KeyCode == KeyConf.showMenu)
     {
