@@ -15,20 +15,11 @@ namespace DualSense4RDR2
   {
     private static Ped playerPed;
     private static Weapon currentMainHandWeapon;
-    private static bool showbatstat = true;
-    private static bool showconmes = true;
     private static bool wanted = false;
     private int brig;
-    private float currentStaminaDisplay = 1f;
-    private float health = 0;
-    private int interval_direction = 1;
 
-    private float interval_pos = 0;
-
-    private BasicCurve pulseRateCurve;
 
     //private float pulseRate = 0;
-    private int staminaTarget = 0;
 //    public static readonly ControllerConfig controllerConfig = new();
 
 
@@ -36,73 +27,11 @@ namespace DualSense4RDR2
     {
       playerPed = Game.Player.Character;
       Tick += this.OnTick;
-      KeyDown += this.OnKeyDown;
       Connect();
       Process.GetProcessesByName("DSX");
-      pulseRateCurve = new BasicCurve()
-      {
-        new(0f,25f),
-        new(0.2f,8f),
-        new(0.7f, 1.2f),
-        new(1f,0.3f)
-      };
     }
 
-    public void HandleLEDs()
-    {
-      if (currentStaminaDisplay >= 0.99f && interval_pos >= 0.95f)
-      {
-        interval_pos = 1;
-      }
-      else if (interval_direction == -1 && interval_pos <= 0.05f)
-      {
-        interval_direction = 1;
-      }
-      else if (interval_direction == 1 && interval_pos >= 1)
-      {
-        interval_direction = -1;
-      }
 
-      float green = health * 255f;
-      float red = 255f - green;
-
-      Packet packet = new();
-      int num = 0;
-      packet.instructions = new Instruction[4];
-      packet.instructions[1].type = InstructionType.RGBUpdate;
-      packet.instructions[1].parameters = new object[]
-      {
-        num,
-        (int)(red * interval_pos),
-        (int)(green * interval_pos),
-        0
-      };
-      Send(packet);
-
-      interval_pos += interval_direction * 0.01f * pulseRateCurve.Evaluate(currentStaminaDisplay);
-    }
-
-    private void OnKeyDown(object sender, KeyEventArgs e)
-    {
-      return;
-      Packet packet = new();
-      packet.instructions = new Instruction[4];
-      if (e.KeyCode == Keys.F9)
-      {
-        iO obj = new();
-        Send(packet);
-        obj.getstat(out int bat, out bool isconnected);
-        RDR2.UI.Screen.DisplaySubtitle("Controller connection status: " + isconnected + " controller battery status: " + bat + "% \n to hide this Press F10");
-      }
-      if (e.KeyCode == Keys.F10)
-      {
-        showbatstat = !showbatstat;
-      }
-      if (e.KeyCode == Keys.F11)
-      {
-        showconmes = !showconmes;
-      }
-    }
     private readonly Dictionary<uint, Weapon> playerWeapons = new Dictionary<uint, Weapon>();
 
     private unsafe Weapon GetCurrentWeapon(bool offHand = false)
@@ -334,8 +263,6 @@ namespace DualSense4RDR2
         }
       }
 
-      updateLights();
-      HandleLEDs();
       return;
       // updateLights();
       // health = Math.Min(health, 1);
@@ -344,57 +271,8 @@ namespace DualSense4RDR2
       return;
 
       //else
-      return;
-
-      //RDR2.UI.Screen.DisplaySubtitle(health + " - " + pulseRate + " - " + staminaTarget);
-      add add2 = new();
-      iO obj = new();
-      Send(packet);
-      Wait(235);
-      obj.getstat(out int bat, out bool isConnected);
-
-      if (!isConnected && showconmes)
-      {
-        RDR2.UI.Screen.DisplaySubtitle("controller is disconnected or discharged, please fix or press F11");
-      }
-      else if (bat <= 15 && showbatstat)
-      {
-        RDR2.UI.Screen.DisplaySubtitle("Your controller battery is  " + bat + " to hide this message press F10");
-        // RDR2.UI.Screen.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);
-      }
 
     }
 
-    private void updateLights()
-    {
-      // if (ScriptSettings::getBool("HealthIndication"))
-      {
-        this.health = playerPed.Health * 1f / (playerPed.MaxHealth * 1f);
-      }
-
-      // else
-      // {
-      //     health = 1;
-      // }
-
-      // if (ScriptSettings::getBool("StaminaIndication"))
-      {
-        this.staminaTarget = playerPed.Handle;
-        if (playerPed.IsOnMount)
-        {
-          this.staminaTarget = PED.GET_MOUNT(playerPed.Handle);
-        }
-
-        //float stamina = RDR2.Native.PED._GET_PED_STAMINA(this.staminaTarget)*1f / RDR2.Native.PED._GET_PED_MAX_STAMINA(this.staminaTarget)*1f;
-        float stamina = PED._GET_PED_STAMINA_NORMALIZED(this.staminaTarget);
-        currentStaminaDisplay = stamina;// DSX_Math.LerpCapped(0.1f,0.8f,stamina);
-        //this.pulseRate = DSX_Math.LerpCapped(1f, 0.2f, stamina);// Math.Max(0.2f, Math.Min(1f, 1f - stamina));
-        //RDR2.UI.Screen.DisplaySubtitle(playerPed.Health + " - " + playerPed.MaxHealth + " - " + pulseRate);
-      }
-      // else
-      // {
-      //     pulseRate = 0;
-      // }
-    }
   }
 }
