@@ -40,23 +40,39 @@ public class LEDs_RDR2 : Script
     if (flashy > 0)
     {
       //RDR2.UI.Screen.DisplaySubtitle(flashy.ToString("N2"));
-      flashy -= 0.03f;
+      flashy = Math.Max(0f, flashy- 0.01f);
     }
 
     bool playerIsInDeadEye = Game.Player.IsInDeadEye;
 
-    if (!playerIsInDeadEye && currentStaminaDisplay >= 0.99f && interval_pos >= 0.95f)
+    var playerPed = Game.Player.Character;
+    float healthCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.Health) * 0.01f;
+
+    bool healthCoreLow = healthCore < 0.2f;
+
+    bool shouldFlash = playerIsInDeadEye || currentStaminaDisplay <= 0.99f || healthCoreLow;
+
+    if (!shouldFlash && interval_pos >= 0.99f)
       interval_pos = 1;
     else if (interval_direction == -1 && interval_pos <= 0.05f)
+    {
       interval_direction = 1;
+      interval_pos = Math.Max(0.05f, interval_pos);
+    }    
     else if (interval_direction == 1 && interval_pos >= 1)
     {
+      interval_pos = 1;
       interval_direction = -1;
     }
 
     float green = currentHealth * 255f;
     float red = (255f - green);
     float blue = 0;
+
+    //if (ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Health))
+    //{
+    // RDR2.UI.Screen.DisplaySubtitle(ATTRIBUTE._GET_ATTRIBUTE_CORE_OVERPOWER_SECONDS_LEFT(playerPed.Handle, (int)PedCore.Health).ToString());
+    //}
 
     if (playerIsInDeadEye)
     {
@@ -66,14 +82,24 @@ public class LEDs_RDR2 : Script
     }
     else
     {
-      red *= interval_pos;
-      green *= interval_pos;
 
+      //green += flashy * 255;
+      //blue += flashy * 255;
+
+      if (healthCoreLow)
+      {
+        red += interval_pos * 255;
+        green -= red/2;
+      }
+      else
+      {
+        red *= interval_pos;
+        green *= interval_pos;
+      }
       red += flashy * 255;
-      green += flashy * 255;
-      blue += flashy * 255;
 
     }
+    //RDR2.UI.Screen.DisplaySubtitle(healthCore.ToString());
 
     Packet packet = new();
     int num = 0;
@@ -88,7 +114,11 @@ public class LEDs_RDR2 : Script
     };
     Send(packet);
 
-    float pulseRate =  pulseRateCurve.Evaluate(playerIsInDeadEye ? 0.5f : currentStaminaDisplay);
+    float pulseRate = pulseRateCurve.Evaluate(playerIsInDeadEye ? 0.5f : 
+      (healthCoreLow
+      ? healthCore *5f
+      : currentStaminaDisplay));
+
     interval_pos += interval_direction * 0.01f * pulseRate;
   }
 
@@ -112,26 +142,12 @@ public class LEDs_RDR2 : Script
 
   private void OnTick(object sender, EventArgs e)
   {
-    Packet packet = new();
-    packet.instructions = new Instruction[4];
 
     updateLights();
     HandleLEDs();
 
     return;
 
-    //RDR2.UI.Screen.DisplaySubtitle(health + " - " + pulseRate + " - " + staminaTarget);
-    add add2 = new();
-    iO obj = new();
-    Send(packet);
-    Wait(235);
-    obj.getstat(out int bat, out bool isConnected);
-
-    if (!isConnected && showconmes)
-      RDR2.UI.Screen.DisplaySubtitle("controller is disconnected or discharged, please fix or press F11");
-    else if (bat <= 15 && showbatstat)
-      RDR2.UI.Screen.DisplaySubtitle("Your controller battery is  " + bat + " to hide this message press F10");
-    // RDR2.UI.Screen.ShowHelpMessage("Your controller battery is  " + bat + " to hide this message press F10", 1, sound: false);
   }
 
   private void updateLights()
@@ -144,7 +160,7 @@ public class LEDs_RDR2 : Script
 
       currentHealth = playerPed.Health * 1f / playerPed.MaxHealth * 1f;
     }
-    if (currentHealth < lastHealth - 0.03f)
+    if (currentHealth < lastHealth - 0.01f)
     {
       flashy += MathExtended.InverseLerp(0, lastHealth, currentHealth);
     }
