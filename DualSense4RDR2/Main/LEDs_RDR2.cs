@@ -25,8 +25,8 @@ public class LEDs_RDR2 : Script
   {
     pulseRateCurve = new BasicCurve()
     {
-      new(0f, 25f),
-      new(0.2f, 8f),
+      new(0f, 4f),
+      new(0.2f, 2f),
       new(0.7f, 1.2f),
       new(1f, 0.3f)
     };
@@ -40,7 +40,7 @@ public class LEDs_RDR2 : Script
     if (flashy > 0)
     {
       //RDR2.UI.Screen.DisplaySubtitle(flashy.ToString("N2"));
-      flashy = Math.Max(0f, flashy- 0.01f);
+      flashy = Math.Max(0f, flashy - 0.01f);
     }
 
     bool playerIsInDeadEye = Game.Player.IsInDeadEye;
@@ -48,17 +48,24 @@ public class LEDs_RDR2 : Script
     var playerPed = Game.Player.Character;
     float healthCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.Health) * 0.01f;
 
+    if (ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Health))
+    {
+      healthCore += 1;
+    }
+
     bool healthCoreLow = healthCore < 0.2f;
 
     bool shouldFlash = playerIsInDeadEye || currentStaminaDisplay <= 0.99f || healthCoreLow;
 
     if (!shouldFlash && interval_pos >= 0.99f)
+    {
       interval_pos = 1;
+    }
     else if (interval_direction == -1 && interval_pos <= 0.05f)
     {
       interval_direction = 1;
       interval_pos = Math.Max(0.05f, interval_pos);
-    }    
+    }
     else if (interval_direction == 1 && interval_pos >= 1)
     {
       interval_pos = 1;
@@ -80,26 +87,19 @@ public class LEDs_RDR2 : Script
       red = 255 * interval_pos;
       green = 120 * interval_pos;
     }
-    else
+    else if (healthCoreLow)
     {
-
-      //green += flashy * 255;
-      //blue += flashy * 255;
-
-      if (healthCoreLow)
-      {
-        red += interval_pos * 255;
-        green -= red/2;
-      }
-      else
-      {
-        red *= interval_pos;
-        green *= interval_pos;
-      }
-      red += flashy * 255;
-
+      red += interval_pos * 255;
+      green -= red / 2;
     }
-    //RDR2.UI.Screen.DisplaySubtitle(healthCore.ToString());
+    else // stamina
+    {
+      red *= interval_pos;
+      green *= interval_pos;
+    }
+    red += flashy * 255;
+
+    // RDR2.UI.Screen.DisplaySubtitle( + " - " + healthCore.ToString());
 
     Packet packet = new();
     int num = 0;
@@ -114,9 +114,9 @@ public class LEDs_RDR2 : Script
     };
     Send(packet);
 
-    float pulseRate = pulseRateCurve.Evaluate(playerIsInDeadEye ? 0.5f : 
+    float pulseRate = pulseRateCurve.Evaluate(playerIsInDeadEye ? 0.5f :
       (healthCoreLow
-      ? healthCore *5f
+      ? healthCore * 5f
       : currentStaminaDisplay));
 
     interval_pos += interval_direction * 0.01f * pulseRate;
@@ -142,12 +142,10 @@ public class LEDs_RDR2 : Script
 
   private void OnTick(object sender, EventArgs e)
   {
-
     updateLights();
     HandleLEDs();
 
     return;
-
   }
 
   private void updateLights()
