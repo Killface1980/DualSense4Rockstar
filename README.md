@@ -33,8 +33,11 @@ Redefined controller layout and bug fixing
 - Support for LemonUI for config (currently triggered with F10)
 
 ### RDR 2
-- Added support for DSX using ScriptHook.
-- Adapted controller layout and features from Shtivi. All credits to the excellent feel of this layout go to him.
+- Based upon the layout and features from Shtivi
+- Added haptic feedback for gun recoil, adapted gun trigger and gun cocking to the triggers
+- Different haptics for double action revolver, hardened triggers while reloading
+- Supports off hand weapons
+- LEDs show current player health, can indicate the stamina and underpowered health core
 
 ## Installation Instructions & Download
 Nightly builts version can be found here. As it's currently WIP, I have no 1.0 release planned.
