@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using GTA;
-using Shared;
+using DSX_Base;
 
 namespace DualSense4GTAV
 {

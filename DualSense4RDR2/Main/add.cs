@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using RDR2;
-using Shared;
+using DSX_Base;
 using static DSX_Base.Client.iO;
 
 namespace DualSense4RDR2

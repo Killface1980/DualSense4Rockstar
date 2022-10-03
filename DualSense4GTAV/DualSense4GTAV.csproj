@@ -25,12 +25,6 @@
     <ProjectReference Include="..\DSX_Base\DSX_Base.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>C:\Rockstar Games\Grand Theft Auto V\Scripts\Newtonsoft.Json.dll</HintPath>
-      <CopyLocal>False</CopyLocal>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Reference Update="System">
       <CopyLocal>False</CopyLocal>
     </Reference>

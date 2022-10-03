@@ -1,7 +1,7 @@
 using DSX_Base.MathExtended;
 using RDR2;
 using RDR2.Native;
-using Shared;
+using DSX_Base;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -84,9 +84,9 @@ namespace DualSense4RDR2
 
       bool isMounted = hasMountedWeapon && playerPed?.CurrentVehicle != null;
 
-      uint number = 0;
+      uint weaponHash = 0;
 
-      bool currentPedVehicleWeapon = GET_CURRENT_PED_VEHICLE_WEAPON(playerPed.Handle, &number);
+      bool currentPedVehicleWeapon = GET_CURRENT_PED_VEHICLE_WEAPON(playerPed.Handle, &weaponHash);
 
       // RDR2.UI.Screen.DisplaySubtitle(hasOffHandWeapon.ToString());
 
@@ -117,8 +117,8 @@ namespace DualSense4RDR2
       {
         //RDR2.UI.Screen.DisplaySubtitle((number).ToString());
 
-        if (number == 3666182381 || //gat
-            number == 3101324918)// maxi
+        if (weaponHash == 3666182381 || //gat
+            weaponHash == 3101324918)// maxi
         {
           SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 1, amountOfForceExerted: 20);
           if (playerPed.IsShooting) // Auto
@@ -133,8 +133,8 @@ namespace DualSense4RDR2
               CustomTriggerValueMode.Rigid, startOfResistance: 30, amountOfForceExerted: 128);
           }
         }
-        else if (number == 2465730487 || //hotch - cannons
-                 number == 1609145491)// breach
+        else if (weaponHash == 2465730487 || //hotch - cannons
+                 weaponHash == 1609145491)// breach
         {
           SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 1, amountOfForceExerted: 20);
           SetAndSendPacketCustom(packet, Trigger.Right,
@@ -143,10 +143,21 @@ namespace DualSense4RDR2
       }
       else if (weaponIsThrowable || currentMainHandWeapon.Group == eWeaponGroup.GROUP_BOW || currentMainHandWeapon.Group == eWeaponGroup.GROUP_FISHINGROD || currentMainHandWeapon.Group == eWeaponGroup.GROUP_LASSO)
       {
-        if (PED._GET_LASSO_TARGET(playerPed.Handle) != 0)
+        if (currentMainHandWeapon.Group == eWeaponGroup.GROUP_FISHINGROD)
+        {
+          // ulong currentState;
+          // TASK._GET_TASK_FISHING(playerPed.Handle, &currentState); // BUG Crashing https://pastebin.com/NmK5ZLVs
+
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 6, 1 });
+
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 4, 2 });
+
+        }
+        else if (PED._GET_LASSO_TARGET(playerPed.Handle) != 0)
         {
           SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
+
         }
         /*        else if (player.IsTargettingAnything) // not working on the lasso
                 {
@@ -157,16 +168,21 @@ namespace DualSense4RDR2
         */
         else if (player.IsAiming)
         {
-          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 2, 8 });
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 6, 4 });
 
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 1, 6 });
+          // RDR2.UI.Screen.DisplaySubtitle("aimy");
+
         }
         else
         {
-          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 4, 1 });
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 6, 1 });
 
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 4, 2 });
+         // RDR2.UI.Screen.DisplaySubtitle("fishing");
+
         }
+
       }
       else
       {

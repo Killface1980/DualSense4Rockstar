@@ -1,6 +1,6 @@
 using GTA;
 using GTA.Native;
-using Shared;
+using DSX_Base;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,13 +12,6 @@ namespace DualSense4GTAV
 {
   public class Main_GTAV : Script
   {
-    private static bool engine;
-    private static int lastBrakeFreq = 0;
-    private static int lastBrakeResistance = 200;
-    private static int lastThrottleResistance = 1;
-    private static bool noammo;
-
-    private static DateTime TimeSent;
 
     public static readonly ControllerConfig controllerConfig = new();
 
@@ -210,7 +203,10 @@ namespace DualSense4GTAV
           float engineIdleRpm     = 0.2f;
           float engineRange       = 1f - engineIdleRpm;
           if (currentGear > 1)
+          {
             engineIdleRpm = 0.2f+ 0.025f* currentVehicle.HandlingData.ClutchChangeRateScaleUpShift * currentGear;
+          }
+
           float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
 
           //GTA.UI.Screen.ShowSubtitle(currentVehicle.HandlingData.ClutchChangeRateScaleUpShift + " - " + engineIdleRpm + " - " + currentRPMRatio);
@@ -402,9 +398,13 @@ namespace DualSense4GTAV
           // GTA.UI.Screen.ShowSubtitle(lastAmmo + " - " + ammoInClip+" - "+ (int)(timeBetweenShots * 1000f));
 
           if (playerPed.Weapons.Current.Hash == WeaponHash.Minigun)
+          {
             Wait((int)(timeBetweenShots * 10000f));
+          }
           else
+          {
             Wait((int)(timeBetweenShots * 1000f));
+          }
 
 
           lastAmmo = ammoInClip;

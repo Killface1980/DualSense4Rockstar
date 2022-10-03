@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Newtonsoft.Json;
-using Shared;
+using DSX_Base;
 
 namespace DualSense4RDR2
 {
@@ -36,7 +36,10 @@ namespace DualSense4RDR2
 
         public void getstat(out int bat, out bool isconnected)
         {
-            Connect();
+          bat = 0;
+          isconnected = false;
+          // Deactivated; The only use of Json, and 
+          Connect();
             bat = 0;
             isconnected = false;
             Packet data = new()

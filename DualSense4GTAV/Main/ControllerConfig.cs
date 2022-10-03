@@ -103,7 +103,7 @@ public class ControllerConfig
     {
       iO obj = new();
 
-      obj.getstat(out int bat, out bool isconnected);
+      obj.GetStat(out int bat, out bool isconnected);
       GTA.UI.Notification.Show("Controller connection status: " + isconnected + " controller battery status: " + bat +
                                ".");// "% \n to hide this Press F8");
     }

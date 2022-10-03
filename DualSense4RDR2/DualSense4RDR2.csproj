@@ -20,9 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>C:\Rockstar Games\Grand Theft Auto V\Scripts\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="ScriptHookRDRNetAPI">
       <HintPath>..\..\..\..\Rockstar Games\Red Dead Redemption 2\ScriptHookRDRNetAPI.dll</HintPath>
     </Reference>

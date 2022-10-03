@@ -1,6 +1,6 @@
 ﻿using DSX_Base.MathExtended;
 using GTA;
-using Shared;
+using DSX_Base;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -74,7 +74,7 @@ namespace DualSense4GTAV.Main_LEDs
 
       this._obj ??= new iO();
 
-      this._obj.getstat(out int bat, out bool isConnected);
+      this._obj.GetStat(out int bat, out bool isConnected);
       if (!isConnected && controllerConfig.showconmes)
       {
         GTA.UI.Notification.Show("Your controller is disconnected or discharged, please fix or press " + KeyConf
@@ -191,8 +191,16 @@ namespace DualSense4GTAV.Main_LEDs
       }
       else { isWanted = false; }
 
-      if (isSirenOn) return;
-      if (isWanted) return;
+      if (isSirenOn)
+      {
+        return;
+      }
+
+      if (isWanted)
+      {
+        return;
+      }
+
       if (controllerConfig.showRPM && playerped.IsInVehicle() && currentVehicle.Driver == playerped)
       {
         int RedChannel;
@@ -247,7 +255,10 @@ namespace DualSense4GTAV.Main_LEDs
           // float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
 
           if (currentGear > 1)
+          {
             engineIdleRpm = 0.2f+ 0.025f * currentVehicle.HandlingData.ClutchChangeRateScaleUpShift * currentGear;
+          }
+
           float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
 
           float curVal;

@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Newtonsoft.Json;
-using Shared;
+using DSX_Base;
 
 namespace DualSense4GTAV
 {
@@ -17,7 +17,7 @@ namespace DualSense4GTAV
 
         private static IPEndPoint endPoint;
 
-        private static Socket Socke;
+        private static Socket Socket;
 
         private static bool engine;
 
@@ -36,7 +36,7 @@ namespace DualSense4GTAV
             client = new UdpClient();
             string value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
             endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(value));
-            Socke = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         }
 
         private static void Send(Packet data)
@@ -45,11 +45,11 @@ namespace DualSense4GTAV
             client.Send(bytes, bytes.Length, endPoint);
         }
 
-        public void getstat(out int bat, out bool isconnected)
+        public void GetStat(out int bat, out bool isConnected)
         {
             Connect();
             bat = 0;
-            isconnected = false;
+            isConnected = false;
             Packet data = new()
             {
                 instructions = new Instruction[6]
@@ -57,7 +57,7 @@ namespace DualSense4GTAV
             Console.WriteLine("Instructions Sent\n");
             Send(data);
             Console.WriteLine("Waiting for Server Response...\n");
-            if (Process.GetProcessesByName("DSX").Length == 0)
+            if (Process.GetProcessesByName("DSX").Length == 0 && Main_GTAV.controllerConfig.showconmes) 
             {
                 GTA.UI.Notification.Show("DSX is not running but mod is installed");
             }
@@ -71,7 +71,7 @@ namespace DualSense4GTAV
                     Console.WriteLine("Status: " + serverResponse.Status);
                     _ = DateTime.Now;
                     bat = serverResponse.BatteryLevel;
-                    isconnected = serverResponse.isControllerConnected;
+                    isConnected = serverResponse.isControllerConnected;
                     Console.WriteLine($"isControllerConnected: {serverResponse.isControllerConnected}");
                     Console.WriteLine($"BatteryLevel: {serverResponse.BatteryLevel}");
                     Console.WriteLine("===================================================================\n");
