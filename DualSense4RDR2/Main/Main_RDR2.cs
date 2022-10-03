@@ -239,12 +239,12 @@ namespace DualSense4RDR2
               SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
               mainHandShotRecently = true;
               offHandShotRecently = false;
-              if (!hasOffHandWeapon)
+              if (!hasOffHandWeapon && playerIsAiming)
               {
                 SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
               }
             }
-            if (currentOffHandWeapon.AmmoInClip < lastOffHandAmmo)
+            if (currentOffHandWeapon.AmmoInClip < lastOffHandAmmo && playerIsAiming)
             {
               SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
               mainHandShotRecently = false;
