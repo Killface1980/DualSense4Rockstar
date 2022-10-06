@@ -47,41 +47,51 @@ namespace DualSense4GTAV
 
         public void GetStat(out int bat, out bool isConnected)
         {
-            Connect();
-            bat = 0;
-            isConnected = false;
-            Packet data = new()
+          Connect();
+          bat = 0;
+          isConnected = false;
+          Packet data = new()
+          {
+            instructions = new Instruction[6]
+          };
+          Console.WriteLine("Instructions Sent\n");
+          Send(data);
+          Console.WriteLine("Waiting for Server Response...\n");
+          if (Process.GetProcessesByName("DSX").Length == 0 && Main_GTAV.controllerConfig.showconmes)
+          {
+            GTA.UI.Notification.Show("DSX is not running but mod is installed");
+          }
+          else
+          {
+            try
             {
-                instructions = new Instruction[6]
-            };
-            Console.WriteLine("Instructions Sent\n");
-            Send(data);
-            Console.WriteLine("Waiting for Server Response...\n");
-            if (Process.GetProcessesByName("DSX").Length == 0 && Main_GTAV.controllerConfig.showconmes) 
-            {
-                GTA.UI.Notification.Show("DSX is not running but mod is installed");
+              byte[] array = client.Receive(ref endPoint);
+              if (array.Length != 0)
+              {
+                ServerResponse serverResponse =
+                  JsonConvert.DeserializeObject<ServerResponse>(
+                    Encoding.ASCII.GetString(array, 0, array.Length) ?? "");
+                Console.WriteLine("===================================================================");
+                Console.WriteLine("Status: " + serverResponse.Status);
+                _ = DateTime.Now;
+                bat = serverResponse.BatteryLevel;
+                isConnected = serverResponse.isControllerConnected;
+                Console.WriteLine($"isControllerConnected: {serverResponse.isControllerConnected}");
+                Console.WriteLine($"BatteryLevel: {serverResponse.BatteryLevel}");
+                Console.WriteLine("===================================================================\n");
+              }
+              else
+              {
+                GTA.UI.Notification.Show("DSX is not installed or UDP is off check the app settings ");
+              }
+
             }
-            else
+            catch
             {
-                byte[] array = client.Receive(ref endPoint);
-                if (array.Length != 0)
-                {
-                    ServerResponse serverResponse = JsonConvert.DeserializeObject<ServerResponse>(Encoding.ASCII.GetString(array, 0, array.Length) ?? "");
-                    Console.WriteLine("===================================================================");
-                    Console.WriteLine("Status: " + serverResponse.Status);
-                    _ = DateTime.Now;
-                    bat = serverResponse.BatteryLevel;
-                    isConnected = serverResponse.isControllerConnected;
-                    Console.WriteLine($"isControllerConnected: {serverResponse.isControllerConnected}");
-                    Console.WriteLine($"BatteryLevel: {serverResponse.BatteryLevel}");
-                    Console.WriteLine("===================================================================\n");
-                }
-                else
-                {
-                    GTA.UI.Notification.Show("DSX is not installed or UDP is off check the app settings ");
-                }
+              isConnected = false;
             }
             Console.WriteLine("Press any key to send again\n");
+          }
         }
     }
 }
