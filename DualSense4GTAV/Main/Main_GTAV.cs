@@ -22,7 +22,7 @@ namespace DualSense4GTAV
       Connect();
       Process.GetProcessesByName("DSX");
       //Interval = 50;
-      KeyDown += controllerConfig.OnKeyDown;
+      KeyUp += controllerConfig.OnKeyDown;
     }
 
 
@@ -30,6 +30,10 @@ namespace DualSense4GTAV
 
     private void OnTick(object sender, EventArgs e)
     {
+      if (ControllerConfig.isDisabled)
+      {
+        return;
+      }
       controllerConfig.pool.Process();
 
       Packet packet = new();

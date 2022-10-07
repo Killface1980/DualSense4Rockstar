@@ -20,6 +20,9 @@ public class ControllerConfig
   public bool showPlayerColor;
   public bool showRPM;
   public bool showWanted;
+
+  public static bool isDisabled;
+
   private NativeSliderItem item_endofResistanceVehicle;
   private NativeSliderItem item_maxResistanceVehicle;
   private NativeSliderItem item_minResistanceVehicle;
@@ -45,9 +48,9 @@ public class ControllerConfig
     showPlayerColor = settings.GetValue("Controls", nameof(showPlayerColor), true);
 
     startofResistanceVehicle = settings.GetValue("Controls", nameof(startofResistanceVehicle), 1) * 25;
-    endofResistanceVehicle = settings.GetValue("Controls", nameof(endofResistanceVehicle), 7) * 25;
-    minResistanceVehicle = settings.GetValue("Controls", nameof(minResistanceVehicle), 2) * 25;
-    maxResistanceVehicle = settings.GetValue("Controls", nameof(maxResistanceVehicle), 7) * 25;
+    endofResistanceVehicle   = settings.GetValue("Controls", nameof(endofResistanceVehicle), 7) * 25;
+    minResistanceVehicle     = settings.GetValue("Controls", nameof(minResistanceVehicle), 2) * 25;
+    maxResistanceVehicle     = settings.GetValue("Controls", nameof(maxResistanceVehicle), 7) * 25;
 
     pool = new ObjectPool();
 
@@ -97,6 +100,8 @@ public class ControllerConfig
   {
     if (e.KeyCode == KeyConf.showMenu)
     {
+      ControllerConfig.isDisabled = false;
+
       menu.Visible = !menu.Visible;
     }
     else if (e.KeyCode == KeyConf.showBatStat)

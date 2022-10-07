@@ -66,6 +66,11 @@ namespace DualSense4GTAV.Main_LEDs
 
     private void OnTick(object sender, EventArgs e)
     {
+      if (ControllerConfig.isDisabled)
+      {
+        return;
+      }
+
       Packet packet = new();
       int controllerIndex = 0;
       packet.instructions = new Instruction[4];

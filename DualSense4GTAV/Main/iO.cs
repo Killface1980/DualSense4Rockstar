@@ -59,9 +59,10 @@ namespace DualSense4GTAV
           Console.WriteLine("Waiting for Server Response...\n");
           if (Process.GetProcessesByName("DSX").Length == 0 && Main_GTAV.controllerConfig.showconmes)
           {
-            GTA.UI.Notification.Show("DSX is not running but mod is installed");
+            GTA.UI.Notification.Show("DSX is not running but mod is installed. This mod will shutdown. Press " + KeyConf.showMenu + " to reactivate it.");
+            ControllerConfig.isDisabled = true ;
           }
-          else
+      else
           {
             try
             {

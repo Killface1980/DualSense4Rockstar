@@ -244,7 +244,7 @@ namespace DualSense4RDR2
                 SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
               }
             }
-            if (currentOffHandWeapon.AmmoInClip < lastOffHandAmmo && playerIsAiming)
+            if (currentOffHandWeapon.AmmoInClip < lastOffHandAmmo)// && playerIsAiming)
             {
               SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
               mainHandShotRecently = false;
@@ -277,24 +277,20 @@ namespace DualSense4RDR2
             if (mainHandIsDoubleAction)
             {
               if (!hasOffHandWeapon){ doubleActionActive = true; }
-              else if (!mainHandShotRecently && currentMainHandWeapon.AmmoInClip > 0) { doubleActionActive = true;}
+              else if (offHandShotRecently && currentMainHandWeapon.AmmoInClip > 0 || mainHandShotRecently && currentOffHandWeapon.AmmoInClip == 0 ) { doubleActionActive = true;}
              // RDR2.UI.Screen.DisplaySubtitle("main is double");
             }
 
-            if (!doubleActionActive)
+            if (offHandIsDoubleAction && !doubleActionActive)
             {
-              if (offHandIsDoubleAction && currentOffHandWeapon.AmmoInClip > 0)
-              {
-                doubleActionActive = true;
-               // RDR2.UI.Screen.DisplaySubtitle("secondary is double");
-              }
+              if (mainHandShotRecently && currentOffHandWeapon.AmmoInClip > 0 || offHandShotRecently && currentMainHandWeapon.AmmoInClip == 0) { doubleActionActive = true; }
             }
 
             if (doubleActionActive) // harder triggers for double action
             {
               triggerEnd = 3;
-              force1 = (5 + (3f * degradation));
-              force2 = (5 + (3f * degradation));
+              force1 =  (5 + (3f * degradation));
+              force2 =  (5 + (3f * degradation));
             }
 
 
