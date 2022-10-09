@@ -1,11 +1,9 @@
-using DSX_Base.MathExtended;
+using DSX_Base;
 using RDR2;
 using RDR2.Native;
-using DSX_Base;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Windows.Forms;
 using static DSX_Base.Client.iO;
 using static RDR2.Native.WEAPON;
 
@@ -14,16 +12,18 @@ namespace DualSense4RDR2
   public class Main_RDR2 : Script
   {
     private static Ped playerPed;
-    private static Weapon currentMainHandWeapon;
     private static bool wanted = false;
+    private readonly Dictionary<uint, Weapon> playerWeapons = new Dictionary<uint, Weapon>();
     private int brig;
-    int lastMainHandAmmo;
-    int lastOffHandAmmo;
-
+    private int lastMainHandAmmo;
+    private int lastOffHandAmmo;
 
     //private float pulseRate = 0;
     //    public static readonly ControllerConfig controllerConfig = new();
 
+    private bool mainHandWillShootNext;
+
+    private bool offHandWillShootNext;
 
     public Main_RDR2()
     {
@@ -33,19 +33,36 @@ namespace DualSense4RDR2
       Process.GetProcessesByName("DSX");
     }
 
+    private static bool ShouldBehaveLikeDoubleAction(Weapon weapon)
+    {
+      switch (weapon.Hash)
+      {
+        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION:
+        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION_EXOTIC:
+        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION_GAMBLER:
+        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION_MICAH:
+        case eWeapon.WEAPON_PISTOL_MAUSER:
+        case eWeapon.WEAPON_PISTOL_MAUSER_DRUNK:
+        case eWeapon.WEAPON_PISTOL_SEMIAUTO:
+        case eWeapon.WEAPON_PISTOL_M1899:
+        case eWeapon.WEAPON_SHOTGUN_SEMIAUTO:
+          return true;
+      }
 
-    private readonly Dictionary<uint, Weapon> playerWeapons = new Dictionary<uint, Weapon>();
-    private bool mainHandWillShootNext;
-    private bool offHandWillShootNext;
+      return false;
+    }
 
     private unsafe Weapon GetCurrentWeapon(bool offHand = false)
     {
       Ped owner = Game.Player.Character;
       uint weaponHash;
       GET_CURRENT_PED_WEAPON(owner!.Handle, &weaponHash, true,
-        offHand ? 
+        offHand ?
           (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY :
         (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY, false);
+
+      //int weaponEntityIndex = GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint);
+
 
       //uint weaponHash = WEAPON._GET_PED_CURRENT_HELD_WEAPON(owner.Handle);
       if (playerWeapons!.ContainsKey(weaponHash))
@@ -53,37 +70,36 @@ namespace DualSense4RDR2
         return playerWeapons[weaponHash];
       }
 
-      Weapon weapon = new(owner, (eWeapon)weaponHash);
+      Weapon weapon = new(owner, (eWeapon)weaponHash );
       playerWeapons.Add(weaponHash, weapon);
       return weapon;
     }
 
     private unsafe void OnTick(object sender, EventArgs e)
     {
-      Packet packet = new();
-      packet.instructions = new Instruction[4];
-      Player player = Game.Player;
-      playerPed = player.Character;
-      currentMainHandWeapon = playerPed?.Weapons?.Current;
-
+      Packet packet                = new();
+      packet.instructions          = new Instruction[4];
+      Player player                = Game.Player;
+      playerPed                    = player.Character;
+      Weapon currentMainHandWeapon = GetCurrentWeapon();// playerPed?.Weapons?.Current;
+      Weapon currentOffHandWeapon   = GetCurrentWeapon(true);
+      //playerPed.Weapons.CurrentWeaponEntity.
       //if ((uint)CurrentOffHand.Hash == 0xA2719263) // unarmed
       {
         //RDR2.UI.Screen.DisplaySubtitle((CurrentOffHand.Hash).ToString());
-
       }
 
       // SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 1, 1 });
       // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 5, 8, 8 });
 
       bool mainWeaponIsReadyToShoot = IS_PED_WEAPON_READY_TO_SHOOT(playerPed.Handle);
-      bool weaponIsAGun = IS_WEAPON_A_GUN((uint)currentMainHandWeapon.Hash); //IS_WEAPON_A_GUN
-      bool weaponIsThrowable = _IS_WEAPON_THROWABLE((uint)currentMainHandWeapon.Hash); //
-      bool mainWeaponIsTwoHanded = _IS_WEAPON_TWO_HANDED((uint)currentMainHandWeapon.Hash);
-      bool carriesWeaponOpenly = currentMainHandWeapon.Hash != eWeapon.WEAPON_UNARMED; /* unarmed*/
-      Weapon currentOffHandWeapon = GetCurrentWeapon(true);
-      bool hasOffHandWeapon = currentOffHandWeapon.Hash != eWeapon.WEAPON_UNARMED;
-      //uint* numbi = null;
-      //var mount = GET_CURRENT_PED_VEHICLE_WEAPON(characterPed.Handle, numbi); //
+      bool weaponIsAGun             = IS_WEAPON_A_GUN((uint)currentMainHandWeapon.Hash); //IS_WEAPON_A_GUN
+      bool weaponIsThrowable        = _IS_WEAPON_THROWABLE((uint)currentMainHandWeapon.Hash); //
+      bool mainWeaponIsTwoHanded    = _IS_WEAPON_TWO_HANDED((uint)currentMainHandWeapon.Hash);
+      bool carriesWeaponOpenly      = currentMainHandWeapon.Hash != eWeapon.WEAPON_UNARMED; /* unarmed*/
+      bool hasOffHandWeapon         = currentOffHandWeapon.Hash != eWeapon.WEAPON_UNARMED;
+      //uint* numbi                 = null;
+      //var mount                   = GET_CURRENT_PED_VEHICLE_WEAPON(characterPed.Handle, numbi); //
 
       bool hasMountedWeapon = playerPed?.Weapons?.Current?.Group == 0 && playerPed.IsSittingInVehicle();
 
@@ -92,6 +108,7 @@ namespace DualSense4RDR2
       uint weaponHash = 0;
 
       bool currentPedVehicleWeapon = GET_CURRENT_PED_VEHICLE_WEAPON(playerPed.Handle, &weaponHash);
+       RDR2.UI.Screen.DisplaySubtitle(currentMainHandWeapon.AmmoInClip + " - " + currentOffHandWeapon.AmmoInClip);
 
       // RDR2.UI.Screen.DisplaySubtitle(hasOffHandWeapon.ToString());
 
@@ -99,12 +116,15 @@ namespace DualSense4RDR2
       {
       }
       // return;
-      bool playerIsAiming = player.IsAiming; //PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LT) ;// 
+      bool isAimingControlPressed = /*PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LT) ||*/ player.IsAiming; ////
 
       //RDR2.UI.Screen.DisplaySubtitle(weaponIsAGun.ToString());
       // return;
 
       //RDR2.UI.Screen.DisplaySubtitle(playerweapon.Group.ToString());
+      //RDR2.UI.Screen.DisplaySubtitle((playerPed.IsReloading).ToString());
+      int ammo;
+
 
       // Weapon Wheel
       if (PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LB))  //INPUT_FRONTEND_LB, weapon wheel
@@ -115,12 +135,27 @@ namespace DualSense4RDR2
       // no gun accidents
       else if (playerPed.IsReloading) // Mode reloading
       {
-        SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
-        SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
+
+        if (lastMainHandAmmo != currentMainHandWeapon.AmmoInClip ||
+            hasOffHandWeapon && lastOffHandAmmo != currentOffHandWeapon.AmmoInClip)
+        {
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
+          // Wait(100);
+        }
+        else
+        {
+          SetAndSendPacket(packet, Trigger.Right);
+          SetAndSendPacket(packet, Trigger.Left);
+          Wait(20);
+        }
         mainHandWillShootNext = true;
-        offHandWillShootNext  = false;
-        lastMainHandAmmo      = lastOffHandAmmo = 99; // set the ammo the a ridiculous amount
-        Wait(100);
+        offHandWillShootNext = false;
+
+        lastMainHandAmmo = currentMainHandWeapon.AmmoInClip;
+        lastOffHandAmmo = currentOffHandWeapon.AmmoInClip;
+
+        // SetAndSendPacket(packet, Trigger.Right, TriggerMode.AutomaticGun,new(){ 0,8,3 });
       }
       else if (currentPedVehicleWeapon)
       {
@@ -133,7 +168,7 @@ namespace DualSense4RDR2
           if (playerPed.IsShooting) // Auto
           {
             SetAndSendPacket(packet, Trigger.Right,
-              TriggerMode.AutomaticGun, new(){0,4,30});
+              TriggerMode.AutomaticGun, new() { 0, 4, 30 });
             Script.Wait(100);
           }
           else // Prepare
@@ -160,13 +195,11 @@ namespace DualSense4RDR2
           SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 6, 1 });
 
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 4, 2 });
-
         }
         else if (PED._GET_LASSO_TARGET(playerPed.Handle) != 0)
         {
           SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
-
         }
         /*        else if (player.IsTargettingAnything) // not working on the lasso
                 {
@@ -181,26 +214,21 @@ namespace DualSense4RDR2
 
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 1, 6 });
           // RDR2.UI.Screen.DisplaySubtitle("aimy");
-
         }
         else
         {
           SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance, new() { 6, 1 });
 
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance, new() { 4, 2 });
-         // RDR2.UI.Screen.DisplaySubtitle("fishing");
-
+          // RDR2.UI.Screen.DisplaySubtitle("fishing");
         }
-
       }
       else
       {
-       
         bool isPedDuelling = TASK._IS_PED_DUELLING(player.Handle);
         bool isDeadEyeEnabled = player.IsInDeadEye || player.IsInEagleEye;
         if (weaponIsAGun || isPedDuelling || isDeadEyeEnabled)
         {
-
           //SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new(){6,1});
           eWeaponAttachPoint attachPoint;
 
@@ -210,38 +238,40 @@ namespace DualSense4RDR2
           }
           else
           {
-            attachPoint =  eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY;
+            attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY;
           }
 
           int weaponEntityIndex = GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint);
           float degradation = GET_WEAPON_DEGRADATION(weaponEntityIndex);
+          
 
-           //RDR2.UI.Screen.DisplaySubtitle(currentMainHandWeapon.Hash.ToString());
+          //RDR2.UI.Screen.DisplaySubtitle(weaponEntityIndex.ToString());
 
           // float permanentDegradation = GET_WEAPON_PERMANENT_DEGRADATION(weaponEntityIndex);
-          // 
+          //
 
           // 279042 - double action
-          bool mainHandIsDoubleAction = ShouldBehaveLikeDoubleAction( currentMainHandWeapon);
-          bool offHandIsDoubleAction = ShouldBehaveLikeDoubleAction( currentOffHandWeapon);
-          // RDR2.UI.Screen.DisplaySubtitle(mainHandIsDoubleAction.ToString());
+          bool mainHandIsDoubleAction = ShouldBehaveLikeDoubleAction(currentMainHandWeapon);
+          bool offHandIsDoubleAction = ShouldBehaveLikeDoubleAction(currentOffHandWeapon);
 
           //if (playerPed.IsShooting)
           if (playerPed.IsShooting)
           {
-
-           // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new (){0,8, 2} );
+            // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new (){0,8, 2} );
 
             Wait(10);
 
+
             //SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
-            if (currentMainHandWeapon.AmmoInClip < lastMainHandAmmo)
+            if (!hasOffHandWeapon || currentMainHandWeapon.Hash == currentOffHandWeapon.Hash || mainHandWillShootNext && (currentMainHandWeapon.AmmoInClip < lastMainHandAmmo))
             {
+             // RDR2.UI.Screen.DisplaySubtitle("main");
+
               SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
 
-              if (!hasOffHandWeapon && playerIsAiming)
+              if (isAimingControlPressed)
               {
-                SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 80, forceExertedInRange: 80);
+                //    SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 40, forceExertedInRange: 40);
               }
 
               if (hasOffHandWeapon && currentOffHandWeapon.AmmoInClip > 0)
@@ -250,17 +280,18 @@ namespace DualSense4RDR2
                 offHandWillShootNext = true;
               }
             }
-            if (currentOffHandWeapon.AmmoInClip < lastOffHandAmmo)// && playerIsAiming)
+            else if (offHandWillShootNext&& currentOffHandWeapon.AmmoInClip < lastOffHandAmmo)// && playerIsAiming)
             {
-              if (playerIsAiming)
+            //   RDR2.UI.Screen.DisplaySubtitle("off");
+
+              if (isAimingControlPressed)
               {
                 SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
-              SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 80, forceExertedInRange: 80);
+         //       SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 40, forceExertedInRange: 40);
               }
               else
               {
                 SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
-
               }
               if (currentMainHandWeapon.AmmoInClip > 0)
               {
@@ -268,9 +299,13 @@ namespace DualSense4RDR2
                 offHandWillShootNext = false;
               }
             }
+            lastMainHandAmmo = currentMainHandWeapon.AmmoInClip;
+            lastOffHandAmmo = currentOffHandWeapon.AmmoInClip;
+
             Wait(150);
+
           }
-          else if (!mainHandIsDoubleAction && (playerIsAiming && mainWeaponIsTwoHanded || !hasOffHandWeapon )  && !mainWeaponIsReadyToShoot || isPedDuelling || !carriesWeaponOpenly) // Mode Gun Cock
+          else if (!mainHandIsDoubleAction && (isAimingControlPressed && mainWeaponIsTwoHanded || !hasOffHandWeapon) && !mainWeaponIsReadyToShoot || isPedDuelling || !carriesWeaponOpenly) // Mode Gun Cock
           {
             SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 140 - (int)(degradation * 110), amountOfForceExerted: (int)(100 + degradation * 120), 180);
             SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
@@ -283,7 +318,7 @@ namespace DualSense4RDR2
 
             // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
           }
-          else // GUN_MANUAL; 
+          else // GUN_MANUAL;
           {
             // uint modelHash = WEAPON.enti(weaponEntityIndex);
             int triggerEnd = 1;
@@ -294,9 +329,9 @@ namespace DualSense4RDR2
 
             if (mainHandIsDoubleAction)
             {
-              if (!hasOffHandWeapon){ doubleActionActive = true; }
-              else if (mainHandWillShootNext ) { doubleActionActive = true;}
-             // RDR2.UI.Screen.DisplaySubtitle("main is double");
+              if (!hasOffHandWeapon) { doubleActionActive = true; }
+              else if (mainHandWillShootNext) { doubleActionActive = true; }
+              // RDR2.UI.Screen.DisplaySubtitle("main is double");
             }
 
             if (offHandIsDoubleAction && !doubleActionActive)
@@ -308,14 +343,13 @@ namespace DualSense4RDR2
             if (doubleActionActive) // harder triggers for double action
             {
               triggerEnd = 3;
-              force1 =  (4 + (4f * degradation));
-              force2 =  (4 + (4f * degradation));
+              force1 = (4 + (4f * degradation));
+              force2 = (4 + (4f * degradation));
               factor = 0.85f;
             }
 
-
             //RDR2.UI.Screen.DisplaySubtitle((doubleActionActive).ToString());
-            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 180 - (int)(degradation * 120 * factor), amountOfForceExerted: (int)(100+degradation * 120), 255);
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 180 - (int)(degradation * 120 * factor), amountOfForceExerted: (int)(100 + degradation * 120), 255);
 
             SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
             {
@@ -332,13 +366,11 @@ namespace DualSense4RDR2
         {
           SetAndSendPacket(packet, Trigger.Right);
           SetAndSendPacket(packet, Trigger.Left);
-          
+
           // SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
           // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 2, 3, 4 });
         }
       }
-      lastMainHandAmmo = currentMainHandWeapon.AmmoInClip;
-      lastOffHandAmmo = currentOffHandWeapon.AmmoInClip;
 
       return;
       // updateLights();
@@ -348,28 +380,6 @@ namespace DualSense4RDR2
       return;
 
       //else
-
-    }
-
-    private static bool ShouldBehaveLikeDoubleAction(Weapon weapon)
-    {
-      bool isDoubleAction = false;
-      switch (weapon.Hash)
-      {
-        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION:
-        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION_EXOTIC:
-        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION_GAMBLER:
-        case eWeapon.WEAPON_REVOLVER_DOUBLEACTION_MICAH:
-        case eWeapon.WEAPON_PISTOL_MAUSER:
-        case eWeapon.WEAPON_PISTOL_MAUSER_DRUNK:
-        case eWeapon.WEAPON_PISTOL_SEMIAUTO:
-        case eWeapon.WEAPON_PISTOL_M1899:
-        case eWeapon.WEAPON_SHOTGUN_SEMIAUTO:
-          isDoubleAction = true;
-          break;
-      }
-
-      return isDoubleAction;
     }
   }
 }
