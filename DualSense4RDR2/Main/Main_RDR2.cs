@@ -300,7 +300,7 @@ namespace DualSense4RDR2
 
               if (isAimingControlPressed)
               {
-                //    SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 40, forceExertedInRange: 40);
+                    SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 60, forceExertedInRange: 60);
               }
 
               if (hasOffHandWeapon && ammoL > 0)
@@ -316,7 +316,7 @@ namespace DualSense4RDR2
               if (isAimingControlPressed)
               {
                 SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
-                //       SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 40, forceExertedInRange: 40);
+                SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 60, forceExertedInRange: 60);
               }
               else
               {
