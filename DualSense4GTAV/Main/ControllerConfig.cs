@@ -3,7 +3,6 @@ using LemonUI;
 using LemonUI.Menus;
 using System;
 using System.Windows.Forms;
-using GTA.Native;
 
 namespace DualSense4GTAV;
 

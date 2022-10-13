@@ -1,39 +1,28 @@
+using DSX_Base;
+using DSX_Base.MathExtended;
 using GTA;
 using GTA.Native;
-using DSX_Base;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using DSX_Base.MathExtended;
 using static DSX_Base.Client.iO;
 
 namespace DualSense4GTAV
 {
   public class Main_GTAV : Script
   {
-
     public static readonly ControllerConfig controllerConfig = new();
 
-    private static class WeaponDamageHelper
-    {
-      public static float min = 10;
-      public static float max = 50;
+    public static float max = 60;
+    public static float min = 20;
+    private static int lastAmmo = 0;
 
-      public static float CurrentWeaponDamageNormalized(WeaponHash weaponHash)
-      {
-        float weaponDamage = Function.Call<float>(Hash.GET_WEAPON_DAMAGE, weaponHash);
+    private static bool spinning;
 
-        // min = Math.Min(weaponDamage, min);
-        // min = Math.Max(min, 10);
-        // max = Math.Max(weaponDamage, max);
-        // max = Math.Min(max, 80);
-        float result = MathExtended.InverseLerp(min, max, weaponDamage);
-        // GTA.UI.Notification.Show( result.ToString("N3"));
-        return result;
-      }
-    }
-    public Main_GTAV()
+
+
+  public Main_GTAV()
     {
       Tick += this.OnTick;
       //Tick += Main_LEDs.Ontick;
@@ -43,8 +32,24 @@ namespace DualSense4GTAV
       KeyUp += controllerConfig.OnKeyDown;
     }
 
+    public static float CurrentWeaponDamageNormalized(WeaponHash weaponHash)
+    {
+      float weaponDamage = currentDamage;// Function.Call<float>(Hash.GET_WEAPON_DAMAGE, weaponHash);
 
+      // min = Math.Min(weaponDamage, min);
+      // min = Math.Max(min, 10);
+      // max = Math.Max(weaponDamage, max);
+      // max = Math.Min(max, 80);
+      float result = MathExtended.InverseLerp(min, max, weaponDamage);
 
+      // GTA.UI.Screen.ShowSubtitle( weaponDamage.ToString("N3"));
+      return result;
+    }
+
+    Weapon lastWeapon;
+    private static float currentAccuracy;
+    private static float currentDamage;
+    float weaponStrength;
 
     private void OnTick(object sender, EventArgs e)
     {
@@ -54,12 +59,15 @@ namespace DualSense4GTAV
       }
       controllerConfig.pool.Process();
 
+
+
+
       Packet packet = new();
       int controllerIndex = 0;
       packet.instructions = new Instruction[4];
       Ped playerPed = Game.Player.Character;
 
-      Weapon playerWeapon = playerPed.Weapons.Current;
+
       if (Function.Call<bool>(Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
       {
         SetAndSendPacket(packet, Trigger.Right);
@@ -218,21 +226,20 @@ namespace DualSense4GTAV
         else // if (playerped.CurrentVehicle.EngineHealth >= 1000f)
         {
           float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
-          float healthMalus       = (int)((1f - engineHealthFloat) * 4f);
-          int currentGear         = currentVehicle.CurrentGear;
-          int maxGear             = currentVehicle.HighGear;
-          float currentRPM        = currentVehicle.CurrentRPM;
-          float engineIdleRpm     = 0.2f;
-          float engineRange       = 1f - engineIdleRpm;
+          float healthMalus = (int)((1f - engineHealthFloat) * 4f);
+          int currentGear = currentVehicle.CurrentGear;
+          int maxGear = currentVehicle.HighGear;
+          float currentRPM = currentVehicle.CurrentRPM;
+          float engineIdleRpm = 0.2f;
+          float engineRange = 1f - engineIdleRpm;
           if (currentGear > 1)
           {
-            engineIdleRpm = 0.2f+ 0.025f* currentVehicle.HandlingData.ClutchChangeRateScaleUpShift * currentGear;
+            engineIdleRpm = 0.2f + 0.025f * currentVehicle.HandlingData.ClutchChangeRateScaleUpShift * currentGear;
           }
 
           float currentRPMRatio = MathExtended.InverseLerp(engineIdleRpm, 1f, currentRPM);
 
           //GTA.UI.Screen.ShowSubtitle(currentVehicle.HandlingData.ClutchChangeRateScaleUpShift + " - " + engineIdleRpm + " - " + currentRPMRatio);
-
 
           //float currentRPMRatio = MathExtended.InverseLerp(0.2f + 0.6f * (Math.Max(0, currentVehicle.CurrentGear - 1)) / currentVehicle.HighGear, 1f, currentRPM);
           //(currentRPM - engineIdleRpm) / engineRange;
@@ -253,11 +260,11 @@ namespace DualSense4GTAV
           }
 
           float startOfGear = 1f;
-          startOfGear      *= MathExtended.Lerp(0.7f, 1f, initialDriveForce);
-          startOfGear      *= MathExtended.Lerp(0.3f, 1f, engineHealthFloat);
-          startOfGear      *= MathExtended.Lerp(1f, 0.7f, gearForce);
-          startOfGear      *= MathExtended.Lerp(0.6f, 1f, driveInertia);
-          startOfGear      *= spinnie;
+          startOfGear *= MathExtended.Lerp(0.7f, 1f, initialDriveForce);
+          startOfGear *= MathExtended.Lerp(0.3f, 1f, engineHealthFloat);
+          startOfGear *= MathExtended.Lerp(1f, 0.7f, gearForce);
+          startOfGear *= MathExtended.Lerp(0.6f, 1f, driveInertia);
+          startOfGear *= spinnie;
 
           //startOfGear*= Lerp(0.4f, 1f, currentVehicle.Clutch);
 
@@ -287,7 +294,7 @@ namespace DualSense4GTAV
             SetAndSendPacket(packet, Trigger.Right);
             Script.Wait(100);
           }
-          else if (currentGear > 0 )
+          else if (currentGear > 0)
           {
             SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid,
               startOfResistance: (int)MathExtended.Lerp(controllerConfig.startofResistanceVehicle, controllerConfig.endofResistanceVehicle, startOfGear),
@@ -326,186 +333,253 @@ namespace DualSense4GTAV
           }
 
           // GTA.UI.Screen.ShowSubtitle(startOfResistance.ToString("N2") +" - " + amountOfForce.ToString("N2"));
-          
         }
       }
       else
       {
+        Weapon playerWeapon = playerPed.Weapons.Current;
+
+
+        if (playerWeapon == null) return;
+
+        if (playerWeapon != lastWeapon )
         {
-          if (playerWeapon != null)
+          WeaponHudStats stats = new();
+          Hans.GetTheWeaponHudStats((uint)playerWeapon.Hash, ref stats);
+
+          lastWeapon = playerWeapon;
+          currentAccuracy = stats.hudAccuracy / 100f;
+          currentDamage = stats.hudDamage;
+          weaponStrength = CurrentWeaponDamageNormalized(playerWeapon.Hash);
+
+          // GTA.UI.Screen.ShowSubtitle(stats.hudAccuracy + " - " + stats.hudRange);
+        }
+
+
+        float animationLength = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
+        bool weaponHasNoAmmo =
+          playerWeapon.Group == WeaponGroup.Unarmed || playerWeapon.Group == WeaponGroup.PetrolCan;
+
+        if (playerPed.IsReloading || playerWeapon.AmmoInClip == 0 && !weaponHasNoAmmo)
+        {
+          if (lastAmmo == 1 && playerWeapon.AmmoInClip == 0) // recoil!
           {
-            float weaponStrength =  WeaponDamageHelper.CurrentWeaponDamageNormalized(playerWeapon.Hash);
-
-            if (playerPed.IsReloading || playerWeapon.AmmoInClip == 0)
-            {
-              if (lastAmmo == 1 && lastAmmo != playerWeapon.AmmoInClip) // recoil!
-              {
-               // SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 128, forceExertedInRange: 128);
-                SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 32, amountOfForceExerted: (int)MathExtended.Lerp(2, 96, weaponStrength), (int)MathExtended.Lerp(32, 128, weaponStrength));
-
-              }
-              else
-              {
-                SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 4 });
-
-              }
-              SetAndSendPacket(packet, Trigger.Left);
-              // Wait(50);
-              lastAmmo = playerPed.Weapons.Current.AmmoInClip;
-
-              return;
-            }
-
-
-
-            float animationLength = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
-            //int weaponStrength = Math.Min(8, (int)(weaponDamage / 6f));
-
-            int fireRateAutomaticInt = (int)(1/animationLength );
-             //GTA.UI.Screen.ShowSubtitle(fireRateAutomaticInt.ToString());
-
-
-            int triggerForce = (int)MathExtended.Lerp(1, 5, weaponStrength);
-            int triggerSnapForce = (int)MathExtended.Lerp(1, 4, weaponStrength);
-            switch (playerWeapon.Group)
-            {
-              case WeaponGroup.Pistol:
-              case WeaponGroup.SMG:
-              case WeaponGroup.AssaultRifle:
-              case WeaponGroup.MG:
-              case WeaponGroup.Sniper:
-              case WeaponGroup.Shotgun:
-                ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, weaponStrength, fireRateAutomaticInt, new() { 1, 5, triggerForce, triggerSnapForce }, animationLength);
-                break;
-
-                SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
-                    new() { 5, 2 });
-                if (playerPed.IsShooting)
-                {
-                  SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 50,
-                    amountOfForceExerted: 180, forceExertedInRange: 180);
-                  //Wait(50);
-                }else
-                {
-                  SetAndSendPacket(packet, Trigger.Right, TriggerMode.SemiAutomaticGun,
-                    new() { 2, 7, 3 });
-                }                //UI.ShowSubtitle("Sniper");
-                break;
-
-              case WeaponGroup.Heavy:
-                if (playerWeapon.Hash == WeaponHash.Minigun)
-                {
-                  ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, 0.6f, fireRateAutomaticInt , new() { 1, 6, 4, 8 }, animationLength);
-                }
-                else
-                {
-                  SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
-                      new() { 1, 2 });
-                  SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow,
-                      new() { 1, 6, 4, 8 });
-                }
-
-                break;
-
-              default:
-              case WeaponGroup.Unarmed:
-              case WeaponGroup.Melee:
-              case WeaponGroup.Thrown:
-              case WeaponGroup.PetrolCan:
-                SetAndSendPacket(packet, Trigger.Left);
-                SetAndSendPacket(packet, Trigger.Right);
-                break;
-            }
-          }
-        }
-      }
-    }
-
-    private static int lastAmmo = 0;
-
-    private static void ApplyAutomaticWeaponHandling(Packet packet, int controllerIndex, Ped playerPed, float weaponStrength,
-      int fireRateAutomaticInt, List<int> triggerParameters, float timeBetweenShots)
-    {
-      SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
-        new() { (int)MathExtended.Lerp(7, 5, weaponStrength), (int)MathExtended.Lerp(1, 4, weaponStrength) });
-      
-
-
-      bool doDefault = false;
-      int ammoInClip = playerPed.Weapons.Current.AmmoInClip;
-
-
-      if (playerPed.IsShooting || lastAmmo != ammoInClip )
-      {
-       //  Wait(10);
-
-        lastAmmo = ammoInClip;
-        if (fireRateAutomaticInt > 2)
-        {
-          SetAndSendPacket(packet, Trigger.Right, TriggerMode.AutomaticGun,
-            new() { 1, (int)MathExtended.Lerp(3, 8, weaponStrength), fireRateAutomaticInt });
-        }
-        else // recoil for low firing frquency
-        {
-          SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 32, amountOfForceExerted: (int)MathExtended.Lerp(2, 96, weaponStrength), (int)MathExtended.Lerp(32, 128, weaponStrength));
-         // Wait(100);
-          return;
-        }
-          // GTA.UI.Screen.ShowSubtitle(lastAmmo + " - " + ammoInClip+" - "+ (int)(timeBetweenShots * 1000f));
-
-          if (playerPed.Weapons.Current.Hash == WeaponHash.Minigun)
-          {
-            Wait((int)(timeBetweenShots * 10000f));
+            // SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 128, forceExertedInRange: 128);
+            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0,
+              amountOfForceExerted: (int)MathExtended.Lerp(2, 128, currentAccuracy),
+              (int)MathExtended.Lerp(32, 128, weaponStrength));
+            Wait((int)(animationLength * 1000f));
           }
           else
           {
-           // Wait((int)(timeBetweenShots * 1000f));
+            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 4 });
           }
 
-
+          SetAndSendPacket(packet, Trigger.Left);
+          // Wait(50);
+          lastAmmo = playerWeapon.AmmoInClip;
 
           return;
         }
 
-      
+        //int weaponStrength = Math.Min(8, (int)(weaponDamage / 6f));
 
-      if (playerPed.Weapons.Current.Hash == WeaponHash.Minigun) // not ahooting, only spinning
+        int fireRateAutomaticInt = (int)(1 / animationLength);
+
+        int triggerForce = (int)MathExtended.Lerp(1, 3, currentAccuracy);
+        int triggerSnapForce = (int)MathExtended.Lerp(1, 3, weaponStrength);
+        switch (playerWeapon.Group)
+        {
+          case WeaponGroup.Pistol:
+          case WeaponGroup.SMG:
+          case WeaponGroup.AssaultRifle:
+          case WeaponGroup.MG:
+          case WeaponGroup.Sniper:
+          case WeaponGroup.Shotgun:
+          {
+            ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, weaponStrength, fireRateAutomaticInt,
+              new() { 1, 5, triggerForce, triggerSnapForce }, animationLength);
+            break;
+
+            SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
+              new() { 5, 2 });
+            if (playerPed.IsShooting)
+            {
+              SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 50,
+                amountOfForceExerted: 180, forceExertedInRange: 180);
+              //Wait(50);
+            }
+            else
+            {
+              SetAndSendPacket(packet, Trigger.Right, TriggerMode.SemiAutomaticGun,
+                new() { 2, 7, 3 });
+            } //UI.ShowSubtitle("Sniper");
+
+            break;
+          }
+          case WeaponGroup.Heavy:
+          {
+            if (playerWeapon.Hash == WeaponHash.Minigun)
+            {
+              ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, 0.9f, (int)(fireRateAutomaticInt / 5f),
+                new() { 1, 5, 1, 1 }, animationLength);
+            }
+            else
+            {
+              ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, 0.6f, 1, new() { 1, 5, 1, 1 },
+                animationLength);
+              break;
+              SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
+                new() { 1, 2 });
+              SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow,
+                new() { 1, 6, 2, 2 });
+            }
+
+            break;
+          }
+          default:
+          case WeaponGroup.Unarmed:
+          case WeaponGroup.Melee:
+          case WeaponGroup.Thrown:
+          case WeaponGroup.PetrolCan:
+            SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
+              new() { (int)MathExtended.Lerp(7, 4, weaponStrength), (int)MathExtended.Lerp(1, 4, weaponStrength) });
+            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance,
+              new() { (int)MathExtended.Lerp(7, 3, weaponStrength), (int)MathExtended.Lerp(1, 8, weaponStrength) });
+            //GTA.UI.Screen.ShowSubtitle(lastAmmo.ToString());
+
+            // SetAndSendPacket(packet, Trigger.Left);
+            // SetAndSendPacket(packet, Trigger.Right);
+            break;
+        }
+      }
+    }
+  private static void ApplyAutomaticWeaponHandling(Packet packet, int controllerIndex, Ped playerPed, float weaponStrength,
+  int fireRateAutomaticInt, List<int> triggerParameters, float timeBetweenShots)
+  {
+    bool doDefault = false;
+    int ammoInClip = playerPed.Weapons.Current.AmmoInClip;
+    int iMax = 20;
+      float accuracy = currentAccuracy;
+      if (playerPed.Weapons.Current.Hash != WeaponHash.Minigun)
       {
-          int iMax = 20;
-          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
-            new() { 2, 9, 1, 2, iMax, 1 });
+        SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
+          new() { (int)MathExtended.Lerp(7, 5, accuracy), (int)MathExtended.Lerp(1, 4, weaponStrength) });
+      }
 
-        // if (Game.IsControlPressed(Control.Attack) && !spinning)
-        // {
-        //   for (int i = 1; i < iMax; i++)
-        //   {
-        //     SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
-        //       new() { 1, 9, 1, 2, i, 1 });
-        //     Wait(10);
-        //   }
-        // 
-        //   spinning = true;
-        // }
-        // else
-        // {
-        //   SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
-        //     new() { 1, 9, 1, 2, iMax, 1 });
-        //   spinning = false;
-        // }
+      if (playerPed.IsShooting || lastAmmo != ammoInClip)
+    {
+
+      //  Wait(10);
+
+      lastAmmo = ammoInClip;
+      if (fireRateAutomaticInt > 2) // recoil in general
+      {
+        SetAndSendPacket(packet, Trigger.Right, TriggerMode.AutomaticGun,
+          new() { 0, (int)MathExtended.Lerp(5, 8, weaponStrength), fireRateAutomaticInt });
+      }
+      // recoil for low firing frequency
+      else 
+      {
+        SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: (int)MathExtended.Lerp(8, 196, weaponStrength), (int)MathExtended.Lerp(8, 196, accuracy));
+        // Wait(100);
+        return;
+      }
+
+      if (playerPed.Weapons.Current.Hash == WeaponHash.Minigun)
+      {
+        Wait((int)(timeBetweenShots * 10000f));
+        spinning = true;
       }
       else
       {
-        SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow,
-          triggerParameters);
-      }        
-      lastAmmo = ammoInClip;
+        Wait((int)(timeBetweenShots * 1000f));
+        spinning = false;
+      }
 
-      Wait(50);
-
-      
-      //Script.Wait(fireRateAutomaticInt);
+      return;
     }
 
-    private static bool spinning;
+    if (playerPed.Weapons.Current.Hash == WeaponHash.Minigun) // not ahooting, only spinning
+    {
+      bool isAttackPressed = Game.IsControlPressed(Control.Attack);
+      if (playerPed.IsAiming || isAttackPressed)
+      {
+        bool isWeaponReadyToShoot = Function.Call<bool>(Hash.IS_PED_WEAPON_READY_TO_SHOOT, playerPed.Handle);
+
+
+        if (isWeaponReadyToShoot)
+        {
+          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
+            new() { 1, 9, 1, 3, iMax, 100 });
+          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
+            new() { 1, 9, 1, 2, iMax, 100 });
+        }
+        else 
+        {
+          // if (!spinning)
+          {
+            int iii = iMax;
+            while (iii > 0)
+            {
+              SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
+                new() { 1, 9, 1, 2, iMax-iii, 100 });
+              SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
+                new() { 1, 9, 1, 2, iMax-iii, 100 });
+              iii--;
+              Wait((int)(iii * (isAttackPressed ? 1f : 4f)));
+
+            }
+            for (int i = 1; i < iMax; i++)
+            {
+            }
+
+            spinning = true;
+          }
+        }
+      }
+      else
+      {
+        //SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
+        //  new() { 2, 9, 1, 2, iMax, 1 });
+
+          SetAndSendPacket(packet, Trigger.Left);
+        SetAndSendPacket(packet, Trigger.Right);
+
+        //SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
+        //  new() { 4, 9, 1, 2, 0, 1 });
+        //SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
+        //  new() { 4, 9, 1, 2, 0, 1 });
+      }
+      // if (Game.IsControlPressed(Control.Attack) && !spinning)
+      // {
+      //   for (int i = 1; i < iMax; i++)
+      //   {
+      //     SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
+      //       new() { 1, 9, 1, 2, i, 1 });
+      //     Wait(10);
+      //   }
+      //
+      //   spinning = true;
+      // }
+      // else
+      // {
+      //   SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
+      //     new() { 1, 9, 1, 2, iMax, 1 });
+      //   spinning = false;
+      // }
+    }
+    else
+    {
+      SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow,
+        triggerParameters);
+    }
+    lastAmmo = ammoInClip;
+
+    Wait(50);
+
+    //Script.Wait(fireRateAutomaticInt);
   }
+  }
+
 }

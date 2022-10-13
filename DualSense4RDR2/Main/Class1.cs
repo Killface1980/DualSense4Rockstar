@@ -1,5 +1,4 @@
-﻿using System;
-using RDR2;
+﻿using RDR2;
 
 namespace DualSense4RDR2;
 

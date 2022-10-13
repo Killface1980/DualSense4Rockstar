@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using DSX_Base;
 
 namespace DSX_Base.Client
 {
