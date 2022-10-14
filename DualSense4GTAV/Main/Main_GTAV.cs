@@ -47,6 +47,8 @@ namespace DualSense4GTAV
     }
 
     Weapon lastWeapon;
+    private Vehicle lastVehicle;
+
     private static float currentAccuracy;
     private static float currentDamage;
     float weaponStrength;

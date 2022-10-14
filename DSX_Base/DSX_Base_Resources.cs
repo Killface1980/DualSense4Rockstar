@@ -9,7 +9,7 @@ namespace DSX_Base
   }
   public static class Triggers
   {
-    public static IPAddress localhost = new IPAddress(new byte[] { 127, 0, 0, 1 });
+    public static IPAddress localhost = new(new byte[] { 127, 0, 0, 1 });
 
     public static string PacketToJson(Packet packet)
     {

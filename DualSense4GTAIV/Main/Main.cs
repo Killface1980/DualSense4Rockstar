@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Policy;
+using DSX_Base;
 using static DSX_Base.Client.iO;
+using static DSX_Base.MathExtended.MathExtended;
 
 namespace DualSense4GTAV
 {
@@ -40,41 +43,6 @@ namespace DualSense4GTAV
     /// <param name="b"></param>
     /// <param name="v"></param>
     /// <returns></returns>
-    public static float InvLerp(float a, float b, float v)
-    {
-      return (v - a) / (b - a);
-    }
-
-    /// <summary>
-    /// Returns float: The interpolated float result between the two float values. Linearly interpolates between a and b by t. The parameter t is clamped to the range[0, 1].
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <param name="t"></param>
-    /// <returns></returns>
-    public static float Lerp(float a, float b, float t)
-    {
-      //return firstFloat * by + secondFloat * (1 - by);
-      return (1f - t) * a + b * t;
-    }
-    /// <summary>
-    /// Returns float: A value between zero and one, representing where the "value" parameter falls within the range defined by a and b.
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <param name="v"></param>
-    /// <returns></returns>
-    public static float InvLerpCapped(float a, float b, float v)
-    {
-      return Math.Max(0, Math.Min(1, (v - a) / (b - a)));
-    }
-
-    private int LerpInt(float a, float b, float t)
-    {
-      //return firstFloat * by + secondFloat * (1 - by);
-      return (int)((1f - t) * a + t * b);
-    }
-
     private void OnTick(object sender, EventArgs e)
     {
       controllerConfig.pool.Process();
@@ -83,15 +51,16 @@ namespace DualSense4GTAV
       int controllerIndex = 0;
       packet.instructions = new Instruction[4];
       Ped playerped = Player.Character;
-
+      
       Weapon playerWeapon = playerped.Weapons.Current;
-      if (Function.Call<bool>(Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
-      {
-        SetAndSendPacket(packet, Trigger.Right);
-        SetAndSendPacket(packet, Trigger.Left);
-      }
-      else if ((playerped.isSittingInVehicle() || playerped.isInVehicle() || playerped.isInWater || playerped.isInAir) &&
-               playerped.CurrentVehicle.Driver == playerped)
+      //if (Function.Call<bool>(Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
+      //{
+      //  SetAndSendPacket(packet, Trigger.Right);
+      //  SetAndSendPacket(packet, Trigger.Left);
+      //}
+      // else 
+      if ((playerped.isSittingInVehicle() || playerped.isInVehicle() || playerped.isInWater || playerped.isInAir) &&
+               playerped.CurrentVehicle.CreatePedOnSeat(VehicleSeat.Driver) == playerped)
       {
         Vehicle currentVehicle = playerped.CurrentVehicle;
 
@@ -101,8 +70,11 @@ namespace DualSense4GTAV
           SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new() { 5, 6, 4, 5 });
           SetAndSendPacket(packet, Trigger.Left, TriggerMode.Bow, new() { 5, 6, 4, 5 });
         }
-        else if (!currentVehicle.IsInAir && currentVehicle.Wheels != null && currentVehicle.Wheels.Any(x => x.IsBursted))
+        else if (currentVehicle.isOnAllWheels  && currentVehicle.Wheels != null && currentVehicle.Wheels.Any(x => x.IsBursted))
         {
+          bool anyTireBurst = currentVehicle.Model.isBike
+            ? currentVehicle.IsTireBurst(VehicleWheel.RearLeft) || currentVehicle.IsTireBurst(VehicleWheel.FrontLeft) :
+            currentVehicle.IsTireBurst(VehicleWheel.FrontLeft) || currentVehicle.IsTireBurst(VehicleWheel.FrontRight)|| currentVehicle.IsTireBurst(VehicleWheel.RearLeft) || currentVehicle.IsTireBurst(VehicleWheel.RearRight);
           int resistance = 4;
           int burstCount = currentVehicle.Wheels.Where(x => x.IsBursted).Count();
           int resStart = (int)(140 - burstCount * 25f);
@@ -114,7 +86,7 @@ namespace DualSense4GTAV
             resStart, 255, 144, 90, 120, 220, (int)currentVehicle.WheelSpeed);
           Wait(300);
         }
-        else if (playerped.IsInHeli)
+        else if (playerped.Model.isHelicopter)
         {
           float health = (currentVehicle.HeliEngineHealth / 1000f * currentVehicle.HeliMainRotorHealth / 1000f * currentVehicle.HeliTailRotorHealth / 1000f);
           float healthMalus = (int)((1f - health) * 4f);
@@ -127,22 +99,22 @@ namespace DualSense4GTAV
 
           SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new()
           {
-            1 + LerpInt(0, 6, health),
-            LerpInt(8, 1, health)
+            1 + Lerp(0, 6, health),
+            Lerp(8, 1, health)
           });
 
           SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new()
           {
-            1 + LerpInt(0, 6, health),
-            LerpInt(8, 1, health)
+            1 + Lerp(0, 6, health),
+            Lerp(8, 1, health)
           });
         }
         else if (playerped.isInWater && !playerped.isSwimming)
         {
           float engineHealthFloat = Math.Min(1, currentVehicle.EngineHealth / 1000f);
 
-          float initialDriveForce = InvLerpCapped(0.1f, 0.4f, currentVehicle.HandlingData.InitialDriveForce); // most cars 0.1f < df < 0.4f
-          float driveInertia = InvLerpCapped(0.3f, 1.0f, currentVehicle.HandlingData.DriveInertia);
+          float initialDriveForce = InverseLerp(0.1f, 0.4f, currentVehicle.HandlingData.InitialDriveForce); // most cars 0.1f < df < 0.4f
+          float driveInertia = InverseLerp(0.3f, 1.0f, currentVehicle.HandlingData.DriveInertia);
 
           float startOfGear = 0.8f;
           startOfGear *= Lerp(0.7f, 1f, initialDriveForce);
@@ -156,7 +128,7 @@ namespace DualSense4GTAV
           lightnessVehicle *= engineHealthFloat;
           //lightnessVehicle *= Lerp(0.2f, 1f, currentVehicle.Clutch);
 
-          float brakeForce = InvLerpCapped(0.2f, 1.2f, currentVehicle.HandlingData.BrakeForce); // Bigger number = harder braking 0.01 - 2.0 and above. 1.0 uses brake force calculation unmodified.
+          float brakeForce = InverseLerp(0.2f, 1.2f, currentVehicle.HandlingData.BrakeForce); // Bigger number = harder braking 0.01 - 2.0 and above. 1.0 uses brake force calculation unmodified.
 
           float startOfResistanceBrake = 1f * Lerp(0.4f, 1f, brakeForce);
           startOfResistanceBrake *= engineHealthFloat;
@@ -209,7 +181,7 @@ namespace DualSense4GTAV
               255);
           }
         }
-        else if (playerped.IsInPlane)
+        else if (playerped.Model.isPlane)
         {
           SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 5, 1 });
           SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new() { 5, 1 });
@@ -234,17 +206,17 @@ namespace DualSense4GTAV
           float currentRPM = currentVehicle.CurrentRPM;
           float engineIdleRpm = 0.2f;
           float engineRange = 1f - engineIdleRpm;
-          float currentRPMRatio = InvLerp(0.2f + 0.6f * (Math.Max(0, currentVehicle.CurrentGear - 1)) / currentVehicle.HighGear, 1f, currentRPM);
+          float currentRPMRatio = InverseLerp(0.2f + 0.6f * (Math.Max(0, currentVehicle.CurrentGear - 1)) / currentVehicle.HighGear, 1f, currentRPM);
           //(currentRPM - engineIdleRpm) / engineRange;
           float currentSpeed = currentVehicle.Speed;
           float maxSpeed = Function.Call<float>(Hash.GET_VEHICLE_ESTIMATED_MAX_SPEED, currentVehicle.Handle);
 
           //GTA.UI.Screen.ShowSubtitle(engineHealthFloat.ToString());
 
-          float initialDriveForce = InvLerpCapped(0.1f, 0.4f, currentVehicle.HandlingData.InitialDriveForce); // most cars 0.1f < df < 0.4f
-          float driveInertia = InvLerpCapped(0.3f, 1.0f, currentVehicle.HandlingData.DriveInertia);
+          float initialDriveForce = InverseLerp(0.1f, 0.4f, currentVehicle.HandlingData.InitialDriveForce); // most cars 0.1f < df < 0.4f
+          float driveInertia = InverseLerp(0.3f, 1.0f, currentVehicle.HandlingData.DriveInertia);
 
-          float gearForce = InvLerp(currentVehicle.HighGear, 1, currentGear);
+          float gearForce = InverseLerp(currentVehicle.HighGear, 1, currentGear);
 
           float spinnie = 1f;
           if (currentVehicle.Speed > 0)
@@ -267,7 +239,7 @@ namespace DualSense4GTAV
           lightnessVehicle *= engineHealthFloat;
           //lightnessVehicle *= Lerp(0.2f, 1f, currentVehicle.Clutch);
 
-          float brakeForce = InvLerpCapped(0.2f, 1.2f, currentVehicle.HandlingData.BrakeForce); // Bigger number = harder braking 0.01 - 2.0 and above. 1.0 uses brake force calculation unmodified.
+          float brakeForce = InverseLerp(0.2f, 1.2f, currentVehicle.HandlingData.BrakeForce); // Bigger number = harder braking 0.01 - 2.0 and above. 1.0 uses brake force calculation unmodified.
 
           float startOfResistanceBrake = 1f * Lerp(0.4f, 1f, brakeForce);
           startOfResistanceBrake *= engineHealthFloat;
@@ -454,7 +426,7 @@ namespace DualSense4GTAV
 
     private float Remap(float iMin, float iMax, float oMin, float oMax, float v)
     {
-      float t = InvLerp(iMin, iMax, v);
+      float t = InverseLerp(iMin, iMax, v);
       return Lerp(oMin, oMax, t);
     }
   }
