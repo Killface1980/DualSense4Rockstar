@@ -431,10 +431,6 @@ namespace DualSense4GTAV
               ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, 0.6f, 1, new() { 1, 5, 1, 1 },
                 animationLength);
               break;
-              SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
-                new() { 1, 2 });
-              SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow,
-                new() { 1, 6, 2, 2 });
             }
 
             break;
@@ -444,10 +440,8 @@ namespace DualSense4GTAV
           case WeaponGroup.Melee:
           case WeaponGroup.Thrown:
           case WeaponGroup.PetrolCan:
-            SetAndSendPacket(packet, Trigger.Left, TriggerMode.Resistance,
-              new() { (int)MathExtended.Lerp(7, 4, weaponStrength), (int)MathExtended.Lerp(1, 4, weaponStrength) });
-            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Resistance,
-              new() { (int)MathExtended.Lerp(7, 3, weaponStrength), (int)MathExtended.Lerp(1, 8, weaponStrength) });
+            SetAndSendPacketResistance(Trigger.Left, (int)MathExtended.Lerp(7, 4, weaponStrength), (int)MathExtended.Lerp(1, 4, weaponStrength) );
+            SetAndSendPacketResistance(Trigger.Right, (int)MathExtended.Lerp(7, 3, weaponStrength), (int)MathExtended.Lerp(1, 8, weaponStrength) );
             //GTA.UI.Screen.ShowSubtitle(lastAmmo.ToString());
 
             // SetAndSendPacket(packet, Trigger.Left);

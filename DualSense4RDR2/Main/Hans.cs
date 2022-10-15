@@ -17,48 +17,50 @@ namespace DualSense4RDR2.Main
       UnsafeFishTaskState data =  default(UnsafeFishTaskState);
       unsafe
       {
-        Function.Call(0xF3735ACD11ACD500, Game.Player.Character.Handle, ((IntPtr)(&data)).ToInt32()); //_GET_TASK_FISHING
+        Function.Call(0xF3735ACD11ACD500, Game.Player.Character.Handle, &data); //_GET_TASK_FISHING
+        /*        Function.Call(0xF3735ACD11ACD500, Game.Player.Character.Handle,  ((IntPtr)(&data)).ToInt32()); //_GET_TASK_FISHING
+        */
         return data.GetData();
       }
     }
 
-    [StructLayout(LayoutKind.Explicit, Size = 0xE0)]
+    [StructLayout(LayoutKind.Explicit, Size = 224)]
     [SecurityCritical]
     internal unsafe struct UnsafeFishTaskState
     {
-      [FieldOffset(offset: 0x00)] internal int fishingState;
-      [FieldOffset(offset: 0x08)] internal float throwingTargetDistance;
-      [FieldOffset(offset: 0x10)] internal float distance;
-      [FieldOffset(offset: 0x18)] internal float curvature;
-      [FieldOffset(offset: 0x20)] internal float unk0;
-      [FieldOffset(offset: 0x28)] internal int hookFlag;
-      [FieldOffset(offset: 0x30)] internal int transitionFlag;
-      [FieldOffset(offset: 0x38)] internal int fishHandle;
-      [FieldOffset(offset: 0x40)] internal float fishweight;
-      [FieldOffset(offset: 0x48)] internal float fishPower;
-      [FieldOffset(offset: 0x50)] internal int scriptTimer;
-      [FieldOffset(offset: 0x58)] internal int hookHandle;
-      [FieldOffset(offset: 0x60)] internal int bobberHandle;
-      [FieldOffset(offset: 0x68)] internal float rodShakeMult;
-      [FieldOffset(offset: 0x70)] internal float unk1;
-      [FieldOffset(offset: 0x78)] internal float unk2;
-      [FieldOffset(offset: 0x80)] internal int unk3;
-      [FieldOffset(offset: 0x88)] internal float unk4; // 17?
-      [FieldOffset(offset: 0x90)] internal int fishSizeIndex; // 18?
-      [FieldOffset(offset: 0x98)] internal float unk5; // 19 Any unk ?
-      [FieldOffset(offset: 0xA0)] internal float tension; // 20 float unk ??
-      [FieldOffset(offset: 0xA8)] internal float shakeFightMult; //21
-      [FieldOffset(offset: 0xB0)] internal float fishingRodX; //22
-      [FieldOffset(offset: 0xB8)] internal float fishingRodY; //23
-      [FieldOffset(offset: 0xC0)] internal int unk6;
-      [FieldOffset(offset: 0xC8)] internal int unk7;
-      [FieldOffset(offset: 0xD0)] internal int unk8;
-      [FieldOffset(offset: 0xD8)] internal int unk9;
+      [FieldOffset(0)] internal int fishingState;//01 One of the states above
+      [FieldOffset(8)] internal float throwingTargetDistance;//02 Max throwing distance
+      [FieldOffset(16)] internal float distance;//03 Distance between the ped and the fishing hook
+      [FieldOffset(24)] internal float fishing_line_curvature;//04
+      [FieldOffset(32)] internal float unk0;//05
+      [FieldOffset(40)] internal int hookFlag;// 06 Flag; (n | 1) when pressing INPUT_ATTACK (hooking); (n | 4096) when fishing on a boat
+      [FieldOffset(48)] internal int transitionFlag;//07
+      [FieldOffset(56)] internal int fishHandle;//08
+      [FieldOffset(64)] internal float fishweight;//09 Calculated fish weight (value / 54.25).
+      [FieldOffset(72)] internal float fishPower;//10 Fish current power? / Heading?
+      [FieldOffset(80)] internal int scriptTimer;//11
+      [FieldOffset(88)] internal int hookHandle;//12
+      [FieldOffset(96)] internal int bobberHandle;//13
+      [FieldOffset(104)] internal float rodShakeMult;//14
+      [FieldOffset(112)] internal float unk1;//14
+      [FieldOffset(120)] internal float unk2;//15
+      [FieldOffset(128)] internal int unk3;// 16 Some kind of state (0 - 7)
+      [FieldOffset(136)] internal float unk4; // 17?
+      [FieldOffset(144)] internal int fishSizeIndex; // 18?
+      [FieldOffset(152)] internal float unk5; // 19 Any unk ?
+      [FieldOffset(160)] internal float tension; // 20 float unk ??
+      [FieldOffset(168)] internal float shakeFightMult; //21
+      [FieldOffset(176)] internal float fishingRodX; //22
+      [FieldOffset(184)] internal float fishingRodY; //23
+      [FieldOffset(192)] internal float unk6;//24
+      [FieldOffset(200)] internal float unk7;//25
+      [FieldOffset(208)] internal float unk8;//26
+      [FieldOffset(216)] internal float unk9; //27
 
 
       public FishTaskState GetData()
       {
-        return new FishTaskState(fishingState, throwingTargetDistance, distance, curvature, unk0, hookFlag,
+        return new FishTaskState(fishingState, throwingTargetDistance, distance, fishing_line_curvature, unk0, hookFlag,
           transitionFlag, fishHandle, fishweight, fishPower, scriptTimer, hookHandle, bobberHandle, rodShakeMult, unk1,
           unk2, unk3, shakeFightMult, fishSizeIndex, fishingRodX, fishingRodY, tension);
 
@@ -154,7 +156,7 @@ namespace DualSense4RDR2.Main
           fishingState = FishingState,
           throwingTargetDistance = ThrowingTargetDistance,
           distance = Distance,
-          curvature = Curvature,
+          fishing_line_curvature = Curvature,
           unk0 = Unk0,
           hookFlag = HookFlag,
           transitionFlag = TransitionFlag,

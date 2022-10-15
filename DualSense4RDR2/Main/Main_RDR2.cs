@@ -79,6 +79,20 @@ namespace DualSense4RDR2
       return weapon;
     }
 
+    private bool spinning;
+    private Weapon GetVehicleWeaponHash(uint weaponHash)
+    {
+      if (playerWeapons!.ContainsKey(weaponHash))
+      {
+        return playerWeapons[weaponHash];
+      }
+      Ped owner = Game.Player.Character;
+
+      Weapon weapon = new(owner, (eWeapon)weaponHash);
+      playerWeapons.Add(weaponHash, weapon);
+      return weapon;
+
+    }
     private bool cockingActive;
     private unsafe void OnTick(object sender, EventArgs e)
     {
@@ -133,7 +147,7 @@ namespace DualSense4RDR2
 
       uint weaponHash = 0;
 
-      bool currentPedVehicleWeapon = GET_CURRENT_PED_VEHICLE_WEAPON(playerPed.Handle, &weaponHash);
+      bool pedHasVehicleWeapon = GET_CURRENT_PED_VEHICLE_WEAPON(playerPed.Handle, &weaponHash);
       // RDR2.UI.Screen.DisplaySubtitle(currentMainHandWeapon.AmmoInClip + " - " + currentOffHandWeapon.AmmoInClip);
 
       // RDR2.UI.Screen.DisplaySubtitle(hasOffHandWeapon.ToString());
@@ -142,7 +156,7 @@ namespace DualSense4RDR2
       {
       }
       // return;
-      bool isAimingControlPressed = /*PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LT) ||*/ player.IsAiming; ////
+      bool isAimingControlPressed = PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LT) || player.IsAiming; 
 
       //RDR2.UI.Screen.DisplaySubtitle(weaponIsAGun.ToString());
       // return;
@@ -154,10 +168,97 @@ namespace DualSense4RDR2
       // Weapon Wheel
       if (PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LB))  //INPUT_FRONTEND_LB, weapon wheel
       {
-        SetAndSendPacket(packet, Trigger.Right);
-        SetAndSendPacket(packet, Trigger.Left);
+        SetAndSendPacketResistance(Trigger.Left, 5, 1 );
+        SetAndSendPacketResistance(Trigger.Right,  5, 1 );
+        //SetAndSendPacket(packet, Trigger.Right);
+        //SetAndSendPacket(packet, Trigger.Left);
       }
       // no gun accidents
+      else if (pedHasVehicleWeapon)
+      {
+        
+        //RDR2.UI.Screen.DisplaySubtitle((weaponHash + " - " + GetVehicleWeaponHash(weaponHash).GetHashCode()));
+
+        if (weaponHash == 3666182381 || //gat
+            weaponHash == 3101324918)// maxi
+        {
+          int iMax = 20;
+          //bool isWeaponReadyToShoot = IS_PED_WEAPON_READY_TO_SHOOT(playerPed.Handle);
+          if (playerPed.IsShooting) // Auto
+          {
+            SetAndSendPacketAutomaticGun(Trigger.Right, 0, 8, iMax );
+            SetAndSendPacketAutomaticGun(Trigger.Left, 0, 8, iMax );
+            Script.Wait(100);
+            spinning = false;
+          }
+          else
+          {
+/*            if (PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_VEH_ATTACK))
+            {
+              if (!spinning)
+              {
+                Wait(200);
+                for (int i = iMax; i > 0; i--)
+                {
+                  SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
+                    new() { 1, 9, 4, 5, iMax - i, 100 });
+                  SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
+                    new() { 1, 9, 4, 5, iMax - i, 100 });
+                  i--;
+                  Wait((int)(i * 40f));
+                  RDR2.UI.Screen.DisplaySubtitle((i.ToString()));
+
+                }
+
+
+                spinning = true;
+              }
+              else
+              {
+                SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
+                  new() { 1, 9, 1, 2, iMax , 100 });
+                SetAndSendPacket(packet, Trigger.Right, TriggerMode.Machine,
+                  new() { 1, 9, 1, 2, iMax , 100 });
+
+              }
+            }
+            else // Prepare
+*/            {
+              spinning = false;
+              SetAndSendPacket(packet, Trigger.Left, TriggerMode.Choppy);
+              SetAndSendPacket(packet, Trigger.Right, TriggerMode.Choppy);
+
+              /*              SetAndSendPacketCustom(packet, Trigger.Left,
+                CustomTriggerValueMode.Rigid, startOfResistance: 30, amountOfForceExerted: 128);
+              SetAndSendPacketCustom(packet, Trigger.Right,
+                CustomTriggerValueMode.Rigid, startOfResistance: 30, amountOfForceExerted: 128);
+*/
+            }
+          }
+
+        }
+        else if (weaponHash == 2465730487 || //hotch - cannons
+                 weaponHash == 1609145491)// breach
+        {
+          if (playerPed.IsShooting)
+          {
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
+            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
+            Wait(800);
+          }
+          else
+          {
+            /*            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 1, amountOfForceExerted: 20);
+            */
+            SetAndSendPacket(packet, Trigger.Left, TriggerMode.Choppy);
+            SetAndSendPacket(packet, Trigger.Right, TriggerMode.Choppy);
+            /*            SetAndSendPacketCustom(packet, Trigger.Right,
+              CustomTriggerValueMode.PulseA, startOfResistance: 255, amountOfForceExerted: 200, forceExertedInRange: 255);
+*/
+
+          }
+        }
+      }
       else if (playerPed.IsReloading) // Mode reloading
       {
         // SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
@@ -194,43 +295,16 @@ namespace DualSense4RDR2
 
         // SetAndSendPacket(packet, Trigger.Right, TriggerMode.AutomaticGun,new(){ 0,8,3 });
       }
-      else if (currentPedVehicleWeapon)
-      {
-        //RDR2.UI.Screen.DisplaySubtitle((number).ToString());
-
-        if (weaponHash == 3666182381 || //gat
-            weaponHash == 3101324918)// maxi
-        {
-          SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 1, amountOfForceExerted: 20);
-          if (playerPed.IsShooting) // Auto
-          {
-            SetAndSendPacket(packet, Trigger.Right,
-              TriggerMode.AutomaticGun, new() { 0, 4, 30 });
-            Script.Wait(100);
-          }
-          else // Prepare
-          {
-            SetAndSendPacketCustom(packet, Trigger.Right,
-              CustomTriggerValueMode.Rigid, startOfResistance: 30, amountOfForceExerted: 128);
-          }
-        }
-        else if (weaponHash == 2465730487 || //hotch - cannons
-                 weaponHash == 1609145491)// breach
-        {
-          SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 1, amountOfForceExerted: 20);
-          SetAndSendPacketCustom(packet, Trigger.Right,
-            CustomTriggerValueMode.PulseA, startOfResistance: 255, amountOfForceExerted: 200, forceExertedInRange: 255);
-        }
-      }
       else if (weaponIsThrowable || currentMainHandWeapon.Group == eWeaponGroup.GROUP_BOW || currentMainHandWeapon.Group == eWeaponGroup.GROUP_FISHINGROD || currentMainHandWeapon.Group == eWeaponGroup.GROUP_LASSO)
       {
         if (currentMainHandWeapon.Group == eWeaponGroup.GROUP_FISHINGROD)
         {
-          // ulong currentState;
+           ulong currentState;
           // TASK._GET_TASK_FISHING(playerPed.Handle, &currentState); // BUG Crashing https://pastebin.com/NmK5ZLVs
+          // TASK._GET_TASK_FISHING(playerPed.Handle, (ulong*)((IntPtr)(&currentState)).ToInt32()); // BUG Crashing https://pastebin.com/NmK5ZLVs
 
-           //Hans.FishTaskState state = Hans.GetFishTaskState();
-           //RDR2.UI.Screen.DisplaySubtitle(state.FishingState.ToString());
+           // Hans.FishTaskState state = Hans.GetFishTaskState();
+           // RDR2.UI.Screen.DisplaySubtitle(state.FishingState.ToString());
 
           //state.FishingState == (int)FishingStates.Caught_fish_holding_in_hand
 
@@ -315,7 +389,7 @@ namespace DualSense4RDR2
 
               if (isAimingControlPressed)
               {
-                    SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 96, amountOfForceExerted: 96, forceExertedInRange: 96);
+                    SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 64, forceExertedInRange: 64);
               }
 
               if (canUseOffhandWeapon && ammoL > 0)
@@ -331,7 +405,7 @@ namespace DualSense4RDR2
               if (isAimingControlPressed)
               {
                 SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
-                SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 96, amountOfForceExerted: 96, forceExertedInRange: 96);
+                SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 0, amountOfForceExerted: 96, forceExertedInRange: 96);
               }
               else
               {
@@ -346,13 +420,13 @@ namespace DualSense4RDR2
             lastMainHandAmmo = ammoR;
             lastOffHandAmmo = ammoL;
 
-            Wait(150);
+            Wait(200);
           }
           else if (cockingActive  || !mainHandIsDoubleAction && !mainWeaponIsReadyToShoot &&
                    !canUseOffhandWeapon   || !carriesWeaponOpenly) // Mode Gun Cock
           {
             cockingActive = true;
-            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 140 - (int)(degradation * 110), amountOfForceExerted: (int)(100 + degradation * 120), 180);
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 120 - (int)(degradation * 110), amountOfForceExerted: (int)(100 + degradation * 120), 180);
             // SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
             // {
             //   4,
@@ -361,7 +435,9 @@ namespace DualSense4RDR2
             //   (int)(2 + (6f * degradation))
             // });
 
-            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 96, 4 + (int)MathExtended.Lerp(0,128, degradation) , 4 + (int)MathExtended.Lerp(0, 128, degradation));
+            SetAndSendPacketCustom(packet, Trigger.Right, CustomTriggerValueMode.Rigid, startOfResistance: 96,
+              16 + (int)MathExtended.Lerp(0, 128, degradation), 16 + (int)MathExtended.Lerp(0, 128, degradation));
+
           }
           else // GUN_MANUAL;
           {
@@ -396,7 +472,7 @@ namespace DualSense4RDR2
             }
 
             //RDR2.UI.Screen.DisplaySubtitle((doubleActionActive).ToString());
-            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 180 - (int)(degradation * 120 * factor), amountOfForceExerted: (int)(100 + degradation * 120), 255);
+            SetAndSendPacketCustom(packet, Trigger.Left, CustomTriggerValueMode.Rigid, startOfResistance: 128 - (int)(degradation * 120 * factor), amountOfForceExerted: (int)(100 + degradation * 160), 255);
 
             SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
             {

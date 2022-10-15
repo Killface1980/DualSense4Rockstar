@@ -51,6 +51,53 @@ namespace DSX_Base.Client
 
             Send(packet);
         }
+    public static void SetAndSendPacketAutomaticGun(Trigger trigger,
+          int start, int strength, int frequency)
+    {
+      Packet packet = new();
+      int controllerIndex = 0;
+      packet.instructions = new Instruction[4];
+
+      TriggerMode triggerMode = TriggerMode.AutomaticGun;
+            packet.instructions[0].type = InstructionType.TriggerUpdate;
+            List<object> newList = new()
+            {
+                controllerIndex,
+                trigger,
+                triggerMode,
+                start,
+                strength,
+                frequency
+            };
+            packet.instructions[0].parameters = newList.ToArray();
+
+            Send(packet);
+        }
+    public static void SetAndSendPacketResistance(Trigger trigger,
+          int start, int force)
+    {
+      Packet packet = new();
+      int controllerIndex = 0;
+      packet.instructions = new Instruction[4];
+
+      TriggerMode triggerMode = TriggerMode.Resistance;
+            packet.instructions[0].type = InstructionType.TriggerUpdate;
+            List<object> newList = new()
+            {
+                controllerIndex,
+                trigger,
+                triggerMode,
+                start,
+                force
+            };
+
+            packet.instructions[0].parameters = newList.ToArray();
+
+            Send(packet);
+        }
+
+
+
         public static void SetAndSendPacketCustom(Packet packet, Trigger trigger,
           CustomTriggerValueMode customMode = CustomTriggerValueMode.OFF, int startOfResistance = 0,
           int amountOfForceExerted = 0, int forceExertedInRange = 0, int ab_strengthNearRelease = 0,
