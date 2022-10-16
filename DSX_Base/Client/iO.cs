@@ -5,121 +5,202 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace DSX_Base.Client
+namespace DSX_Base.Client;
+
+public class iO
 {
-    public class iO
+  private static UdpClient client;
+
+  private static int controllerIndex = 0;
+  private static IPEndPoint endPoint;
+
+  public static void Connect()
+  {
+    _ = DateTime.Now;
+    client = new UdpClient();
+    string value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
+    endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(value));
+    new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+  }
+
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="trigger"></param>
+  /// <param name="start">0-8</param>
+  /// <param name="end">0-8, > start</param>
+  /// <param name="force">0-8</param>
+  /// <param name="snapForce">0-8</param>
+  public static void DoTrigger_Bow(Trigger trigger, int start, int end, int force, int snapForce)
+  {
+    Packet packet = new()
     {
-        private static UdpClient client;
-
-        private static IPEndPoint endPoint;
-
-        public static void Connect()
-        {
-            _ = DateTime.Now;
-            client = new UdpClient();
-            string value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
-            endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(value));
-            new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        }
-
-        public static void Send(Packet data)
-        {
-            byte[] bytes = Encoding.ASCII.GetBytes(Triggers.PacketToJson(data));
-            client.Send(bytes, bytes.Length, endPoint);
-        }
-
-        static int controllerIndex = 0;
-
-    public static void SetAndSendPacket(Packet packet, Trigger trigger,
-          TriggerMode triggerMode = TriggerMode.Normal, List<int> parameters = null)
-        {
-            packet.instructions[0].type = InstructionType.TriggerUpdate;
-            List<object> newList = new()
-            {
-                controllerIndex,
-                trigger,
-                triggerMode
-            };
-            if (parameters != null)
-            {
-                foreach (object param in parameters)
-                {
-                    newList.Add(param);
-                }
-            }
-            packet.instructions[0].parameters = newList.ToArray();
-
-            Send(packet);
-        }
-    public static void SetAndSendPacketAutomaticGun(Trigger trigger,
-          int start, int strength, int frequency)
+      instructions = new Instruction[4]
+    };
+    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    packet.instructions[0].parameters = new object[]
     {
-      Packet packet = new();
-      int controllerIndex = 0;
-      packet.instructions = new Instruction[4];
+      controllerIndex,
+      trigger,
+      TriggerMode.Bow,
+      start,
+      end,
+      force,
+      snapForce
+    };
 
-      TriggerMode triggerMode = TriggerMode.AutomaticGun;
-            packet.instructions[0].type = InstructionType.TriggerUpdate;
-            List<object> newList = new()
-            {
-                controllerIndex,
-                trigger,
-                triggerMode,
-                start,
-                strength,
-                frequency
-            };
-            packet.instructions[0].parameters = newList.ToArray();
+    Send(packet);
+  }
 
-            Send(packet);
-        }
-    public static void SetAndSendPacketResistance(Trigger trigger,
-          int start, int force)
+  public static void DoTrigger_CustomRigid(Trigger trigger, int startOfResistance, int amountOfForceExcerted,
+    int forceExcertedInRange) // custom trigger values need ALL their parameters
+  {
+    Packet packet = new()
     {
-      Packet packet = new();
-      int controllerIndex = 0;
-      packet.instructions = new Instruction[4];
+      instructions = new Instruction[4]
+    };
 
-      TriggerMode triggerMode = TriggerMode.Resistance;
-            packet.instructions[0].type = InstructionType.TriggerUpdate;
-            List<object> newList = new()
-            {
-                controllerIndex,
-                trigger,
-                triggerMode,
-                start,
-                force
-            };
-
-            packet.instructions[0].parameters = newList.ToArray();
-
-            Send(packet);
-        }
-
-
-
-        public static void SetAndSendPacketCustom(Packet packet, Trigger trigger,
-          CustomTriggerValueMode customMode = CustomTriggerValueMode.OFF, int startOfResistance = 0,
-          int amountOfForceExerted = 0, int forceExertedInRange = 0, int ab_strengthNearRelease = 0,
-          int ab_strengthNearMiddle = 0, int ab_strengthPressedState = 0, int ab_actuationFrequency = 0)
-        {
-            TriggerMode triggerMode = TriggerMode.CustomTriggerValue;
-
-            packet.instructions[0].type = InstructionType.TriggerUpdate;
-            List<object> newList = new()
-            {
-                controllerIndex,
-                trigger,
-                triggerMode,
-                customMode,
-                startOfResistance, amountOfForceExerted, forceExertedInRange, ab_strengthNearRelease,
-                ab_strengthNearMiddle, ab_strengthPressedState, ab_actuationFrequency
-            };
-
-            packet.instructions[0].parameters = newList.ToArray();
-
-            Send(packet);
-        }
-
+    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    packet.instructions[0].parameters = new object[]
+    {
+      controllerIndex,
+      trigger,
+      TriggerMode.CustomTriggerValue,
+      CustomTriggerValueMode.Rigid,
+      startOfResistance,
+      amountOfForceExcerted,
+      forceExcertedInRange,
+      0, 0, 0, 0
+    };
+/*    if (trigger == Trigger.Right)
+    {
+      packet.instructions[2].type = InstructionType.RGBUpdate;
+      packet.instructions[2].parameters = new object[] { controllerIndex, 255, 255, 255 };
     }
+*/    Send(packet);
+  }
+
+  /// <summary>
+  /// AutomaticGun needs 3 params
+  /// </summary>
+  /// <param name="trigger"></param>
+  /// <param name="start">Start: 0-8</param>
+  /// <param name="strength">End:0-8</param>
+  /// <param name="frequency">Max 40 to avoid damage</param>
+  public static void DoTrigger_AutomaticGun(Trigger trigger, int start, int strength, int frequency)
+  {
+    Packet packet = new()
+    {
+      instructions = new Instruction[4]
+    };
+
+    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    packet.instructions[0].parameters = new object[]
+    {
+      controllerIndex,
+      trigger,
+      TriggerMode.AutomaticGun,
+      start,
+      strength,
+      frequency
+    };
+
+    Send(packet);
+  }
+
+  public static void DoTrigger_Machine(Trigger trigger, int start, int end, int strengthA, int strengthB, int frequency,
+    int period)
+  {
+    Packet packet = new()
+    {
+      instructions = new Instruction[4]
+    };
+    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    packet.instructions[0].parameters = new object[]
+    {
+      controllerIndex,
+      trigger,
+      TriggerMode.Machine,
+      start,
+      end,
+      strengthA,
+      strengthB,
+      frequency,
+      period
+    };
+
+    Send(packet);
+  }
+
+  /// <summary>
+  /// Resistance needs 2 params
+  /// </summary>
+  /// <param name="trigger"></param>
+  /// <param name="start">Start: 0-9</param>
+  /// <param name="force">Force:0-8</param>
+  public static void DoTrigger_Resistance(Trigger trigger, int start, int force)
+  {
+    Packet packet = new()
+    {
+      instructions = new Instruction[4]
+    };
+
+    packet.instructions[0].type = InstructionType.TriggerUpdate;
+
+    packet.instructions[0].parameters = new object[]
+    {
+      controllerIndex,
+      trigger,
+      TriggerMode.Resistance,
+      start,
+      force
+    };
+
+    Send(packet);
+  }
+
+  public static void Send(Packet data)
+  {
+    byte[] bytes = Encoding.ASCII.GetBytes(Triggers.PacketToJson(data));
+    client.Send(bytes, bytes.Length, endPoint);
+  }
+
+  public static void SetAndSendPacket(Packet packet, Trigger trigger,
+    TriggerMode triggerMode = TriggerMode.Normal, List<int> parameters = null)
+  {
+    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    List<object> newList = new()
+    {
+      controllerIndex,
+      trigger,
+      triggerMode
+    };
+    if (parameters != null)
+      foreach (object param in parameters)
+        newList.Add(param);
+    packet.instructions[0].parameters = newList.ToArray();
+
+    Send(packet);
+  }
+
+  public static void SetAndSendPacketCustom(Packet packet, Trigger trigger,
+    CustomTriggerValueMode customMode = CustomTriggerValueMode.OFF, int startOfResistance = 0,
+    int amountOfForceExerted = 0, int forceExertedInRange = 0, int ab_strengthNearRelease = 0,
+    int ab_strengthNearMiddle = 0, int ab_strengthPressedState = 0, int ab_actuationFrequency = 0)
+  {
+    TriggerMode triggerMode = TriggerMode.CustomTriggerValue;
+
+    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    packet.instructions[0].parameters = new object[]
+    {
+      controllerIndex,
+      trigger,
+      triggerMode,
+      customMode,
+      startOfResistance, amountOfForceExerted, forceExertedInRange, ab_strengthNearRelease,
+      ab_strengthNearMiddle, ab_strengthPressedState, ab_actuationFrequency
+    };
+
+    Send(packet);
+  }
 }
