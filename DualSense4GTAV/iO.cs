@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using Newtonsoft.Json;
 using DSX_Base;
+using DualSense4GTAV.Config;
 
 namespace DualSense4GTAV
 {
@@ -59,7 +60,7 @@ namespace DualSense4GTAV
           Console.WriteLine("Waiting for Server Response...\n");
           if (Process.GetProcessesByName("DSX").Length == 0 && Main_GTAV.controllerConfig.showconmes)
           {
-            GTA.UI.Notification.Show("DSX is not running but mod is installed. This mod will shutdown. Press " + KeyConf.showMenu + " to reactivate it.");
+            GTA.UI.Notification.Show("DualSense4GTAV | DSX is not running but mod is installed. This mod will shutdown. Press " + KeyConf.showMenu + " to reactivate it.");
             ControllerConfig.isDisabled = true ;
           }
       else
@@ -83,7 +84,7 @@ namespace DualSense4GTAV
               }
               else
               {
-                GTA.UI.Notification.Show("DSX is not installed or UDP is off check the app settings ");
+                GTA.UI.Notification.Show("DualSense4GTAV | DSX is not installed or UDP is off check the app settings ");
               }
 
             }

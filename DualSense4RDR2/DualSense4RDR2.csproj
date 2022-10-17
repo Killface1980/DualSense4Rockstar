@@ -12,10 +12,11 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <Compile Remove="Main\Hans.cs" />
+    <Compile Remove="FishingStat\Hans.cs" />
+    <Compile Remove="Hans.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Main\Hans.cs" />
+    <None Include="FishingStat\Hans.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />

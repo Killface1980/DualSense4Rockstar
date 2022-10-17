@@ -11,9 +11,7 @@ namespace DualSense4GTAV
     [ScriptAttributes(NoDefaultInstance = true)]
     public class add : Script
     {
-        private static bool wanted;
-
-        private static UdpClient client;
+      private static UdpClient client;
 
         private static IPEndPoint endPoint;
 
@@ -23,11 +21,7 @@ namespace DualSense4GTAV
 
         private static ServicePoint ser;
 
-        private bool playeralive;
-
         private int brig;
-
-        private int batterylevel;
 
         public DateTime TimeSent { get; private set; }
 

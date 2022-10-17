@@ -165,9 +165,13 @@ public class iO
     client.Send(bytes, bytes.Length, endPoint);
   }
 
-  public static void SetAndSendPacket(Packet packet, Trigger trigger,
+  public static void SetAndSendPacket(Trigger trigger,
     TriggerMode triggerMode = TriggerMode.Normal, List<int> parameters = null)
   {
+    Packet packet = new();
+    packet.instructions = new Instruction[4];
+
+
     packet.instructions[0].type = InstructionType.TriggerUpdate;
     List<object> newList = new()
     {

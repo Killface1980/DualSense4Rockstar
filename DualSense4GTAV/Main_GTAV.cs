@@ -1,5 +1,6 @@
 using DSX_Base;
 using DSX_Base.MathExtended;
+using DualSense4GTAV.Config;
 using GTA;
 using GTA.Native;
 using System;
@@ -72,8 +73,8 @@ namespace DualSense4GTAV
 
       if (Function.Call<bool>(Hash.IS_HUD_COMPONENT_ACTIVE, 19)) //HUD_WEAPON_WHEEL
       {
-        SetAndSendPacket(packet, Trigger.Right);
-        SetAndSendPacket(packet, Trigger.Left);
+        SetAndSendPacket(Trigger.Right);
+        SetAndSendPacket(Trigger.Left);
       }
       else if ((playerPed.IsInVehicle() || playerPed.IsOnBike || playerPed.IsInBoat || playerPed.IsInHeli) &&
                playerPed.CurrentVehicle.Driver == playerPed)
@@ -208,13 +209,13 @@ namespace DualSense4GTAV
         }
         else if (currentVehicle.IsInAir || !currentVehicle.IsOnAllWheels)
         {
-          SetAndSendPacket(packet, Trigger.Right);
-          SetAndSendPacket(packet, Trigger.Left);
+          SetAndSendPacket(Trigger.Right);
+          SetAndSendPacket(Trigger.Left);
         }
         else if (currentVehicle.EngineHealth <= 0f)
         {
-          SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
-          SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
+          SetAndSendPacket(Trigger.Right, TriggerMode.Hardest);
+          SetAndSendPacket(Trigger.Left, TriggerMode.Hardest);
           Wait(300);
         }
         else // if (playerped.CurrentVehicle.EngineHealth >= 1000f)
@@ -284,8 +285,8 @@ namespace DualSense4GTAV
 
           if (currentGear != currentVehicle.NextGear) // here comes the clutch!
           {
-            SetAndSendPacket(packet, Trigger.Left);
-            SetAndSendPacket(packet, Trigger.Right);
+            SetAndSendPacket(Trigger.Left);
+            SetAndSendPacket(Trigger.Right);
             Script.Wait(100);
           }
           else if (currentGear > 0)
@@ -368,7 +369,7 @@ namespace DualSense4GTAV
             DoTrigger_Bow(Trigger.Right, 5, 6, 4, 4 );
           }
 
-          SetAndSendPacket(packet, Trigger.Left);
+          SetAndSendPacket(Trigger.Left);
           // Wait(50);
           lastAmmo = playerWeapon.AmmoInClip;
 
@@ -390,7 +391,7 @@ namespace DualSense4GTAV
           case WeaponGroup.Sniper:
           case WeaponGroup.Shotgun:
           {
-            ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, weaponStrength, fireRateAutomaticInt, animationLength, 1, 5, triggerForce, triggerSnapForce);
+            ApplyAutomaticWeaponHandling(playerPed, weaponStrength, fireRateAutomaticInt, animationLength, 1, 5, triggerForce, triggerSnapForce);
 
             break;
           }
@@ -398,11 +399,11 @@ namespace DualSense4GTAV
           {
             if (playerWeapon.Hash == WeaponHash.Minigun)
             {
-              ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, 0.9f, (int)(fireRateAutomaticInt / 5f), animationLength, 1, 5, 1, 1);
+              ApplyAutomaticWeaponHandling(playerPed, 0.9f, (int)(fireRateAutomaticInt / 5f), animationLength, 1, 5, 1, 1);
             }
             else
             {
-              ApplyAutomaticWeaponHandling(packet, controllerIndex, playerPed, 0.6f, 1,
+              ApplyAutomaticWeaponHandling(playerPed, 0.6f, 1,
                 animationLength, 1, 5, 1, 1);
               break;
             }
@@ -424,7 +425,7 @@ namespace DualSense4GTAV
         }
       }
     }
-  private static void ApplyAutomaticWeaponHandling(Packet packet, int controllerIndex, Ped playerPed, float weaponStrength,
+  private static void ApplyAutomaticWeaponHandling(Ped playerPed, float weaponStrength,
   int fireRateAutomaticInt, float timeBetweenShots, int start, int end, int force, int snapForce)
   {
     bool doDefault = false;
@@ -514,8 +515,8 @@ namespace DualSense4GTAV
         //SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
         //  new() { 2, 9, 1, 2, iMax, 1 });
 
-          SetAndSendPacket(packet, Trigger.Left);
-        SetAndSendPacket(packet, Trigger.Right);
+          SetAndSendPacket(Trigger.Left);
+        SetAndSendPacket(Trigger.Right);
 
         //SetAndSendPacket(packet, Trigger.Left, TriggerMode.Machine,
         //  new() { 4, 9, 1, 2, 0, 1 });
