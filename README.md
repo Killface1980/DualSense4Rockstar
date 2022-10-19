@@ -11,9 +11,8 @@ Github Link: https://github.com/Paliverse/DualSenseX | Steam Link:  https://stor
 These mods were built against the Steam version of DualSenseX which is fully supported. The GitHub version of DSX is *not* supported and/or recommended.
 
 - GTA V requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies and LemonUI for .NET v1.8 by Lemon https://github.com/LemonUIbyLemon/LemonUI and its dependencies
-- RDR 2 ScriptHook v1 requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
-- RDR 2 requires ScriptHookRDR2DotNet v2 by TuffyTown https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and its dependencies
-
+- RDR 2 requires ScriptHookRDR2DotNet *v2* by TuffyTown https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and its dependencies
+- OR RDR 2 ScriptHook *v1* requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
 
 ## Features
 Based upon JohnD's DualSense mod for Grand Theft Auto V using ScriptHook, this project adds support for Red Dead Redemption 2 with the adapted control layout originally by Shtivi.
