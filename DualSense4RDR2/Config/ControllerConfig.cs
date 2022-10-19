@@ -46,6 +46,7 @@ public class ControllerConfig
         minResistanceVehicle = settings.GetValue("Controls", nameof(minResistanceVehicle), 2) * 25;
         maxResistanceVehicle = settings.GetValue("Controls", nameof(maxResistanceVehicle), 7) * 25;
 
+        settings.SetValue("TestSection", "TestKey", "TestValue");
         settings.Save();
 
         /*    pool = new ObjectPool();

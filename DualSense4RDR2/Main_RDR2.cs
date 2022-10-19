@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using DSX_Base.MathExtended;
+using JetBrains.Annotations;
 using static DSX_Base.Client.iO;
 using static RDR2.Native.WEAPON;
+// using DualSense4RDR2.Config;
 
 namespace DualSense4RDR2
 {
@@ -28,6 +30,7 @@ namespace DualSense4RDR2
       Tick += this.OnTick;
       Connect();
       Process.GetProcessesByName("DSX");
+      // var config = new ControllerConfig();
     }
 
 
@@ -58,7 +61,7 @@ namespace DualSense4RDR2
 
 
       //uint weaponHash = WEAPON._GET_PED_CURRENT_HELD_WEAPON(owner.Handle);
-      if (playerWeapons!.ContainsKey(weaponHash))
+      if (playerWeapons.ContainsKey(weaponHash))
       {
         return playerWeapons[weaponHash];
       }
@@ -75,7 +78,7 @@ namespace DualSense4RDR2
       {
         return playerWeapons[weaponHash];
       }
-      Ped owner = Game.Player.Character;
+      Ped owner = Game.Player?.Character;
 
       Weapon weapon = new(owner, (eWeapon)weaponHash);
       playerWeapons.Add(weaponHash, weapon);
@@ -83,10 +86,23 @@ namespace DualSense4RDR2
 
     }
     private bool cockingActive;
+    int GetHorseSpeed(Ped horsie)
+    {
+      // stopped
+      // walking 
+      // faster, everything else
+      // running
+      // sprinting
+      if (horsie.IsStopped) return 0;
+      if (horsie.IsWalking) return 1;
+      if (horsie.IsRunning) return 3;
+      if (horsie.IsSprinting) return 4;
+      return 2; // gallopping
+    }
     private  void OnTick(object sender, EventArgs e)
     {
 
-      Ped playerPed = Game.Player.Character;
+      Ped playerPed = Game.Player?.Character;
       Player player                = Game.Player;
       Weapon currentMainHandWeapon = GetCurrentWeapon();// playerPed?.Weapons?.Current;
       Weapon currentOffHandWeapon  = GetCurrentWeapon(true);
@@ -161,6 +177,8 @@ namespace DualSense4RDR2
         //SetAndSendPacket(packet, Trigger.Right);
         //SetAndSendPacket(packet, Trigger.Left);
       }
+      bool ignoreLeftTrigger = false;
+
       bool pedHasVehicleWeapon;
       uint weaponHash = 0;
 
@@ -278,7 +296,7 @@ namespace DualSense4RDR2
         }
         else if (PED._GET_LASSO_TARGET(playerPed.Handle) != 0) // caught someone/-thing
         {
-          SetAndSendPacket(Trigger.Left, TriggerMode.Hardest);
+          if (!ignoreLeftTrigger) SetAndSendPacket(Trigger.Left, TriggerMode.Hardest);
           SetAndSendPacket(Trigger.Right, TriggerMode.Hardest);
         }
         /*        else if (player.IsTargettingAnything) // not working on the lasso
@@ -290,14 +308,14 @@ namespace DualSense4RDR2
         */
         else if (player.IsAiming)
         {
-          DoTrigger_Resistance(Trigger.Left, 6, 4 );
+          if (!ignoreLeftTrigger) DoTrigger_Resistance(Trigger.Left, 6, 4 );
 
           DoTrigger_Resistance(Trigger.Right, 1, 6 );
           // RDR2.UI.Screen.DisplaySubtitle("aimy");
         }
         else
         {
-          DoTrigger_Resistance(Trigger.Left, 6, 1 );
+          if (!ignoreLeftTrigger) DoTrigger_Resistance(Trigger.Left, 6, 1 );
 
           DoTrigger_Resistance(Trigger.Right, 4, 2 );
           // RDR2.UI.Screen.DisplaySubtitle("fishing");
@@ -318,14 +336,15 @@ namespace DualSense4RDR2
 
         if (lastMainHandAmmo != ammoR && canUseOffhandWeapon)
         {
-          DoTrigger_CustomRigid(Trigger.Right, 0, 128, 255);
+          DoTrigger_CustomRigid(Trigger.Right, 0, 112, 255);
           Wait(75);
 
         }
         else if (lastMainHandAmmo != ammoR || lastOffHandAmmo != ammoL)
         {
           // DoTrigger_CustomRigid(Trigger.Right, 0, 128, 255);
-          DoTrigger_CustomRigid(Trigger.Left, 0, 128, 255);
+          DoTrigger_CustomRigid(Trigger.Left, 0, 112, 255);
+          Wait(75);
           // SetAndSendPacket(packet, Trigger.Right);
 
           // DoTriggerCustomRigid(Trigger.Right, startOfResistance: 0, amountOfForceExerted: 255, forceExertedInRange: 255);
@@ -334,7 +353,6 @@ namespace DualSense4RDR2
           //SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
           // SetAndSendPacket(packet, Trigger.Left, TriggerMode.AutomaticGun, new() { 2, 6, 4 });
           // SetAndSendPacket(packet, Trigger.Right, TriggerMode.AutomaticGun, new() { 2, 6, 4 });
-          Wait(75);
 
         }
         else
@@ -381,6 +399,56 @@ namespace DualSense4RDR2
         // 279042 - double action
         bool mainHandIsDoubleAction = ShouldBehaveLikeDoubleAction(currentMainHandWeapon);
         bool offHandIsDoubleAction = ShouldBehaveLikeDoubleAction(currentOffHandWeapon);
+
+        if (playerPed.IsOnHorse)
+        {
+          Ped horsie = playerPed.CurrentMount;
+          int speedie = GetHorseSpeed(horsie); // 0-4, stop => fastest
+          if (speedie > 0)
+          {
+            int start = 0, end, first, second = 7;
+            end       = 9;
+            first     = 0;
+            int freq  = 1;
+            switch (speedie)
+            {
+              case 1:
+              {
+                start  = 7;
+                second = 1;
+                freq   = 1;
+                break;
+              }
+              case 2:
+              {
+                start  = 6;
+                second = 3;
+                freq   = 1;
+                break;
+              }
+              case 3:
+              {
+                start  = 5;
+                second = 5;
+                freq   = 2;
+                break;
+              }
+              case 4:
+              {
+                start  = 4;
+                second = 7;
+                freq   = 3;
+
+                break;
+              }
+            }
+
+            SetAndSendPacket(Trigger.Left, TriggerMode.Galloping, new List<int> { start, end, first, second, freq });
+            ignoreLeftTrigger = true;
+          }
+
+        }
+
 
         //if (playerPed.IsShooting)
         if (playerPed.IsShooting)
@@ -433,18 +501,26 @@ namespace DualSense4RDR2
           return;
         }
 
+        bool isControlAttackPressed = PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_RT);
         if (cockingActive)
         {
-          cockingActive = PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_RT);
+          cockingActive = isControlAttackPressed;
         }
 
+        bool uncockVolcanic = !mainWeaponIsReadyToShoot && isControlAttackPressed && currentMainHandWeapon.Hash == eWeapon.WEAPON_PISTOL_VOLCANIC;
+        if (uncockVolcanic)
+        {
+          cockingActive = false;
+        }
         if (cockingActive)
         {
+
           if (mainWeaponIsReadyToShoot)
           {
-            if (PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_RT))
+            if (isControlAttackPressed)
             {
-              DoTrigger_CustomRigid(Trigger.Right, 0, 255, 255);
+              SetAndSendPacket(Trigger.Right);
+              //DoTrigger_CustomRigid(Trigger.Right, 0, 255, 255);
               Wait(10);
 
             }
@@ -458,11 +534,11 @@ namespace DualSense4RDR2
           else
           {
             DoTrigger_CustomRigid(Trigger.Right, 64,
-              16 + (int)MathExtended.Lerp(0, 128, degradation), 16 + (int)MathExtended.Lerp(0, 128, degradation));
+              64 + (int)MathExtended.Lerp(0, 96, degradation), 64 + (int)MathExtended.Lerp(0, 96, degradation));
 
           }
           cockingActive = true;
-          DoTrigger_CustomRigid(Trigger.Left, 120 - (int)(degradation * 110),  (int)(100 + degradation * 120), 180);
+          if (!ignoreLeftTrigger) DoTrigger_CustomRigid(Trigger.Left, 120 - (int)(degradation * 110),  (int)(100 + degradation * 120), 180);
           // SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
           // {
           //   4,
@@ -473,10 +549,10 @@ namespace DualSense4RDR2
 
 
         }
-        else if (!mainHandIsDoubleAction && !mainWeaponIsReadyToShoot && !canUseOffhandWeapon || !carriesWeaponOpenly) // Mode Gun Cock
+        else if (!uncockVolcanic && !mainHandIsDoubleAction && !mainWeaponIsReadyToShoot && !canUseOffhandWeapon || !carriesWeaponOpenly) // Mode Gun Cock
         {
           cockingActive = true;
-          DoTrigger_CustomRigid(Trigger.Left, 160 - (int)(degradation * 150),  (int)(100 + degradation * 120), 180);
+          if (!ignoreLeftTrigger) DoTrigger_CustomRigid(Trigger.Left, 160 - (int)(degradation * 150),  (int)(100 + degradation * 120), 180);
           // SetAndSendPacket(packet, Trigger.Right, TriggerMode.Bow, new()
           // {
           //   4,
@@ -494,8 +570,8 @@ namespace DualSense4RDR2
           cockingActive = false;
           // uint modelHash = WEAPON.enti(weaponEntityIndex);
           int triggerEnd = 1;
-          float force1 = (1 + MathExtended.Lerp(0, 7, degradation));// + (6f * degradation));
-          float force2 = (1 + MathExtended.Lerp(0, 7, degradation));
+          float force1 = (2 + MathExtended.Lerp(0, 6, degradation));// + (6f * degradation));
+          float force2 = (2 + MathExtended.Lerp(0, 6, degradation));
 
           bool doubleActionActive = false;
 
@@ -515,14 +591,14 @@ namespace DualSense4RDR2
           if (doubleActionActive) // harder triggers for double action
           {
             triggerEnd = 3;
-            force1 = (2 + MathExtended.Lerp(0, 6, degradation));// + (6f * degradation));
-            force2 = (2 + MathExtended.Lerp(0, 6, degradation));
+            force1 = (3 + MathExtended.Lerp(0, 5, degradation));// + (6f * degradation));
+            force2 = (3 + MathExtended.Lerp(0, 5, degradation));
 
             factor = 0.9f;
           }
 
           //RDR2.UI.Screen.DisplaySubtitle((doubleActionActive).ToString());
-          DoTrigger_CustomRigid(Trigger.Left, 168 - (int)(degradation * 140 * factor), (int)(32 + degradation * 160), 255);
+          if (!ignoreLeftTrigger) DoTrigger_CustomRigid(Trigger.Left, 168 - (int)(degradation * 140 * factor), (int)(32 + degradation * 160), 255);
 
           DoTrigger_Bow(Trigger.Right, 0, (int)triggerEnd, (int)force1, (int)force2);
 
@@ -534,7 +610,7 @@ namespace DualSense4RDR2
         
       // turn off
       SetAndSendPacket(Trigger.Right);
-      SetAndSendPacket(Trigger.Left);
+      if (!ignoreLeftTrigger) SetAndSendPacket(Trigger.Left);
 
       // SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
       // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 2, 3, 4 });
