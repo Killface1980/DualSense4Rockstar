@@ -15,11 +15,11 @@ These mods were built against the Steam version of DualSenseX which is fully sup
 - OR RDR 2 ScriptHook *v1* requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
 
 ## Features
-Based upon JohnD's DualSense mod for Grand Theft Auto V using ScriptHook, this project adds support for Red Dead Redemption 2 with the adapted control layout originally by Shtivi.
+Based upon JohnD's DualSense mod for Grand Theft Auto V using ScriptHook, this project adds support for Red Dead Redemption 2 with a custom control layout losely based upons Shtivi.
 
 ### GTA V
 Redefined controller layout and bug fixing
-- Adds support for all weapons and switches the adaptive feedback. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP) Automatic weapons will switch from semi automativ trigger mode to automatic mode once the gun starts firing.
+- Adds support for all weapons and switches for the adaptive triggers. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP) Automatic weapons will switch from semi automativ trigger mode to automatic mode once the gun starts firing.
 
 
 ![image](https://user-images.githubusercontent.com/16738568/190234195-d3b623f1-ab29-48db-b357-997e5ba13d5f.png)
@@ -32,7 +32,6 @@ Redefined controller layout and bug fixing
 - Support for LemonUI for config (currently triggered with F10)
 
 ### RDR 2
-- Based upon the layout and features from Shtivi
 - Added feedback for gun recoil, adapted gun trigger and gun cocking to the triggers
 - Different trigger settings for double action revolver, hardened triggers while reloading
 - Supports off hand weapons
