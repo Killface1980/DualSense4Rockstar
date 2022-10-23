@@ -15,27 +15,26 @@ These mods were built against the Steam version of DualSenseX which is fully sup
 - OR RDR 2 ScriptHook *v1* requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
 
 ## Features
-Based upon JohnD's DualSense mod for Grand Theft Auto V using ScriptHook, this project adds support for Red Dead Redemption 2 with the adapted control layout originally by Shtivi.
+Based upon JohnD's DualSense mod for Grand Theft Auto V using ScriptHook, this project adds support for Red Dead Redemption 2 with a custom control layout losely based upons Shtivi.
 
 ### GTA V
 Redefined controller layout and bug fixing
-- Adds support for all weapons and switches the adaptive feedback. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP) Automatic weapons will switch from semi automativ trigger mode to automatic mode once the gun starts firing.
+- Adds support for all weapons and switches for the adaptive triggers. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP) Automatic weapons will switch from semi automatic trigger mode to automatic mode once the gun starts firing.
 
 
 ![image](https://user-images.githubusercontent.com/16738568/190234195-d3b623f1-ab29-48db-b357-997e5ba13d5f.png)
 
-- Adds support for all weapons and switches the adaptive feedback. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP). Automatic weapons will switch from semi automativ trigger mode to automatic mode once the gun actually starts firing.
-- (WIP)Reworked feedback during driving, depending on gear, if wheels are on ground, rpm, vehicle health etc. Adds haptic feedback for shifting gears.
+- Adds support for all weapons to the adaptive triggers. Pistols and shotguns e.g. use a pistol trigger, while automatic guns will provide feedback according to their fire rate and strength (WIP). Automatic weapons will switch from semi automatic trigger mode to automatic mode once the gun actually starts firing.
+- (WIP)Reworked feedback during driving, depending on gear, if wheels are on ground, rpm, vehicle health etc. Adds feedback to the triggers for shifting gears.
 - adds colored speedometer, brake light (mic LED)
 - Changed Player LED, police siren loop; LED will also go into siren loop if the player is not wanted and has the vehicle's siren turned on
 - Added support for DS controller new LED layout, fixing the Wanted stars not showing up
 - Support for LemonUI for config (currently triggered with F10)
 
 ### RDR 2
-- Based upon the layout and features from Shtivi
-- Added haptic feedback for gun recoil, adapted gun trigger and gun cocking to the triggers
-- Different haptics for double action revolver, hardened triggers while reloading
-- Supports off hand weapons
+- Adds support for the adaptive triggers for gun recoil, degradation, double action, automatic guns, gun cocking
+- Feedback depending on the state, e.g. whooting, reloading, galloping on horse
+- Supports off hand weapons and makes the left/right trigger react accordingly
 - LEDs show current player health, can indicate the stamina and underpowered health core
 
 ## Installation Instructions & Download
