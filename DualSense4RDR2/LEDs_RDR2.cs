@@ -12,15 +12,15 @@ namespace DualSense4RDR2;
 public class LEDs_RDR2 : Script
 {
     private static bool showbatstat = true;
-    private static bool showconmes = true;
+    private static bool showconmes  = true;
     private readonly BasicCurve pulseRateCurve;
-    private float currentHealth = 0;
+    private float currentHealth         = 0;
     private float currentStaminaDisplay = 1f;
     private float flashy;
     private int interval_direction = 1;
-    private float interval_pos = 0;
-    private float lastHealth = 0;
-    private int staminaTarget = 0;
+    private float interval_pos     = 0;
+    private float lastHealth       = 0;
+    private int staminaTarget      = 0;
 
     public LEDs_RDR2()
     {
@@ -32,7 +32,7 @@ public class LEDs_RDR2 : Script
       new(1f, 0.3f)
     };
 
-        Tick += OnTick;
+        Tick    += OnTick;
         KeyDown += OnKeyDown;
 
     }
@@ -42,17 +42,51 @@ public class LEDs_RDR2 : Script
     {
         Ped playerPed = Game.Player.Character;
 
+        // if (ScriptSettings::getBool("HealthIndication"))
+        {
+          // currentHealth = ENTITY._GET_ENTITY_HEALTH_FLOAT(playerPed.Handle); //not working?
+
+          currentHealth = playerPed.Health * 1f / playerPed.MaxHealth * 1f;
+        }
+        if (currentHealth < lastHealth - 0.01f)
+        {
+          flashy += MathExtended.InverseLerp(lastHealth, 0, currentHealth);
+          flashy = Math.Min(flashy, 1);
+        }
+
+        lastHealth = currentHealth;
+        // else
+        // {
+        //     health = 1;
+        // }
+
+        // if (ScriptSettings::getBool("StaminaIndication"))
+        {
+          staminaTarget = playerPed.IsOnMount ? PED.GET_MOUNT(playerPed.Handle) : playerPed.Handle;
+
+          //float stamina = RDR2.Native.PED._GET_PED_STAMINA(this.staminaTarget)*1f / RDR2.Native.PED._GET_PED_MAX_STAMINA(this.staminaTarget)*1f;
+          float stamina = PED._GET_PED_STAMINA_NORMALIZED(staminaTarget);
+          currentStaminaDisplay = MathExtended.Lerp(0, 2, stamina); // DSX_Math.LerpCapped(0.1f,0.8f,stamina);
+          //this.pulseRate = DSX_Math.LerpCapped(1f, 0.2f, stamina);// Math.Max(0.2f, Math.Min(1f, 1f - stamina));
+          //RDR2.UI.Screen.DisplaySubtitle(playerPed.Health + " - " + playerPed.MaxHealth + " - " + pulseRate);
+        }
+        // else
+        // {
+        //     pulseRate = 0;
+        // }
+
+
         bool playerIsInDeadEye = Game.Player.IsInDeadEye;
 
-        bool healthCoreOverpowered = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Health);
+        bool healthCoreOverpowered  = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Health);
         bool staminaCoreOverpowered = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Stamina);
         bool deadEyeCoreOverpowered = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.DeadEye);
 
-        float healthCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.Health) * 0.01f + (healthCoreOverpowered ? 1f : 0);
+        float healthCore  = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.Health) * 0.01f + (healthCoreOverpowered ? 1f : 0);
         float staminaCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.Stamina) * 0.01f + (staminaCoreOverpowered ? 1f : 0);
         float deadEyeCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.DeadEye) * 0.01f + (deadEyeCoreOverpowered ? 1f : 0);
 
-        bool healthCoreLow = healthCore < 0.2f;
+        bool healthCoreLow  = healthCore < 0.2f;
         bool staminaCoreLow = staminaCore < 0.2f;
         bool deadEyeCoreLow = deadEyeCore < 0.2f;
 
@@ -74,8 +108,8 @@ public class LEDs_RDR2 : Script
         }
 
         float green = currentHealth * 180f;
-        float red = 180f - green;
-        float blue = 0;
+        float red   = 180f - green;
+        float blue  = 0;
 
         //if (ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Health))
         //{
@@ -103,9 +137,9 @@ public class LEDs_RDR2 : Script
         {
             // DoColourLerp(neutral, inDeadEye, interval_pos, out red, out green, out blue);
 
-            blue = 0;
-            red = 255 * interval_pos;
-            green = 120 * interval_pos;
+            blue      = 0;
+            red       = 255 * interval_pos;
+            green     = 120 * interval_pos;
             evaluator = 0.1f;
 
         }
@@ -113,8 +147,8 @@ public class LEDs_RDR2 : Script
         {
             // DoColourLerp(neutral, coreLowHealth, interval_pos, out red, out green, out blue);
 
-            red += interval_pos * 255;
-            green -= red / 2;
+            red      += interval_pos * 255;
+            green    -= red / 2;
             evaluator = healthCore * 5f;
         }
         // else if (staminaCoreLow)
@@ -137,9 +171,9 @@ public class LEDs_RDR2 : Script
         {
             //DoColourLerp(neutral, coreLowDeadEye, interval_pos, out red, out green, out blue);
 
-            red *= interval_pos / 2;
-            green *= interval_pos / 2;
-            blue *= interval_pos / 2;
+            red      *= interval_pos / 2;
+            green    *= interval_pos / 2;
+            blue     *= interval_pos / 2;
             evaluator = currentStaminaDisplay;
         }
 
@@ -159,9 +193,9 @@ public class LEDs_RDR2 : Script
 
     private void DoColourLerp(Color color1, Color color2, float t, out float red, out float green, out float blue)
     {
-        red = MathExtended.Lerp(color1.R, color2.R, t);
+        red   = MathExtended.Lerp(color1.R, color2.R, t);
         green = MathExtended.Lerp(color1.G, color2.G, t);
-        blue = MathExtended.Lerp(color1.B, color2.B, t);
+        blue  = MathExtended.Lerp(color1.B, color2.B, t);
     }
 
     private static void SendPacketRGB(float red, float green, float blue)
@@ -207,47 +241,10 @@ public class LEDs_RDR2 : Script
 
     private void OnTick(object sender, EventArgs e)
     {
-        updateLights();
         HandleLEDs();
 
         return;
     }
 
-    private void updateLights()
-    {
-        Ped playerPed = Game.Player.Character;
 
-        // if (ScriptSettings::getBool("HealthIndication"))
-        {
-            // currentHealth = ENTITY._GET_ENTITY_HEALTH_FLOAT(playerPed.Handle); //not working?
-
-            currentHealth = playerPed.Health * 1f / playerPed.MaxHealth * 1f;
-        }
-        if (currentHealth < lastHealth - 0.01f)
-        {
-            flashy += MathExtended.InverseLerp(0, lastHealth, currentHealth);
-            flashy = Math.Min(flashy, 1);
-        }
-
-        lastHealth = currentHealth;
-        // else
-        // {
-        //     health = 1;
-        // }
-
-        // if (ScriptSettings::getBool("StaminaIndication"))
-        {
-            staminaTarget = playerPed.IsOnMount ? PED.GET_MOUNT(playerPed.Handle) : playerPed.Handle;
-
-            //float stamina = RDR2.Native.PED._GET_PED_STAMINA(this.staminaTarget)*1f / RDR2.Native.PED._GET_PED_MAX_STAMINA(this.staminaTarget)*1f;
-            float stamina = PED._GET_PED_STAMINA_NORMALIZED(staminaTarget);
-            currentStaminaDisplay = MathExtended.Lerp(0, 2, stamina); // DSX_Math.LerpCapped(0.1f,0.8f,stamina);
-                                                                      //this.pulseRate = DSX_Math.LerpCapped(1f, 0.2f, stamina);// Math.Max(0.2f, Math.Min(1f, 1f - stamina));
-                                                                      //RDR2.UI.Screen.DisplaySubtitle(playerPed.Health + " - " + playerPed.MaxHealth + " - " + pulseRate);
-        }
-        // else
-        // {
-        //     pulseRate = 0;
-        // }
-    }
 }

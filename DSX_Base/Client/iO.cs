@@ -111,12 +111,12 @@ public class iO
   public static void DoTrigger_Machine(Trigger trigger, int start, int end, int strengthA, int strengthB, int frequency,
     int period)
   {
-    Packet packet = new()
+    Packet p = new()
     {
       instructions = new Instruction[4]
     };
-    packet.instructions[0].type = InstructionType.TriggerUpdate;
-    packet.instructions[0].parameters = new object[]
+    p.instructions[0].type = InstructionType.TriggerUpdate;
+    p.instructions[0].parameters = new object[]
     {
       controllerIndex,
       trigger,
@@ -129,7 +129,7 @@ public class iO
       period
     };
 
-    Send(packet);
+    Send(p);
   }
 
   /// <summary>
@@ -140,14 +140,14 @@ public class iO
   /// <param name="force">Force:0-8</param>
   public static void DoTrigger_Resistance(Trigger trigger, int start, int force)
   {
-    Packet packet = new()
+    Packet p = new()
     {
       instructions = new Instruction[4]
     };
 
-    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    p.instructions[0].type = InstructionType.TriggerUpdate;
 
-    packet.instructions[0].parameters = new object[]
+    p.instructions[0].parameters = new object[]
     {
       controllerIndex,
       trigger,
@@ -156,7 +156,7 @@ public class iO
       force
     };
 
-    Send(packet);
+    Send(p);
   }
 
   public static void Send(Packet data)
@@ -168,11 +168,11 @@ public class iO
   public static void SetAndSendPacket(Trigger trigger,
     TriggerMode triggerMode = TriggerMode.Normal, List<int> parameters = null)
   {
-    Packet packet = new();
-    packet.instructions = new Instruction[4];
+    Packet p = new();
+    p.instructions = new Instruction[4];
 
 
-    packet.instructions[0].type = InstructionType.TriggerUpdate;
+    p.instructions[0].type = InstructionType.TriggerUpdate;
     List<object> newList = new()
     {
       controllerIndex,
@@ -182,20 +182,22 @@ public class iO
     if (parameters != null)
       foreach (object param in parameters)
         newList.Add(param);
-    packet.instructions[0].parameters = newList.ToArray();
+    p.instructions[0].parameters = newList.ToArray();
 
-    Send(packet);
+
+
+    Send(p);
   }
 
-  public static void SetAndSendPacketCustom(Packet packet, Trigger trigger,
+  public static void SetAndSendPacketCustom(Packet p, Trigger trigger,
     CustomTriggerValueMode customMode = CustomTriggerValueMode.OFF, int startOfResistance = 0,
     int amountOfForceExerted = 0, int forceExertedInRange = 0, int ab_strengthNearRelease = 0,
     int ab_strengthNearMiddle = 0, int ab_strengthPressedState = 0, int ab_actuationFrequency = 0)
   {
     TriggerMode triggerMode = TriggerMode.CustomTriggerValue;
 
-    packet.instructions[0].type = InstructionType.TriggerUpdate;
-    packet.instructions[0].parameters = new object[]
+    p.instructions[0].type = InstructionType.TriggerUpdate;
+    p.instructions[0].parameters = new object[]
     {
       controllerIndex,
       trigger,
@@ -205,6 +207,6 @@ public class iO
       ab_strengthNearMiddle, ab_strengthPressedState, ab_actuationFrequency
     };
 
-    Send(packet);
+    Send(p);
   }
 }

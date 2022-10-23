@@ -1,4 +1,5 @@
 ﻿using RDR2;
+using System.Windows.Forms;
 
 namespace DualSense4RDR2.Config;
 
@@ -35,25 +36,27 @@ public class ControllerConfig
         // File load / save ...
 
         settings = ScriptSettings.Load("Scripts\\DualSense4RDR2.ini");
+    // settings.SetValue("Controls2", nameof(KeyConf.showMenu), KeyConf.showMenu);
+        KeyConf.showMenu = settings.GetValue("Controls2", nameof(KeyConf.showMenu), Keys.F8);
+        // showWanted      = settings.GetValue("Controls", nameof(showWanted), true);
+        // showHealth      = settings.GetValue("Controls", nameof(showHealth), true);
+        // showRPM         = settings.GetValue("Controls", nameof(showRPM), true);
+        // showPlayerColor = settings.GetValue("Controls", nameof(showPlayerColor), true);
+        // 
+        // startofResistanceVehicle = settings.GetValue("Controls", nameof/ (startofResistanceVehicle), /1) * 25;
+        // endofResistanceVehicle   = settings.GetValue("Controls", nameof (endofResistanceVehicle), /7) /* 25;
+        // minResistanceVehicle     = settings.GetValue("Controls", nameof(minResistanceVehicle),  2) /* /25;
+        // maxResistanceVehicle     = settings.GetValue("Controls", nameof(maxResistanceVehicle), 7) * 25;
 
-        showWanted = settings.GetValue("Controls", nameof(showWanted), true);
-        showHealth = settings.GetValue("Controls", nameof(showHealth), true);
-        showRPM = settings.GetValue("Controls", nameof(showRPM), true);
-        showPlayerColor = settings.GetValue("Controls", nameof(showPlayerColor), true);
-
-        startofResistanceVehicle = settings.GetValue("Controls", nameof(startofResistanceVehicle), 1) * 25;
-        endofResistanceVehicle = settings.GetValue("Controls", nameof(endofResistanceVehicle), 7) * 25;
-        minResistanceVehicle = settings.GetValue("Controls", nameof(minResistanceVehicle), 2) * 25;
-        maxResistanceVehicle = settings.GetValue("Controls", nameof(maxResistanceVehicle), 7) * 25;
-
-        settings.SetValue("TestSection", "TestKey", "TestValue");
-        settings.Save();
+        // settings.SetValue("TestSection", "TestKey", "TestValue");
+        // settings.SetValue("Controls", nameof(maxResistanceVehicle), maxResistanceVehicle);
+        // settings.Save();
 
         /*    pool = new ObjectPool();
-
+    
         menu = new NativeMenu("DualSense for GTA V", "Options");
         menuVehicle = new NativeMenu("Vehicle");
-
+    
         item_showWanted = new NativeCheckboxItem("LED: Show wanted", "Shows red and blue lights when wanted.", showWanted);
         item_showWanted.CheckboxChanged += DS4GTAV_Controls_SettingsChanged;
         menu.Add(item_showWanted);
@@ -66,30 +69,30 @@ public class ControllerConfig
         item_showPlayerColor = new NativeCheckboxItem("LED: Show player color", "Shows the player color.", showPlayerColor);
         item_showPlayerColor.CheckboxChanged += DS4GTAV_Controls_SettingsChanged;
         menu.Add(item_showPlayerColor);
-
+    
         menu.Add(new NativeItem("Vehicle Resistance"));
-
+    
         item_startofResistanceVehicle = new NativeSliderItem("Start ", 10, startofResistanceVehicle / 25);
         item_startofResistanceVehicle.ValueChanged += DS4GTAV_Controls_SettingsChanged;
         menu.Add(item_startofResistanceVehicle);
-
+    
         item_endofResistanceVehicle = new NativeSliderItem("End ", 10, endofResistanceVehicle / 25);
         item_endofResistanceVehicle.ValueChanged += DS4GTAV_Controls_SettingsChanged;
         menu.Add(item_endofResistanceVehicle);
-
+    
         item_minResistanceVehicle = new NativeSliderItem("Minimum ", 10, minResistanceVehicle / 25);
         item_minResistanceVehicle.ValueChanged += DS4GTAV_Controls_SettingsChanged;
         menu.Add(item_minResistanceVehicle);
-
+    
         item_maxResistanceVehicle = new NativeSliderItem("Maximum ", 10, maxResistanceVehicle / 25);
         item_maxResistanceVehicle.ValueChanged += DS4GTAV_Controls_SettingsChanged;
         menu.Add(item_maxResistanceVehicle);
-
+    
         NativeCheckboxItem checkbox = new NativeCheckboxItem("Test");
         // menu.AddSubMenu(menuVehicle);
-
+    
         pool.Add(menu);
-
+    
         UpdateMenuDescriptions();*/
     }
 

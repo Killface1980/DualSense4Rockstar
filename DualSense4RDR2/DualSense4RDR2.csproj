@@ -12,12 +12,10 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <Compile Remove="Config\ControllerConfig.cs" />
     <Compile Remove="FishingStat\Hans.cs" />
     <Compile Remove="Hans.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Config\ControllerConfig.cs" />
     <None Include="FishingStat\Hans.cs" />
   </ItemGroup>
   <ItemGroup>

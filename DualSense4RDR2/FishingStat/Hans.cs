@@ -40,6 +40,7 @@ namespace DualSense4RDR2.Main
       [FieldOffset(112)] internal float unk1;//14
       [FieldOffset(120)] internal float unk2;//15
       [FieldOffset(128)] internal int unk3;// 16 Some kind of state (0 - 7)
+
       [FieldOffset(136)] internal float unk4; // 17?
       [FieldOffset(144)] internal int fishSizeIndex; // 18?
       [FieldOffset(152)] internal float unk5; // 19 Any unk ?
