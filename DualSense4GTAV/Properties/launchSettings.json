@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "DualSense4GTAV": {
+      "commandName": "Project"
+    },
+    "TestApp": {
+      "commandName": "Executable",
+      "executablePath": "D:\\Google Drive\\Jobs\\DualSense4RockStar\\DSX_TestApp\\bin\\Debug\\net6.0-windows\\DSX_TestApp.exe"
+    }
+  }
+}

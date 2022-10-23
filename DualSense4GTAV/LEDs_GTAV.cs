@@ -115,8 +115,8 @@ namespace DualSense4GTAV
                             { controllerIndex, false, false, false, false, false };
                         Send(packet);
 
-                        packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                        packet.instructions[2].parameters = new object[]
+                        packet.instructions[3].type = InstructionType.PlayerLEDNewRevision;
+                        packet.instructions[3].parameters = new object[]
                             { controllerIndex, PlayerLEDNewRevision.AllOff };
                         Send(packet);
                         isWanted = false;
@@ -131,8 +131,8 @@ namespace DualSense4GTAV
                                 { controllerIndex, true, false, false, false, false };
                             Send(packet);
 
-                            packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                            packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.One };
+                            packet.instructions[3].type = InstructionType.PlayerLEDNewRevision;
+                            packet.instructions[3].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.One };
                             Send(packet);
 
                             break;
@@ -144,8 +144,8 @@ namespace DualSense4GTAV
                             { controllerIndex, true, true, false, false, false };
                         Send(packet);
 
-                        packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                        packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Two };
+                        packet.instructions[3].type = InstructionType.PlayerLEDNewRevision;
+                        packet.instructions[3].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Two };
                         Send(packet);
 
                         isWanted = true;
@@ -158,8 +158,8 @@ namespace DualSense4GTAV
                             { controllerIndex, true, true, true, false, false };
                         Send(packet);
 
-                        packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                        packet.instructions[2].parameters = new object[]
+                        packet.instructions[3].type = InstructionType.PlayerLEDNewRevision;
+                        packet.instructions[3].parameters = new object[]
                             { controllerIndex, PlayerLEDNewRevision.Three };
                         Send(packet);
 
@@ -173,8 +173,8 @@ namespace DualSense4GTAV
                             { controllerIndex, true, true, true, true, false };
                         Send(packet);
 
-                        packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                        packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Four };
+                        packet.instructions[3].type = InstructionType.PlayerLEDNewRevision;
+                        packet.instructions[3].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Four };
                         Send(packet);
 
                         isWanted = true;
@@ -187,8 +187,8 @@ namespace DualSense4GTAV
                             { controllerIndex, true, true, true, true, true };
                         Send(packet);
 
-                        packet.instructions[2].type = InstructionType.PlayerLEDNewRevision;
-                        packet.instructions[2].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Five };
+                        packet.instructions[3].type = InstructionType.PlayerLEDNewRevision;
+                        packet.instructions[3].parameters = new object[] { controllerIndex, PlayerLEDNewRevision.Five };
                         Send(packet);
 
                         isWanted = true;
