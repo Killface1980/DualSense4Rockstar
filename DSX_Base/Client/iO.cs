@@ -52,6 +52,29 @@ public class iO
     Send(packet);
   }
 
+  public static void DoTrigger_BowThreshold(Trigger trigger, int start, int end, int force, int snapForce, int threshold)
+  {
+    Packet p = new()
+    {
+      instructions = new Instruction[4]
+    };
+    p.instructions[0].type = InstructionType.TriggerUpdate;
+    p.instructions[0].parameters = new object[]
+    {
+      controllerIndex,
+      trigger,
+      TriggerMode.Bow,
+      start,
+      end,
+      force,
+      snapForce
+    };
+    p.instructions[1].type = InstructionType.TriggerThreshold;
+    p.instructions[1].parameters = new object[] { controllerIndex, trigger, threshold };
+
+    Send(p);
+  }
+
   public static void DoTrigger_CustomRigid(Trigger trigger, int startOfResistance, int amountOfForceExcerted,
     int forceExcertedInRange) // custom trigger values need ALL their parameters
   {

@@ -5,6 +5,7 @@ using RDR2.Native;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using DualSense4RDR2.Config;
 using static DSX_Base.Client.iO;
 using static DualSense4RDR2.Stats.HorseStat;
 using static RDR2.Native.WEAPON;
@@ -20,6 +21,7 @@ public class Main_RDR2 : Script
   private int lastMainHandAmmo;
   private int lastOffHandAmmo;
 
+  public static bool canUseThreshold;
   //private float pulseRate = 0;
   //    public static readonly ControllerConfig controllerConfig = new();
 
@@ -32,7 +34,7 @@ public class Main_RDR2 : Script
     Tick += OnTick;
     Connect();
     Process.GetProcessesByName("DSX");
-    // var config = new ControllerConfig();
+     var config = new ControllerConfig();
   }
 
   private static bool ShouldBehaveLikeDoubleAction(Weapon weapon)
@@ -216,12 +218,10 @@ public class Main_RDR2 : Script
 
 
       //SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new(){6,1});
-      eWeaponAttachPoint attachPoint;
+      eWeaponAttachPoint attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY;
 
       if (canUseOffhandWeapon && offHandWillShootNext) // most likely offhand
         attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY;
-      else
-        attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY;
 
       int weaponEntityIndex = GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint);
       float degradation = GET_WEAPON_DEGRADATION(weaponEntityIndex);
@@ -394,8 +394,8 @@ public class Main_RDR2 : Script
         cockingActive = false;
         // uint modelHash = WEAPON.enti(weaponEntityIndex);
         int triggerEnd = 1;
-        float force1 = 2 + MathExtended.Lerp(0, 6, degradation); // + (6f * degradation));
-        float force2 = 2 + MathExtended.Lerp(0, 6, degradation);
+        float force1 = 1 + MathExtended.Lerp(0, 7, degradation); // + (6f * degradation));
+        float force2 = 1 + MathExtended.Lerp(0, 7, degradation);
 
         bool doDoubleActionNow = false;
 
@@ -421,12 +421,21 @@ public class Main_RDR2 : Script
           factor = 0.9f;
         }
 
-        //RDR2.UI.Screen.DisplaySubtitle((doubleActionActive).ToString());
+        // RDR2.UI.Screen.DisplaySubtitle(mainHandWillShootNext + " - " + offHandWillShootNext + " | " + force2);
         if (!ignoreLeftTrigger)
           DoTrigger_CustomRigid(Trigger.Left, 168 - (int)(degradation * 140 * factor), (int)(32 + degradation * 160),
             64+(int)(degradation * 140) );
 
-        DoTrigger_Bow(Trigger.Right, 0, (int)triggerEnd, (int)force1, (int)force2);
+        if (canUseThreshold)
+        {
+          int offieset = 2;// doDoubleActionNow ? 1 : 3;
+          DoTrigger_BowThreshold(Trigger.Right, offieset, (int)triggerEnd + offieset, (int)force1, (int)force2, (int)((triggerEnd + offieset + 1) * 32f));
+        }else{
+          DoTrigger_Bow(Trigger.Right, 0, (int)triggerEnd, (int)force1, (int)force2);
+        }
+
+
+
 
         //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 4,1+(int)(degradation * 7), 4 });
       }
