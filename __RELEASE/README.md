@@ -1,29 +1,20 @@
 # Installation instructions
-Extract the contents of the zip files in their respective GTA V / RDR 2 **Scripts** folder
+Extract the contents of the zip files in their respective GTA V / RDR 2 **Scripts** folder inside.
+You might have to create the folder in case it doesn't exist, please also make sure to to match all the prerequisites listed below.
 
 ## Prerequisites
 ### GTA V
-- Requires Script Hook V http://www.dev-c.com/gtav/scripthookv/
+- Requires Script Hook V http://www.dev-c.com/gtav/scripthookv/. Download and install. For a video guide see below.
 - Requires ScriptHookVDotNet v3.5.1 by crosire https://github.com/crosire/scripthookvdotnet/releases and its dependencies. Make sure to download the current version from GitHub, info and installation instructions can be found here https://gta5-mods.com/tools/scripthookv-net
-- Requires LemonUI for .NET v1.8 by Lemon https://gta5-mods.com/tools/lemonui and its dependencies
+- Requires LemonUI for .NET v1.8 by Lemon https://gta5-mods.com/tools/lemonui and its dependencies. Download here https://github.com/LemonUIbyLemon/LemonUI/releases  Installation instructions here https://github.com/LemonUIbyLemon/LemonUI#installation
 
 ### RDR 2
-- Requires Script Hook RDR2 http://www.dev-c.com/rdr2/scripthookrdr2/
+- Requires Script Hook RDR2 http://www.dev-c.com/rdr2/scripthookrdr2/. Download and install. For a video guide see below.
+- Requires ScriptHookRDR2DotNet V2 by TuffyTown https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and its dependencies https://github.com/Halen84/ScriptHookRDR2DotNet-V2 Extract the contents of the zip found under the releases link in your RDR2 main directory. The mod is primarily created to be used with ScriptHookRDR2DotNet V2.
+- *SHRDN v1 version of this mod is outdated and is unlikely to be updated as I currently have no mods installed depending on v1*
 
-The mod is primarily created to be used with ScriptHookRDR2DotNet V2. New features might not find their way into the V1 version.
-- RDR 2 requires ScriptHookRDR2DotNet V2 by TuffyTown https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and its dependencies https://github.com/Halen84/ScriptHookRDR2DotNet-V2
+### ScriptHook video installation instructions 
+![image](https://user-images.githubusercontent.com/16738568/197985654-8c0ea9c1-b99d-498e-908c-9e7cb2c8796e.png)
 
-*Use the V1 version only if you have older mods without updates to V2.* 
-- RDR 2 ScriptHook v1 requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet and its dependencies
-
-Prerequisites:
-https://www.youtube.com/watch?v=cGW27hvRRWI&ab_channel=BallerMcBallerson
-ScriptHook installation. Follow the guide, same goes for ScriptHookDotNet
-
-- Download and install Script Hook RDR2 http://www.dev-c.com/rdr2/scripthookrdr2/
-- You'll also need a version of ScriptHookRDR2DotNet (SHRDN). In case you don't know what that is or you have no other mods installed prior, pick https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases and extract the contents of the zip in your RDR2 main directory.
-- In case you have mods depending on v1 of SHRDN, be sure to get the latest version here https://github.com/saltyq/scripthookrdr2dotnet/releases -- V1 of this mod is only updated occasionally and V2 is the preferred option.
-- Create a folder called "scripts" (if not already existing) inside RDR2 - the folder name might be case sensitive
-Go to https://github.com/Killface1980/DualSense4Rockstar/tree/master/__RELEASE
-Download the zip inside "RDR2" *or* "RDR2 ScriptHook v1" (v1 wasn't updated and contains dlls) -- "RDR2" refers to the current ScriptHookDotNet version 2. Chose the folder according to the SHRDN version earlier.
-Exctract all three dll files in your "Scripts" folder.
+for RDR2 can be found here https://www.youtube.com/watch?v=cGW27hvRRWI&ab_channel=BallerMcBallerson
+. These instructions can also be applied to GTA V and ScriptHookDotNet
