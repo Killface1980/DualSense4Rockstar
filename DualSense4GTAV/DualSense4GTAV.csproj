@@ -75,6 +75,6 @@
     </Reference>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;C:\Rockstar Games\Grand Theft Auto V\Scripts\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;" />
+    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;C:\Rockstar Games\Grand Theft Auto V\Scripts\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;&quot;%25ProgramFiles%25\7-Zip\7z.exe&quot; u &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\DSX4GTAV.zip&quot; &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)Newtonsoft.Json.dll&quot;" />
   </Target>
 </Project>
