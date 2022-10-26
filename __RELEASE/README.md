@@ -1,4 +1,5 @@
 # Installation instructions
+Head over to the RDR2/GTAV folder. Click the zip. Then click on the "Download" button.
 Extract the contents of the zip files in their respective GTA V / RDR 2 **Scripts** folder inside.
 You might have to create the folder in case it doesn't exist, please also make sure to to match all the prerequisites listed below.
 
