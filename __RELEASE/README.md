@@ -1,5 +1,5 @@
 # Installation instructions
-Drop the contents of these folder in their respective GTA V / RDR 2 **Scripts** folder
+Extract the contents of the zip files in their respective GTA V / RDR 2 **Scripts** folder
 
 ## Prerequisites
 ### GTA V
@@ -25,5 +25,5 @@ ScriptHook installation. Follow the guide, same goes for ScriptHookDotNet
 - In case you have mods depending on v1 of SHRDN, be sure to get the latest version here https://github.com/saltyq/scripthookrdr2dotnet/releases -- V1 of this mod is only updated occasionally and V2 is the preferred option.
 - Create a folder called "scripts" (if not already existing) inside RDR2 - the folder name might be case sensitive
 Go to https://github.com/Killface1980/DualSense4Rockstar/tree/master/__RELEASE
-Download all files inside "RDR2" or "RDR2 ScriptHook v1" -- "RDR2" refers to the current ScriptHookDotNet version 2. Chose the folder according to the SHRDN version earlier.
-Put the files in your "Scripts" folder.
+Download the zip inside "RDR2" *or* "RDR2 ScriptHook v1" (v1 wasn't updated and contains dlls) -- "RDR2" refers to the current ScriptHookDotNet version 2. Chose the folder according to the SHRDN version earlier.
+Exctract all three dll files in your "Scripts" folder.
