@@ -1,7 +1,7 @@
 # Installation instructions
 - Head over to the RDR2/GTAV folder above.
 - Click the zip file inside. *For the RDR2SHDN v1 mod, select the dlls one by one.*
-- Then click on the "Download" button.
+- Then click on the "Download" button on the right side.
 - Extract the contents of the zip files in their respective GTA V / RDR 2 **Scripts** folder inside.
 - You might have to create the folder in case it doesn't exist, please also make sure to to match all the prerequisites listed below.
 
