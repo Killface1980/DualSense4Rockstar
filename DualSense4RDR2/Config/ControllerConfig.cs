@@ -1,4 +1,5 @@
 ﻿using RDR2;
+using System;
 using System.Windows.Forms;
 
 namespace DualSense4RDR2.Config;
@@ -41,7 +42,11 @@ public class ControllerConfig
 
         Main_RDR2.canUseThreshold = settings.GetValue("Controls", nameof(Main_RDR2.canUseThreshold), false);
         settings.SetValue("Controls", nameof(Main_RDR2.canUseThreshold), Main_RDR2.canUseThreshold);
-        settings.Save();
+        try
+        {
+          settings.Save();
+        }
+        catch(Exception x){}
 
 
     // showWanted      = settings.GetValue("Controls", nameof(showWanted), true);
