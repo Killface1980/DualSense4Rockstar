@@ -4,6 +4,7 @@
 - Then click on the "Download" button on the right side.
 - Extract the contents of the zip files in their respective GTA V / RDR 2 **Scripts** folder inside.
 - You might have to create the folder in case it doesn't exist, please also make sure to to match all the prerequisites listed below.
+- Modded GTA V and RDR 2 might require to be run in administrator mode. 
 
 ## Prerequisites
 ### GTA V
