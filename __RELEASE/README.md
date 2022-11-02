@@ -10,7 +10,7 @@
 ### GTA V
 - Requires [Script Hook V](http://www.dev-c.com/gtav/scripthookv/). Download and install. For a video guide see below.
 - Requires [ScriptHookVDotNet v3.5.1](https://github.com/crosire/scripthookvdotnet/releases) by crosire  and its [dependencies](https://github.com/crosire/scripthookvdotnet). Extract the contents of the zip found under the releases link in your GTA V main directory. Make sure to download the current version from GitHub, info and installation instructions can be found [here](https://gta5-mods.com/tools/scripthookv-net).
-- Requires [LemonUI for .NET v1.8](https://github.com/LemonUIbyLemon/LemonUI/releases) by Lemon and its dependencies. [Homepage](https://gta5-mods.com/tools/lemonui) | [Installation instructions](https://github.com/LemonUIbyLemon/LemonUI#installation).
+- Requires [LemonUI for .NET v1.8](https://github.com/LemonUIbyLemon/LemonUI/releases) by Lemon and its dependencies. [Homepage](https://gta5-mods.com/tools/lemonui) | [Installation instructions](https://github.com/LemonUIbyLemon/LemonUI#installation). In case you're running this mod with ScriptHookDotNet, select the files from the SHVDN3 folder.  
 
 ### RDR 2
 - Requires [Script Hook RDR2](http://www.dev-c.com/rdr2/scripthookrdr2/). Download and install. For a video guide see below.
