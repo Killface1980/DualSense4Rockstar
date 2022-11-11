@@ -17,6 +17,9 @@
 - Requires [ScriptHookRDR2DotNet V2](https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases) by TuffyTown and its [dependencies](https://github.com/Halen84/ScriptHookRDR2DotNet-V2). Extract the contents of the zip found under the releases link in your RDR2 main directory. The mod is primarily created to be used with ScriptHookRDR2DotNet V2.
 - *SHRDN v1 version of this mod is outdated and is unlikely to be updated as I currently have no mods installed depending on v1*
 
+### Rumble / Vibration from Game
+The mod doesn't alter the vibration. In case you're missing the regular rumble/vibration from the game (GTA V, RDR 2), try setting the emulation in DSX to XBOX360. This worked in my case. *Emulation off could also work (unverified/cannot emember).* Emulating the DS4 with DSX v2.3.0 turned off all rumble on my machine. The only downside to the 360 emu is that the game will not use the PS icons. This mod for RDR2 replaces the icons [RDR 2 PlayStation Icons Replacement](https://www.nexusmods.com/reddeadredemption2/mods/660). No known mod for GTAV yet.
+
 ### ScriptHook video installation instructions 
 [![image](https://user-images.githubusercontent.com/16738568/197985654-8c0ea9c1-b99d-498e-908c-9e7cb2c8796e.png)](https://www.youtube.com/watch?v=cGW27hvRRWI&ab_channel=BallerMcBallerson)
 
