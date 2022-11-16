@@ -24,7 +24,7 @@ Example folder structure with SH v3
 `│ └─ Newtonsoft.Json.dll`  
 `├─ <...>`  
 `├─ dinput8.dll`  
-`├─ NativeTrainer.asi <= optional`  
+`├─ NativeTrainer.asi`* <= optional*  
 `├─ ScriptHookV.dll`  
 `├─ ScriptHookVDotNet.asi`  
 `├─ ScriptHookVDotNet.ini`  
@@ -48,7 +48,7 @@ Example folder structure with SH v3
 `│ └─ Newtonsoft.Json.dll`  
 `├ <...>`  
 `├─ dinput8.dll`  
-`├─ NativeTrainer.asi <= optional`  
+`├─ NativeTrainer.asi`* <= optional*  
 `├─ ScriptHookRDR2.dll`  
 `├─ ScriptHookRDRDotNet.asi`  
 `├─ ScriptHookRDRDotNet.ini`  
