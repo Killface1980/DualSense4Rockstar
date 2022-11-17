@@ -39,7 +39,7 @@ Example folder structure with SH v3
 - Requires [ScriptHookRDR2DotNet V2](https://github.com/Halen84/ScriptHookRDR2DotNet-V2/releases) by TuffyTown and its [dependencies](https://github.com/Halen84/ScriptHookRDR2DotNet-V2). Extract the contents of the zip found under the releases link in your RDR2 main directory. The mod is primarily created to be used with ScriptHookRDR2DotNet V2.
 - *SHRDN v1 version of this mod is outdated and is unlikely to be updated as I currently have no mods installed depending on v1*
 
-Example folder structure with SH v3  
+Example folder structure with SH v2  
 `<Red Dead Redemption 2>`  
 `├ <...>`  
 `├ <Scripts>`  
