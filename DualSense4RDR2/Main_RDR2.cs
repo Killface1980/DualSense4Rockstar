@@ -110,7 +110,7 @@ public class Main_RDR2 : Script
     if (currentMainHandWeapon.Hash != eWeapon.WEAPON_UNARMED &&
         (currentMainHandWeapon.Hash == currentOffHandWeapon.Hash ||
          currentOffHandWeapon.Hash == eWeapon.WEAPON_UNARMED)) // get the proper ammo amount
-      unsafe
+      unsafe // IMPORTANT: Re-use the ammoPointer, otherwise RDR crashes. Also new weaponGuid, otherwise mixup.
       {
         ulong weaponGuid_L;
         GET_PED_WEAPON_GUID_AT_ATTACH_POINT(playerPed.Handle,
@@ -224,15 +224,16 @@ public class Main_RDR2 : Script
         attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY;
 
       int weaponEntityIndex = GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint);
-      float degradation = GET_WEAPON_DEGRADATION(weaponEntityIndex);
-
-      //  RDR2.UI.Screen.DisplaySubtitle(PLAYER._GET_PLAYER_WEAPON_DAMAGE(playerPed.Handle, (uint)currentMainHandWeapon.Hash).ToString("N3"));
+      float degradation     = GET_WEAPON_DEGRADATION(weaponEntityIndex);
+      // var damage = _GET_WEAPON_DAMAGE(weaponEntityIndex);
+      //RDR2.UI.Screen.DisplaySubtitle(PLAYER._GET_PLAYER_WEAPON_DAMAGE(playerPed.Handle, (uint)weaponEntityIndex).ToString());
+      //RDR2.UI.Screen.DisplaySubtitle(_GET_WEAPON_DAMAGE((int)currentMainHandWeapon.Hash).ToString("N3"));
 
       // float permanentDegradation = GET_WEAPON_PERMANENT_DEGRADATION(weaponEntityIndex);
       //
       // 279042 - double action
       bool mainHandIsDoubleAction = ShouldBehaveLikeDoubleAction(currentMainHandWeapon);
-      bool offHandIsDoubleAction = ShouldBehaveLikeDoubleAction(currentOffHandWeapon);
+      bool offHandIsDoubleAction  = ShouldBehaveLikeDoubleAction(currentOffHandWeapon);
 
       if (playerPed.IsOnHorse)
       {
@@ -282,13 +283,13 @@ public class Main_RDR2 : Script
         }
       }
 
-      //if (playerPed.IsShooting)
       if (playerPed.IsShooting)
       {
         // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.AutomaticGun, new (){0,8, 2} );
         //RDR2.UI.Screen.DisplaySubtitle(ammoL + "- " + ammoR);// + " | " + weaponGuid_L + " - "+ weaponGuid_R);
         cockingActive = false;
         Wait(10);
+
 
         //SetAndSendPacket(packet, Trigger.Left, TriggerMode.Hardest);
         if (!canUseOffhandWeapon || ammoR < lastMainHandAmmo)
@@ -460,6 +461,34 @@ public class Main_RDR2 : Script
         // RDR2.UI.Screen.DisplaySubtitle(state.FishingState.ToString());
 
         //state.FishingState == (int)FishingStates.Caught_fish_holding_in_hand
+
+        /*
+         * https://github.com/Halen84/RDR3-Decompiled-Scripts/tree/master/1491-16
+         *
+         * TuffyTown — gestern um 22:08 Uhr
+           its probably crashing because of an incorrect struct being passed.
+           note that you will have to convert the struct to type Any* or in this case a ulong* and then pass the struct back as a pointer.
+           c++ example:
+           struct SampleStruct
+           {
+           alignas(8) int f_0 = 0;
+           alignas(8) int f_1 = 0;
+           alignas(8) int f_2 = 0;
+           }
+           SampleStruct sample{};
+           NATIVE::INVOKE((Any*)&sample); // note the "Any*" cast and the "&"
+           
+           i have decompiled scripts as of 1491.16 found here: https://github.com/Halen84/RDR3-Decompiled-Scripts 
+           i havent researched any fishing stuff, so you're kinda on your own there.
+           you'll just have to look at the decompiled scripts and still continue your research
+           Ked28 — heute um 00:03 Uhr
+           I'd look at fishing_core to start
+         *
+         * https://gist.github.com/NoNameSet/c17cd089cbfab97411af7c036ce1630d RDR2 Native Renamer
+         *
+         * https://github.com/alloc8or/rdr3-nativedb-data
+         *
+         */
 
         DoTrigger_Resistance(Trigger.Left, 6, 1);
 
