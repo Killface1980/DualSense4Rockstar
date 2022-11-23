@@ -15,7 +15,7 @@ These mods were built against the Steam version of DualSenseX which is fully sup
 - OR RDR 2 ScriptHook *v1* requires ScriptHookRDR2DotNet v1.0.5.5 by Saltyq https://github.com/saltyq/scripthookrdr2dotnet/releases and its dependencies
 
 ## Features
-Based upon JohnD's DualSense mod for Grand Theft Auto V using ScriptHook, this project adds support for Red Dead Redemption 2 with a custom control layout losely based upons Shtivi.
+Based upon JohnD's DualSense mod for Grand Theft Auto V using ScriptHook, this project adds support for adaptive triggers to GTA V and Red Dead Redemption 2.
 
 ### GTA V
 Redefined controller layout and bug fixing
