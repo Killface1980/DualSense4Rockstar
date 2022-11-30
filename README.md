@@ -43,6 +43,7 @@ https://github.com/Killface1980/DualSense4Rockstar/tree/master/__RELEASE
 
 # Donations
 If you like this mod, you can support its development and DSX support for more games in future.  
+  
 [![image](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=7JQJ8CSH4ZKS8)
 
 
