@@ -33,7 +33,7 @@ Redefined controller layout and bug fixing
 
 ### RDR 2
 - Adds support for the adaptive triggers for gun recoil, degradation, double action, automatic guns, gun cocking
-- Feedback depending on the state, e.g. whooting, reloading, galloping on horse
+- Feedback depending on the state, e.g. shooting, reloading, galloping on horse
 - Supports off hand weapons and makes the left/right trigger react accordingly
 - LEDs show current player health, can indicate the stamina and underpowered health core
 
