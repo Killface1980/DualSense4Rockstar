@@ -1,13 +1,13 @@
 # DualSense4Rockstar
 
-### Current state
-I've had some hardware issues and am currently low on disk space. DSX was updated in the mean time and I haven't tested/updated my mods yet.
-I'll see if I get GTA/RDR up and running again and will take care of the issues. 
-
 Adds support for DualSense controllers to GTAV and RDR2.
 Merge of the GTAV mod by JohnD https://github.com/zelmer69/dualsense4GTA5 and the RDR2 mod by Shtivi https://github.com/Shtivi/RDR2-DualSense
  with rewrites and refinements.
 New controller scheme for GTA V.
+
+### Current state
+I've had some hardware issues and am currently low on disk space. DSX was updated in the mean time and I haven't tested/updated my mods yet.
+I'll see if I get GTA/RDR up and running again and will take care of the issues. 
 
 ### Requires DualSenseX by Paliverse
 Github Link: https://github.com/Paliverse/DualSenseX | Steam Link:  https://store.steampowered.com/app/1812620/DSX/
