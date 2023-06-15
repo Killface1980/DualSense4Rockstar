@@ -5,6 +5,7 @@
 - Extract the contents of the zip files in their respective GTA V / RDR 2 **Scripts** folder inside.
 - You might have to create the folder in case it doesn't exist, please also make sure to to match all the prerequisites listed below.
 - Modded GTA V and RDR 2 might require to be run in administrator mode. 
+- Make sure there's an (empty) text file at `C:\Temp\DualSenseX\DualSenseX_PortNumber.txt` and DSX is using it as Text Source (green light under 'Home')
 
 ## Prerequisites
 ### GTA V
