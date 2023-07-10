@@ -24,6 +24,8 @@ public class iO
     try {
       value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
     } catch (Exception e) {
+    }
+    if (value == null || value == "") {
       value = DEFAULT_PORT
     }
     endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(value));
