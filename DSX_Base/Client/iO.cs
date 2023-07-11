@@ -9,6 +9,8 @@ namespace DSX_Base.Client;
 
 public class iO
 {
+  private const string DEFAULT_PORT = "6969";
+
   private static UdpClient client;
 
   private static int controllerIndex = 0;
@@ -18,7 +20,14 @@ public class iO
   {
     _ = DateTime.Now;
     client = new UdpClient();
-    string value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
+    string value;
+    try {
+      value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
+    } catch (Exception e) {
+    }
+    if (value == null || value == "") {
+      value = DEFAULT_PORT
+    }
     endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(value));
     new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
   }
