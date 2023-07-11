@@ -20,13 +20,13 @@ public class iO
   {
     _ = DateTime.Now;
     client = new UdpClient();
-    string value;
+    string value = string.Empty;
     try {
       value = File.ReadAllText("C:\\Temp\\DualSenseX\\DualSenseX_PortNumber.txt");
     } catch (Exception e) {
     }
-    if (value == null || value == "") {
-      value = DEFAULT_PORT
+    if (value == null || value == "" || value == string.Empty) {
+      value = DEFAULT_PORT;
     }
     endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(value));
     new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);

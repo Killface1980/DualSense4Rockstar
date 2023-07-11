@@ -19,7 +19,7 @@
     <None Include="FishingStat\Hans.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DSX_Base\DSX_Base.csproj" />
@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <Reference Include="ScriptHookRDRNetAPI">
-      <HintPath>..\..\..\..\Rockstar Games\Red Dead Redemption 2\ScriptHookRDRNetAPI.dll</HintPath>
+      <HintPath>D:\Rockstar Games\Red Dead Redemption 2\ScriptHookRDRNetAPI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

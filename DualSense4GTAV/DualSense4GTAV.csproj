@@ -17,9 +17,9 @@
     <None Remove="__RELEASE\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="LemonUI.SHVDN3" Version="1.8.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="ScriptHookVDotNet3" Version="3.5.1" />
+    <PackageReference Include="LemonUI.SHVDN3" Version="1.10.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="ScriptHookVDotNet3" Version="3.6.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DSX_Base\DSX_Base.csproj" />
@@ -75,6 +75,7 @@
     </Reference>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;C:\Rockstar Games\Grand Theft Auto V\Scripts\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;&quot;%25ProgramFiles%25\7-Zip\7z.exe&quot; u &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\DSX4GTAV.zip&quot; &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)Newtonsoft.Json.dll&quot;" />
+    <Exec Command="C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;D:\Rockstar Games\Grand Theft Auto V\Scripts\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;:: C:\Windows\System32\xcopy &quot;$(TargetDir)Newtonsoft.Json.dll&quot; &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\&quot; /S /Y&#xD;&#xA;&quot;%25ProgramFiles%25\7-Zip\7z.exe&quot; u &quot;$(TargetDir)..\..\..\..\__RELEASE\GTAV\DSX4GTAV.zip&quot; &quot;$(TargetDir)DualSense4GTAV.dll&quot; &quot;$(TargetDir)DSX_Base.dll&quot; &quot;$(TargetDir)Newtonsoft.Json.dll&quot;" />
   </Target>
 </Project>
+

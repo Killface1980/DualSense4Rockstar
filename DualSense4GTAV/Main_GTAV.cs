@@ -351,7 +351,7 @@ namespace DualSense4GTAV
         }
 
 
-        float animationLength = Function.Call<float>(Hash._GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
+        float animationLength = Function.Call<float>(Hash.GET_WEAPON_TIME_BETWEEN_SHOTS, playerWeapon.Hash);
         bool weaponHasNoAmmo =
           playerWeapon.Group == WeaponGroup.Unarmed || playerWeapon.Group == WeaponGroup.PetrolCan;
 
