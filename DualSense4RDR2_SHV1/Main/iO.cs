@@ -4,8 +4,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using DSX_Base;
 using Newtonsoft.Json;
-using Shared;
 
 namespace DualSense4RDR2
 {

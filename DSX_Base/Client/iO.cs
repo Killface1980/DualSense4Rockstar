@@ -221,12 +221,13 @@ public class iO
     Send(p);
   }
 
-  public static void SetAndSendPacketCustom(Packet p, Trigger trigger,
+  public static void SetAndSendPacketCustom(Trigger trigger,
     CustomTriggerValueMode customMode = CustomTriggerValueMode.OFF, int startOfResistance = 0,
     int amountOfForceExerted = 0, int forceExertedInRange = 0, int ab_strengthNearRelease = 0,
     int ab_strengthNearMiddle = 0, int ab_strengthPressedState = 0, int ab_actuationFrequency = 0)
   {
     TriggerMode triggerMode = TriggerMode.CustomTriggerValue;
+    Packet p = new();
 
     p.instructions[0].type = InstructionType.TriggerUpdate;
     p.instructions[0].parameters = new object[]

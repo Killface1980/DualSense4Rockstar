@@ -19,9 +19,17 @@ namespace DSX_UDP_Example
     static void Connect()
     {
       client = new UdpClient();
-      string portNumber = File.ReadAllText(@"C:\Temp\DualSenseX\DualSenseX_PortNumber.txt");
+      string portNumber = "6969"
+      try
+      {
+          portNumber = File.ReadAllText(@"C:\Temp\DualSenseX\DualSenseX_PortNumber.txt");
+          Console.WriteLine($"Port number found is: {portNumber}\n");
+      }
+            catch (Exception e)
+      {
+          Console.WriteLine("Using default UDP port 6969.");
+      }
       endPoint = new IPEndPoint(Triggers.localhost, Convert.ToInt32(portNumber));
-      Console.WriteLine($"Port number found is: {portNumber}\n");
     }
 
     static void Send(Packet data)

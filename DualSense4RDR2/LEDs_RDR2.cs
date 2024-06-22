@@ -78,13 +78,13 @@ public class LEDs_RDR2 : Script
 
         bool playerIsInDeadEye = Game.Player.IsInDeadEye;
 
-        bool healthCoreOverpowered  = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Health);
-        bool staminaCoreOverpowered = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.Stamina);
-        bool deadEyeCoreOverpowered = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)PedCore.DeadEye);
+        bool healthCoreOverpowered  = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)eAttributeCore.Health);
+        bool staminaCoreOverpowered = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)eAttributeCore.Stamina);
+        bool deadEyeCoreOverpowered = ATTRIBUTE._IS_ATTRIBUTE_CORE_OVERPOWERED(playerPed.Handle, (int)eAttributeCore.DeadEye);
 
-        float healthCore  = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.Health) * 0.01f + (healthCoreOverpowered ? 1f : 0);
-        float staminaCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.Stamina) * 0.01f + (staminaCoreOverpowered ? 1f : 0);
-        float deadEyeCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)PedCore.DeadEye) * 0.01f + (deadEyeCoreOverpowered ? 1f : 0);
+        float healthCore  = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)eAttributeCore.Health) * 0.01f + (healthCoreOverpowered ? 1f : 0);
+        float staminaCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)eAttributeCore.Stamina) * 0.01f + (staminaCoreOverpowered ? 1f : 0);
+        float deadEyeCore = ATTRIBUTE._GET_ATTRIBUTE_CORE_VALUE(playerPed.Handle, (int)eAttributeCore.DeadEye) * 0.01f + (deadEyeCoreOverpowered ? 1f : 0);
 
         bool healthCoreLow  = healthCore < 0.2f;
         bool staminaCoreLow = staminaCore < 0.2f;

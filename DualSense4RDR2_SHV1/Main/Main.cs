@@ -1,9 +1,9 @@
 using RDR2;
 using RDR2.Native;
-using Shared;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using DSX_Base;
 using static DSX_Base.Client.iO;
 
 namespace DualSense4RDR2
@@ -138,37 +138,37 @@ namespace DualSense4RDR2
       //RDR2.UI.Screen.DisplaySubtitle(playerweapon.Group.ToString());
       if (Function.Call<bool>(Hash.IS_CONTROL_PRESSED,0, 3901091606 ) )  //INPUT_FRONTEND_LB
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-        SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+        SetAndSendPacket(Trigger.Right);
+        SetAndSendPacket(Trigger.Left);
       }
       else if (playerPed.IsReloading) // Mode reloading
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-        SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+        SetAndSendPacket(Trigger.Right);
+        SetAndSendPacket(Trigger.Left);
       }
       else if (weaponIsThrowable)
       {
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+        SetAndSendPacketCustom(Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
 
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
+        SetAndSendPacketCustom(Trigger.Right,
             CustomTriggerValueMode.Pulse, 160, 30, 230);
       }
       else if (playerweapon.Group == WeaponGroup.Bow)
       {
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+        SetAndSendPacketCustom(Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
 
         if (player.IsAiming)
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 2, 8 });
+          SetAndSendPacket(Trigger.Right, TriggerMode.Resistance, new() { 2, 8 });
         }
         else
         {
-          SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Resistance, new() { 1, 1 });
+          SetAndSendPacket(Trigger.Right, TriggerMode.Resistance, new() { 1, 1 });
         }
       }
       else if (weaponIsAGun)
       {
-        SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+        SetAndSendPacketCustom(Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
 
         float degradation = Function.Call<float>(Hash._0x0D78E1097F89E637, Function.Call<int>(Hash.GET_CURRENT_PED_WEAPON_ENTITY_INDEX, playerPed.Handle, 0)); //GET_WEAPON_DEGRADATION
 
@@ -176,14 +176,14 @@ namespace DualSense4RDR2
 
         if (playerIsAiming && !weaponIsReadyToShoot) // Mode Gun Cock
         {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 15 *
+          SetAndSendPacketCustom(Trigger.Right, CustomTriggerValueMode.Pulse, 1, 15 *
               (int)(1 + degradation));
 
           // SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 1, 4, 1 + (int)(degradation * 3), 2 });
         }
         else // GUN_MANUAL
         {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right, CustomTriggerValueMode.Pulse, 1, 90 *
+          SetAndSendPacketCustom(Trigger.Right, CustomTriggerValueMode.Pulse, 1, 90 *
               (int)(1 + degradation));
 
           //SetAndSendPacket(packet, controllerIndex, Trigger.Right, TriggerMode.Bow, new() { 0, 4,1+(int)(degradation * 7), 4 });
@@ -194,30 +194,30 @@ namespace DualSense4RDR2
         if (number == 3666182381 || //gat
          number == 3101324918)// maxi
         {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+          SetAndSendPacketCustom(Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
           if (playerPed.IsShooting) // Auto
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
+            SetAndSendPacketCustom(Trigger.Right,
                 CustomTriggerValueMode.PulseB, 9, 190);
           }
           else // Prepare
           {
-            SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
+            SetAndSendPacketCustom(Trigger.Right,
                 CustomTriggerValueMode.Rigid, 30, 255);
           }
         }
         else if (number == 2465730487 || //hotch - cannons
                  number == 1609145491)// breach
         {
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
-          SetAndSendPacketCustom(packet, controllerIndex, Trigger.Right,
+          SetAndSendPacketCustom(Trigger.Left, CustomTriggerValueMode.Rigid, 1, 20);
+          SetAndSendPacketCustom(Trigger.Right,
               CustomTriggerValueMode.PulseA, 255, 200, 255);
         }
       }
       else // turn off
       {
-        SetAndSendPacket(packet, controllerIndex, Trigger.Right);
-        SetAndSendPacket(packet, controllerIndex, Trigger.Left);
+        SetAndSendPacket(Trigger.Right);
+        SetAndSendPacket(Trigger.Left);
       }
       updateLights();
       HandleLEDs();

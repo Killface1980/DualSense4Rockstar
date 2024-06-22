@@ -40,15 +40,19 @@ public class Main_RDR2 : Script
   private static bool ShouldBehaveLikeDoubleAction(Weapon weapon)
   {
     return weapon.Hash
-      is eWeapon.WEAPON_REVOLVER_DOUBLEACTION
-      or eWeapon.WEAPON_REVOLVER_DOUBLEACTION_EXOTIC
-      or eWeapon.WEAPON_REVOLVER_DOUBLEACTION_GAMBLER
-      or eWeapon.WEAPON_REVOLVER_DOUBLEACTION_MICAH
-      or eWeapon.WEAPON_PISTOL_MAUSER
-      or eWeapon.WEAPON_PISTOL_MAUSER_DRUNK
-      or eWeapon.WEAPON_PISTOL_SEMIAUTO
-      or eWeapon.WEAPON_PISTOL_M1899
-      or eWeapon.WEAPON_SHOTGUN_SEMIAUTO;
+      is eWeapon.RevolverDoubleAction
+      or eWeapon.RevolverDoubleActionDualwield
+      or eWeapon.RevolverDoubleActionExotic
+      or eWeapon.RevolverDoubleActionGambler
+      or eWeapon.RevolverDoubleActionMicah
+      or eWeapon.RevolverDoubleActionMicahDualwield
+      or eWeapon.PistolVolcanic // 
+      or eWeapon.PistolVolcanicCollector // Added Volcanic. Right?
+      or eWeapon.PistolMauser
+      or eWeapon.PistolMauserDrunk
+      or eWeapon.PistolSemiauto
+      or eWeapon.PistolM1899
+      or eWeapon.ShotgunSemiauto;
   }
 
   private unsafe Weapon GetCurrentWeapon(bool offHand = false)
@@ -57,8 +61,8 @@ public class Main_RDR2 : Script
     uint weaponHash;
     GET_CURRENT_PED_WEAPON(owner!.Handle, &weaponHash, true,
       offHand
-        ? (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY
-        : (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY, false);
+        ? (int)eWeaponAttachPoint.Secondary
+        : (int)eWeaponAttachPoint.Primary, false);
 
     //int weaponEntityIndex = GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint);
 
@@ -98,30 +102,30 @@ public class Main_RDR2 : Script
     bool mainWeaponIsReadyToShoot = IS_PED_WEAPON_READY_TO_SHOOT(playerPed.Handle);
     bool mainHandWeaponIsAGun = IS_WEAPON_A_GUN((uint)currentMainHandWeapon.Hash); //IS_WEAPON_A_GUN
     //bool mainWeaponIsTwoHanded    = _IS_WEAPON_TWO_HANDED((uint)currentMainHandWeapon.Hash);
-    bool carriesWeaponOpenly = currentMainHandWeapon.Hash != eWeapon.WEAPON_UNARMED; /* unarmed*/
+    bool carriesWeaponOpenly = currentMainHandWeapon.Hash != eWeapon.Unarmed; /* unarmed*/
     bool canUseOffhandWeapon = currentMainHandWeapon.IsOneHanded && currentOffHandWeapon.IsOneHanded &&
-                               currentOffHandWeapon.Hash != eWeapon.WEAPON_UNARMED;
+                               currentOffHandWeapon.Hash != eWeapon.Unarmed;
     //uint* numbi                 = null;
     //var mount                   = GET_CURRENT_PED_VEHICLE_WEAPON(characterPed.Handle, numbi); //
 
     int ammoL = currentOffHandWeapon.AmmoInClip;
     int ammoR = currentMainHandWeapon.AmmoInClip;
 
-    if (currentMainHandWeapon.Hash != eWeapon.WEAPON_UNARMED &&
+    if (currentMainHandWeapon.Hash != eWeapon.Unarmed &&
         (currentMainHandWeapon.Hash == currentOffHandWeapon.Hash ||
-         currentOffHandWeapon.Hash == eWeapon.WEAPON_UNARMED)) // get the proper ammo amount
+         currentOffHandWeapon.Hash == eWeapon.Unarmed)) // get the proper ammo amount
       unsafe // IMPORTANT: Re-use the ammoPointer, otherwise RDR crashes. Also new weaponGuid, otherwise mixup.
       {
         ulong weaponGuid_L;
         GET_PED_WEAPON_GUID_AT_ATTACH_POINT(playerPed.Handle,
-          (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY, &weaponGuid_L);
+          (int)eWeaponAttachPoint.Secondary, &weaponGuid_L);
         int ammoPointer;
         _GET_AMMO_IN_CLIP_BY_INVENTORY_UID(playerPed.Handle, &ammoPointer, &weaponGuid_L);
 
         ammoL = ammoPointer;
 
         ulong weaponGuid_R;
-        GET_PED_WEAPON_GUID_AT_ATTACH_POINT(playerPed.Handle, (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY,
+        GET_PED_WEAPON_GUID_AT_ATTACH_POINT(playerPed.Handle, (int)eWeaponAttachPoint.Primary,
           &weaponGuid_R);
         //WEAPON.GET_PED_WEAPON_GUID_AT_ATTACH_POINT(playerPed.Handle, (int)eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY, &weaponGuid_R);
         //int ammo_R = 0;
@@ -147,7 +151,7 @@ public class Main_RDR2 : Script
     //RDR2.UI.Screen.DisplaySubtitle((playerPed.IsReloading).ToString());
 
     // Weapon Wheel
-    if (PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LB)) //INPUT_FRONTEND_LB, weapon wheel
+    if (PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.FrontendLB)) //INPUT_FRONTEND_LB, weapon wheel
     {
       DoTrigger_Resistance(Trigger.Left, 8, 1);
       DoTrigger_Resistance(Trigger.Right, 8, 1);
@@ -169,7 +173,7 @@ public class Main_RDR2 : Script
 
     if (mainHandWeaponIsAGun || isDeadEyeEnabled || isPedDueling)
     {
-      bool isAimingControlPressed = PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_LT) || player.IsAiming;
+      bool isAimingControlPressed = PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.FrontendLT) || player.IsAiming;
       if (playerPed.IsReloading) // Mode reloading
       {
         // SetAndSendPacket(packet, Trigger.Right, TriggerMode.Hardest);
@@ -214,14 +218,14 @@ public class Main_RDR2 : Script
         // SetAndSendPacket(packet, Trigger.Right, TriggerMode.AutomaticGun,new(){ 0,8,3 });
       }
 
-      bool isControlAttackPressed = PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.INPUT_FRONTEND_RT);
+      bool isControlAttackPressed = PAD.IS_CONTROL_PRESSED(0, (uint)eInputType.FrontendRT);
 
 
       //SetAndSendPacket(packet, controllerIndex, Trigger.Left, TriggerMode.Resistance, new(){6,1});
-      eWeaponAttachPoint attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_PRIMARY;
+      eWeaponAttachPoint attachPoint = eWeaponAttachPoint.Primary;
 
       if (canUseOffhandWeapon && offHandWillShootNext) // most likely offhand
-        attachPoint = eWeaponAttachPoint.WEAPON_ATTACH_POINT_HAND_SECONDARY;
+        attachPoint = eWeaponAttachPoint.Secondary;
 
       int weaponEntityIndex = GET_CURRENT_PED_WEAPON_ENTITY_INDEX(playerPed.Handle, (int)attachPoint);
       float degradation     = GET_WEAPON_DEGRADATION(weaponEntityIndex);
@@ -335,7 +339,7 @@ public class Main_RDR2 : Script
       if (cockingActive) cockingActive = isControlAttackPressed;
 
       bool uncockVolcanic = !mainWeaponIsReadyToShoot && isControlAttackPressed &&
-                            currentMainHandWeapon.Hash == eWeapon.WEAPON_PISTOL_VOLCANIC;
+                            (currentMainHandWeapon.Hash == eWeapon.PistolVolcanic || currentMainHandWeapon.Hash == eWeapon.PistolVolcanicCollector);
 
       if (uncockVolcanic) cockingActive = false;
       if (cockingActive)
@@ -448,10 +452,10 @@ public class Main_RDR2 : Script
     bool weaponIsThrowable = _IS_WEAPON_THROWABLE((uint)currentMainHandWeapon.Hash); //
 
     if (weaponIsThrowable ||
-        currentMainHandWeapon.Group is eWeaponGroup.GROUP_BOW or eWeaponGroup.GROUP_FISHINGROD
-          or eWeaponGroup.GROUP_LASSO)
+        currentMainHandWeapon.Group is eWeaponGroup.Bow or eWeaponGroup.FishingRod 
+          or eWeaponGroup.Lasso)
     {
-      if (currentMainHandWeapon.Group == eWeaponGroup.GROUP_FISHINGROD)
+      if (currentMainHandWeapon.Group == eWeaponGroup.FishingRod)
       {
         // ulong currentState;
         // TASK._GET_TASK_FISHING(playerPed.Handle, &currentState); // BUG Crashing https://pastebin.com/NmK5ZLVs
