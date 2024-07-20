@@ -1,3 +1,7 @@
+2024-07-20
+An updated version of the mods can currently be found at the 2024 branch here: 
+https://github.com/Killface1980/DualSense4Rockstar/tree/update-2024/__RELEASE
+
 # Installation instructions
 - Head over to the RDR2/GTAV folder above.
 - Click the zip file inside. *For the RDR2SHDN v1 mod, select the dlls one by one.*
