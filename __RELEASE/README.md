@@ -1,6 +1,8 @@
-2024-07-20
-An updated version of the mods can currently be found at the 2024 branch here: 
-https://github.com/Killface1980/DualSense4Rockstar/tree/update-2024/__RELEASE
+---------------------------
+# 2024-07-20
+Updated version of the mods can currently be found at the 2024 branch here: https://github.com/Killface1980/DualSense4Rockstar/tree/update-2024/__RELEASE
+
+---------------------------
 
 # Installation instructions
 - Head over to the RDR2/GTAV folder above.
