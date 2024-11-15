@@ -1,6 +1,6 @@
 ---------------------------
 # 2024-07-20
-Updated version of the mods can currently be found at the 2024 branch here: https://github.com/Killface1980/DualSense4Rockstar/tree/update-2024/__RELEASE
+Updated versions of the mods can currently be found at the 2024 branch here: https://github.com/Killface1980/DualSense4Rockstar/tree/update-2024/__RELEASE
 
 ---------------------------
 
